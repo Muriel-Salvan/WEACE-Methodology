@@ -12,17 +12,21 @@ module WEACE
 
   module Master
   
-    # Process the script and get the actions to perform on WEACE Slave Clients
-    #
-    # Parameters:
-    # * *ioSlaveActions* (_SlaveActions_): The slave actions to populate (check WEACEMasterServer.rb for API)
-    # * *iMasterTicketID* (_String_): The Master Ticket ID
-    # * *iSlaveTaskID* (_String_): The Slave Ticket ID
-    def def processScript(ioSlaveActions, iTicketID, iTaskID)
-      ioSlaveActions.addSlaveAction(
-        Tools_TicketTracker, Action_Ticket_RejectDuplicate,
-        iTicketID, iTaskID
-      )
+    class Server
+    
+      # Process the script and get the actions to perform on WEACE Slave Clients
+      #
+      # Parameters:
+      # * *ioSlaveActions* (_SlaveActions_): The slave actions to populate (check WEACEMasterServer.rb for API)
+      # * *iMasterTicketID* (_String_): The Master Ticket ID
+      # * *iSlaveTaskID* (_String_): The Slave Ticket ID
+      def processScript(ioSlaveActions, iTicketID, iTaskID)
+        ioSlaveActions.addSlaveAction(
+          Tools_TicketTracker, Action_Ticket_RejectDuplicate,
+          iTicketID, iTaskID
+        )
+      end
+      
     end
 
   end
