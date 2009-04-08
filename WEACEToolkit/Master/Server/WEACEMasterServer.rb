@@ -93,7 +93,7 @@ module WEACE
       # * *iScriptParameters* (<em>list<String></em>): Additional parameters to give the script
       # Return:
       # * _Boolean_: Has the operation completed successfully ?
-      def self.execute(iUserScriptID, iScriptID, iScriptParameters)
+      def execute(iUserScriptID, iScriptID, iScriptParameters)
         # Read the configuration file
         begin
           require 'Master/Server/config/Config.rb'
@@ -207,7 +207,7 @@ if (__FILE__ == $0)
     exit 1
   else
     # Execute
-    if (WEACE::Master::Server::execute(lUserScriptID, lScriptID, lScriptParameters))
+    if (WEACE::Master::Server.new.execute(lUserScriptID, lScriptID, lScriptParameters))
       exit 0
     else
       exit 1

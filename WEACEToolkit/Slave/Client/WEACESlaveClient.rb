@@ -70,7 +70,7 @@ module WEACE
       # * *iActions* (<em>map< ToolID, list< [ ActionID, Parameters ] > ></em>): The map of actions to execute
       # Return:
       # * _Boolean_: Has the operation completed successfully ?
-      def self.execute(iUserScriptID, iActions)
+      def execute(iUserScriptID, iActions)
         # Read the configuration file
         begin
           require 'Slave/Client/config/Config.rb'
@@ -181,7 +181,7 @@ if (__FILE__ == $0)
     exit 1
   else
     # Execute
-    if (WEACE::Master::Server::execute(lUserScriptID, lScriptID, lScriptParameters))
+    if (WEACE::Slave::Client.new.execute(lUserScriptID, lScriptID, lScriptParameters))
       exit 0
     else
       exit 1
