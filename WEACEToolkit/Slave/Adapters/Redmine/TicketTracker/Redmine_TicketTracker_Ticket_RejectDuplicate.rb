@@ -1,6 +1,6 @@
 # Usage:
-# ruby -w Redmine_TicketTracker_RejectDuplicate.rb <UserLogin> <MySQLHost> <DBName> <DBUser> <DBPassword> <MasterTicketID> <SlaveTicketID>
-# Example: ruby -w Redmine_TicketTracker_RejectDuplicate.rb Scripts_Validator mysql-r redminedb redminedbuser redminedbpassword 123 124
+# ruby -w Redmine_TicketTracker_Ticket_RejectDuplicate.rb <UserLogin> <MySQLHost> <DBName> <DBUser> <DBPassword> <MasterTicketID> <SlaveTicketID>
+# Example: ruby -w Redmine_TicketTracker_Ticket_RejectDuplicate.rb Scripts_Validator mysql-r redminedb redminedbuser redminedbpassword 123 124
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
@@ -15,7 +15,7 @@ module Redmine
 
   module TicketTracker
   
-    class RejectDuplicate
+    class Ticket_RejectDuplicate
     
       # Mark 2 tickets as duplicated and close the slave ticket
       #
@@ -139,14 +139,14 @@ if (__FILE__ == $0)
       (lSlaveTicketID == nil))
     # Print some usage
     puts 'Usage:'
-    puts 'ruby -w Redmine_TicketTracker_RejectDuplicate.rb <UserLogin> <MySQLHost> <DBName> <DBUser> <DBPassword> <MasterTicketID> <SlaveTicketID>'
-    puts 'Example: ruby -w Redmine_TicketTracker_RejectDuplicate.rb Scripts_Validator mysql-r redminedb redminedbuser redminedbpassword 123 124'
+    puts 'ruby -w Redmine_TicketTracker_Ticket_RejectDuplicate.rb <UserLogin> <MySQLHost> <DBName> <DBUser> <DBPassword> <MasterTicketID> <SlaveTicketID>'
+    puts 'Example: ruby -w Redmine_TicketTracker_Ticket_RejectDuplicate.rb Scripts_Validator mysql-r redminedb redminedbuser redminedbpassword 123 124'
     puts ''
     puts 'Check http://weacemethod.sourceforge.net for details.'
     exit 1
   else
     # Execute
-    Redmine::TicketTracker::RejectDuplicate::execute(lUserLogin, lMySQLHost, lDBName, lDBUser, lDBPassword, lMasterTicketID, lSlaveTicketID)
+    Redmine::TicketTracker::Ticket_RejectDuplicate::execute(lUserLogin, lMySQLHost, lDBName, lDBUser, lDBPassword, lMasterTicketID, lSlaveTicketID)
     exit 0
   end
 end

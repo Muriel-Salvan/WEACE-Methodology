@@ -54,7 +54,7 @@ module WEACE
       # *** *iDBUser* (_String_): The name of the database user
       # *** *iDBPassword* (_String_): The pasword of the database user
       def addWEACESlaveAdapter(iType, iTool, *iParams)
-        @RegisteredAdapters << [ iType, iTools, iParams ]
+        @RegisteredAdapters << [ iType, iTool, iParams ]
       end
       
     end

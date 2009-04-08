@@ -23,18 +23,18 @@ module WEACE
       # * *iWEACEToolkitDir* (_String_): The installation directory of the WEACE toolkit
       # Return:
       # * _Boolean_: Has sending been performed successfully ?
-      def sendMessage(iUserScriptID, iSlaveActions, iSlaveClientDir)
+      def sendMessage(iUserScriptID, iSlaveActions, iWEACEToolkitDir)
         # Try requiring directly the Slave Client
         begin
           require "#{iWEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
-        rescue RuntimError
+        rescue RuntimeError
           puts "!!! Unable to require file #{iWEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
           return false
         end
         # Save the Log file location before, and restore it after
         lOldLogFile = $LogFile
         # Call the Slave Client directly
-        Slave::Client::execute(iUserScriptID, iSlaveActions)
+        WEACE::Slave::Client.new.execute(iUserScriptID, iSlaveActions)
         $LogFile = lOldLogFile
         
         return true

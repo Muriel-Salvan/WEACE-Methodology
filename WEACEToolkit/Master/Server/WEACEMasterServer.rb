@@ -114,11 +114,11 @@ module WEACE
           iClientType, iClientTools, iClientParameters = iSlaveClientInfo
           log "* Client n.#{lIdx}:"
           log "** Type: #{iClientType}"
+          log "** Parameters: #{iClientParameters.inspect}"
           log "** #{iClientTools.size} tools are installed on this client:"
           iClientTools.each do |iToolID|
             log "*** #{iToolID}"
           end
-          log "** Parameters: #{iClientParameters.inspect}"
           lIdx += 1
         end
         # First check that our requires are indeed present
