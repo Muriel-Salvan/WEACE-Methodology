@@ -8,11 +8,14 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
+require 'date'
+
 module WEACE
 
   # Actions to be performed by Slave Clients
   # For the Tickets Manager:
   Action_Ticket_AddLinkToTask = 'Ticket_AddLinkToTask'
+  Action_Ticket_RejectDuplicate = 'Ticket_RejectDuplicate'
   # For the Project Manager:
   Action_Task_AddLinkToTicket = 'Task_AddLinkToTicket'
   
