@@ -71,7 +71,7 @@ module WEACE
       def self.execute(iUserScriptID, iActions)
         # Read the configuration file
         begin
-          require 'config/Config.rb'
+          require 'Slave/Client/config/Config.rb'
         rescue RuntimeError
           puts '!!! Unable to load the configuration from file \'config/Config.rb\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.'
           return false

@@ -31,8 +31,12 @@ module WEACE
           puts "!!! Unable to require file #{iWEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
           return false
         end
+        # Save the Log file location before, and restore it after
+        lOldLogFile = $LogFile
         # Call the Slave Client directly
         Slave::Client::execute(iUserScriptID, iSlaveActions)
+        $LogFile = lOldLogFile
+        
         return true
       end
       

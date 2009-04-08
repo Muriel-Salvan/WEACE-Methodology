@@ -11,14 +11,14 @@ module WEACE
     #
     # Parameters:
     # * *ioConfig* (_Config_): The configuration to set
-    def getWEACEMasterServerConfig(ioConfig)
+    def self.getWEACEMasterServerConfig(ioConfig)
       ioConfig.addWEACESlaveClient(
         ClientType_Local,
         [
           Tools_Wiki,
           Tools_TicketTracker
         ],
-        '/home/groups/m/my/myproject/WEACEToolkit/Slave/Client'
+        '/home/groups/m/my/myproject/WEACEToolkit'
       )
       ioConfig.LogFile = '/home/groups/m/my/myproject/persistent/tmp/WEACEMasterServer.log'
     end

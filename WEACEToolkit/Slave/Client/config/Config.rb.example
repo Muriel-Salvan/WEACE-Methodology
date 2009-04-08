@@ -11,7 +11,7 @@ module WEACE
     #
     # Parameters:
     # * *ioConfig* (_Config_): The configuration to set
-    def getWEACESlaveClientConfig(ioConfig)
+    def self.getWEACESlaveClientConfig(ioConfig)
       ioConfig.addWEACESlaveAdapter(
         Product_Mediawiki,
         Tools_Wiki,
