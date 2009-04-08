@@ -8,7 +8,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require '../Redmine_Common.rb'
+require "#{File.dirname(__FILE__)}/../Redmine_Common"
 require 'date'
 
 module Redmine

@@ -17,7 +17,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-include '../../WEACE_Common.rb'
+require "#{File.dirname(__FILE__)}/../../WEACE_Common.rb"
 
 module WEACE
 
