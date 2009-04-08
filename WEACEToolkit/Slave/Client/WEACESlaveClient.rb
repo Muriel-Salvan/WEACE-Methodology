@@ -61,6 +61,8 @@ module WEACE
     
     class Client
     
+      include WEACE::Logging
+    
       # Execute the server for a given configuration
       #
       # Parameters:

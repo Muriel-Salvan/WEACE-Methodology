@@ -83,6 +83,8 @@ module WEACE
 
     class Server
     
+      include WEACE::Logging
+    
       # Execute the server for a given configuration
       #
       # Parameters:

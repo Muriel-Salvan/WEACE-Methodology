@@ -26,32 +26,36 @@ module WEACE
   # Project Manager
   Tools_ProjectManager = 'ProjectManager'
 
-  # Log something
-  #
-  # Parameters:
-  # * *iMessage* (_String_): The message to log
-  def log(iMessage)
-    iCompleteMessage = "#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - #{iMessage}"
-    puts iCompleteMessage
-    if ($LogFile != nil)
-      File.open($LogFile, 'a') do |iFile|
-        iFile << iCompleteMessage
+  module Logging
+  
+    # Log something
+    #
+    # Parameters:
+    # * *iMessage* (_String_): The message to log
+    def log(iMessage)
+      iCompleteMessage = "#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - #{iMessage}"
+      puts iCompleteMessage
+      if ($LogFile != nil)
+        File.open($LogFile, 'a') do |iFile|
+          iFile << iCompleteMessage
+        end
       end
     end
-  end
 
-  # Log something as an error
-  #
-  # Parameters:
-  # * *iMessage* (_String_): The message to log
-  def logErr(iMessage)
-    iCompleteMessage = "#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - !!! ERROR !!! - #{iMessage}"
-    puts iCompleteMessage
-    if ($LogFile != nil)
-      File.open($LogFile, 'a') do |iFile|
-        iFile << iCompleteMessage
+    # Log something as an error
+    #
+    # Parameters:
+    # * *iMessage* (_String_): The message to log
+    def logErr(iMessage)
+      iCompleteMessage = "#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - !!! ERROR !!! - #{iMessage}"
+      puts iCompleteMessage
+      if ($LogFile != nil)
+        File.open($LogFile, 'a') do |iFile|
+          iFile << iCompleteMessage
+        end
       end
     end
+    
   end
 
 end
