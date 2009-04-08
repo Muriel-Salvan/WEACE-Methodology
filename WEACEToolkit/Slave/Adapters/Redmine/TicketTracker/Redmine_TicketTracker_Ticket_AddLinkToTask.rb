@@ -1,6 +1,6 @@
 # Usage:
-# ruby -w Redmine_Ticket_AddLinkToTask.rb <MySQLHost> <DBName> <DBUser> <DBPassword> <UserLogin> <TicketID> <TaskID> <TaskName>
-# Example: ruby -w Redmine_Ticket_AddLinkToTask.rb mysql-r redminedb redminedbuser redminedbpassword Scripts_Planner 123 45 'Name of my task'
+# ruby -w Redmine_TicketTracker_Ticket_AddLinkToTask.rb <UserLogin> <MySQLHost> <DBName> <DBUser> <DBPassword> <TicketID> <TaskID> <TaskName>
+# Example: ruby -w Redmine_TicketTracker_Ticket_AddLinkToTask.rb Scripts_Planner mysql-r redminedb redminedbuser redminedbpassword 123 45 'Name of my task'
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
@@ -13,19 +13,28 @@ require 'date'
 
 module Redmine
 
-  module Ticket
+  module TicketTracker
   
-    class AddLinkToTask
+    class Ticket_AddLinkToTask
     
       # Add the task reference to the corresponding ticket
       #
       # Parameters:
-      # * *iMySQLConnection* (_Mysql_): The MySQL connection
       # * *iUserID* (_String_): User ID of the script adding this info
+      # * *iMySQLHost* (_String_): The name of the MySQL host
+      # * *iDBName* (_String_): The name of the database of Redmine
+      # * *iDBUser* (_String_): The name of the database user
+      # * *iDBPassword* (_String_): The pasword of the database user
       # * *iTicketID* (_String_): The Ticket ID
       # * *iTaskID* (_String_): The Task ID
       # * *iTaskName* (_String_): The Task name to add into the comment
-      def self.execute(iMySQLConnection, iUserID, iTicketID, iTaskID, iTaskName)
+      def self.execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iTicketID, iTaskID, iTaskName)
+        require 'rubygems'
+        require 'mysql'
+        # Connect to the db
+        lMySQLConnection = Mysql::new(iMySQLHost, iDBName, iDBUser, iDBPassword)
+        # Get the User ID
+        lRedmineUserID = Redmine::getUserID(lMySQLConnection, iUserID)
         # Insert a comment for the Ticket
         iMySQLConnection.query(
           "insert
@@ -38,7 +47,7 @@ module Redmine
              values (
                #{iTicketID},
                'Issue',
-               #{iUserID},
+               #{lRedmineUserID},
                '[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - This Ticket has been linked to Task \"#{iTaskName.gsub(/'/,'\\\\\'')}\" (ID: #{iTaskID})',
                '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
              )")
@@ -53,7 +62,7 @@ end
 # If we were invoked directly
 if (__FILE__ == $0)
   # Parse command line arguments, check them, and call the main function
-  lMySQLHost, lDBName, lDBUser, lDBPassword, lUserLogin, lTicketID, lTaskID, lTaskName = ARGV
+  lUserLogin, lMySQLHost, lDBName, lDBUser, lDBPassword, lTicketID, lTaskID, lTaskName = ARGV
   if ((lMySQLHost == nil) or
       (lDBName == nil) or
       (lDBUser == nil) or
@@ -64,28 +73,14 @@ if (__FILE__ == $0)
       (lTaskName == nil))
     # Print some usage
     puts 'Usage:'
-    puts 'ruby -w Redmine_Ticket_AddLinkToTask.rb <MySQLHost> <DBName> <DBUser> <DBPassword> <UserLogin> <TicketID> <TaskID> <TaskName>'
-    puts 'Example: ruby -w Redmine_Ticket_AddLinkToTask.rb mysql-r redminedb redminedbuser redminedbpassword Scripts_Planner 123 45 \'Name of my task\''
+    puts 'ruby -w Redmine_TicketTracker_Ticket_AddLinkToTask.rb <UserLogin> <MySQLHost> <DBName> <DBUser> <DBPassword> <TicketID> <TaskID> <TaskName>'
+    puts 'Example: ruby -w Redmine_TicketTracker_Ticket_AddLinkToTask.rb Scripts_Planner mysql-r redminedb redminedbuser redminedbpassword 123 45 \'Name of my task\''
     puts ''
     puts 'Check http://weacemethod.sourceforge.net for details.'
     exit 1
   else
-    require 'rubygems'
-    require 'mysql'
-    # Connect to the db
-    lMySQLConnection = Mysql::new(lMySQLHost, lDBUser, lDBPassword, lDBName)
-    # Get the User ID
-    lUserID = Redmine::getUserID(lMySQLConnection, lUserLogin)
-    # Create a transaction
-    lMySQLConnection.query("start transaction")
-    begin
-      # Execute
-      Redmine::Ticket::AddLinkToTask::execute(lMySQLConnection, lUserID, lTicketID, lTaskID, lTaskName)
-      lMySQLConnection.query("commit")
-      exit 0
-    rescue RuntimeError
-      lMySQLConnection.query("rollback")
-      raise
-    end
+    # Execute
+    Redmine::TicketTracker::Ticket_AddLinkToTask::execute(lUserLogin, lMySQLHost, lDBName, lDBUser, lDBPassword, lTicketID, lTaskID, lTaskName)
+    exit 0
   end
 end

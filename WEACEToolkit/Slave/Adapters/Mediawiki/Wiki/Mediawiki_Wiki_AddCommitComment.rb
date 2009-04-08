@@ -1,6 +1,6 @@
 # Usage:
-# ruby -w Mediawiki_Wiki_AddCommitComment.rb <MediawikiDir> <BranchName> <UserLogin> <CommitID> <CommitUser> <CommitComment>
-# Example: ruby -w Mediawiki_Wiki_AddCommitComment.rb /home/groups/m/my/myproject/htdocs/wiki trunk Scripts_Developer 123 msalvan 'Committed a new change'
+# ruby -w Mediawiki_Wiki_AddCommitComment.rb <UserLogin> <MediawikiDir> <BranchName> <CommitID> <CommitUser> <CommitComment>
+# Example: ruby -w Mediawiki_Wiki_AddCommitComment.rb Scripts_Developer /home/groups/m/my/myproject/htdocs/wiki trunk 123 msalvan 'Committed a new change'
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
@@ -19,15 +19,15 @@ module Mediawiki
       # Add the commit information to the wiki
       #
       # Parameters:
+      # * *iUserID* (_String_): User ID of the script adding this info
       # * *iMediaWikiInstallationDir* (_String_): The Mediawiki installation directory
       # * *iBranchName* (_String_): Name of the branch receiving the commit
-      # * *iUserID* (_String_): User ID of the script adding this info
       # * *iCommitID* (_String_): The commit ID
       # * *iCommitUser* (_String_): The commit user
       # * *iCommitComment* (_String_): The commit comment
-      def self.execute(iMediaWikiInstallationDir, iBranchName, iUserID, iCommitID, iCommitUser, iCommitComment)
+      def self.execute(iUserID, iMediaWikiInstallationDir, iBranchName, iCommitID, iCommitUser, iCommitComment)
         # Get the existing text
-        lContent = `php Mediawiki_getContent.php #{iMediaWikiInstallationDir} Changelog_#{iBranchName}`.split("\n")
+        lContent = `php ../Mediawiki_getContent.php #{iMediaWikiInstallationDir} Changelog_#{iBranchName}`.split("\n")
         # Parse the Changelog to get to the end of the section named "=== Current ==="
         lIdxLine = 0
         lContent.each do |iLine|
@@ -56,7 +56,7 @@ end
 # If we were invoked directly
 if (__FILE__ == $0)
   # Parse command line arguments, check them, and call the main function
-  lMediaWikiInstallationDir, lBranchName, lUserID, lCommitID, lCommitUser, lCommitComment = ARGV
+  lUserID, lMediaWikiInstallationDir, lBranchName, lCommitID, lCommitUser, lCommitComment = ARGV
   if ((lMediaWikiInstallationDir == nil) or
       (lBranchName == nil) or
       (lUserID == nil) or
@@ -65,14 +65,14 @@ if (__FILE__ == $0)
       (lCommitComment == nil))
     # Print some usage
     puts 'Usage:'
-    puts 'ruby -w Mediawiki_Wiki_AddCommitComment.rb <MediawikiDir> <BranchName> <UserLogin> <CommitID> <CommitUser> <CommitComment>'
-    puts 'Example: ruby -w Mediawiki_Wiki_AddCommitComment.rb /home/groups/m/my/myproject/htdocs/wiki trunk Scripts_Developer 123 msalvan \'Committed a new change\''
+    puts 'ruby -w Mediawiki_Wiki_AddCommitComment.rb <UserLogin> <MediawikiDir> <BranchName> <CommitID> <CommitUser> <CommitComment>'
+    puts 'Example: ruby -w Mediawiki_Wiki_AddCommitComment.rb Scripts_Developer /home/groups/m/my/myproject/htdocs/wiki trunk 123 msalvan \'Committed a new change\''
     puts ''
     puts 'Check http://weacemethod.sourceforge.net for details.'
     exit 1
   else
     # Execute
-    Mediawiki::Wiki::AddCommitComment::execute(lMediaWikiInstallationDir, lBranchName, lUserID, lCommitID, lCommitUser, lCommitComment)
+    Mediawiki::Wiki::AddCommitComment::execute(lUserID, lMediaWikiInstallationDir, lBranchName, lCommitID, lCommitUser, lCommitComment)
     exit 0
   end
 end

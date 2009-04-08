@@ -1,0 +1,28 @@
+# Config.rb
+#
+# This file contains the configuration of the WEACE Master Server
+
+module WEACE
+
+  module Master
+
+    # Here are the following than can be used to set the configuration:
+    # Check help in WEACEMasterServer.rb to know about the different possible values.
+    #
+    # Parameters:
+    # * *ioConfig* (_Config_): The configuration to set
+    def getWEACEMasterServerConfig(ioConfig)
+      ioConfig.addWEACESlaveClient(
+        ClientType_Local,
+        [
+          Tools_Wiki,
+          Tools_TicketTracker
+        ],
+        '/home/groups/m/my/myproject/WEACEToolkit/Slave/Client'
+      )
+      ioConfig.LogFile = '/home/groups/m/my/myproject/persistent/tmp/WEACEMasterServer.log'
+    end
+    
+  end
+  
+end
