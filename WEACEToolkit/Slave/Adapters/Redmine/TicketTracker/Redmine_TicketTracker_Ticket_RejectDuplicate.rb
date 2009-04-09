@@ -38,7 +38,7 @@ module Redmine
         lMySQLConnection.query("start transaction")
         begin
           # Insert a comment on the Master ticket
-          iMySQLConnection.query(
+          lMySQLConnection.query(
             "insert
                into journals
                ( journalized_id,
@@ -54,7 +54,7 @@ module Redmine
                  '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
                )")
           # Insert a relation on the Master ticket
-          iMySQLConnection.query(
+          lMySQLConnection.query(
             "insert
                into issue_relations
                ( issue_from_id,
@@ -68,7 +68,7 @@ module Redmine
                  NULL
                )")
           # Insert a comment on the Slave ticket
-          iMySQLConnection.query(
+          lMySQLConnection.query(
             "insert
                into journals
                ( journalized_id,
@@ -84,21 +84,21 @@ module Redmine
                  '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
                )")
           # Close the Slave ticket
-          lJournalID = iMySQLConnection.insert_id()
+          lJournalID = lMySQLConnection.insert_id()
           lOldValue = nil
-          iMySQLConnection.query(
+          lMySQLConnection.query(
             "select status_id
              from issues
              where
                id = #{iSlaveTicketID}").each do |iRow|
             lOldValue = iRow[0]
           end
-          iMySQLConnection.query(
+          lMySQLConnection.query(
             "update issues
                set status_id = 6
                where
                  id = #{iSlaveTicketID}")
-          iMySQLConnection.query(
+          lMySQLConnection.query(
             "insert
                into journal_details
                ( journal_id,

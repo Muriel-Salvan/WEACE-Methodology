@@ -38,7 +38,7 @@ module Redmine
         # Get the User ID
         lRedmineUserID = Redmine::getUserID(lMySQLConnection, iUserID)
         # Insert a comment on the ticket
-        iMySQLConnection.query(
+        lMySQLConnection.query(
           "insert
              into journals
              ( journalized_id,
