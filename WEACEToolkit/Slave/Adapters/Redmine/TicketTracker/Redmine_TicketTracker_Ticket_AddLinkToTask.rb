@@ -32,7 +32,7 @@ module Redmine
         require 'rubygems'
         require 'mysql'
         # Connect to the db
-        lMySQLConnection = Mysql::new(iMySQLHost, iDBName, iDBUser, iDBPassword)
+        lMySQLConnection = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
         # Get the User ID
         lRedmineUserID = Redmine::getUserID(lMySQLConnection, iUserID)
         # Insert a comment for the Ticket

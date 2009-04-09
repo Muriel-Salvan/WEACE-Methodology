@@ -125,11 +125,12 @@ module WEACE
               log "* Tool: #{iToolID}"
               log "* Adapter: #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
               log "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
+              lParameters = iProductParameters + iActionParameters
+              log "* Adapter parameters: #{lParameters.inspect}"
               # Require the correct adapter file for the given action
               begin
                 require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                 begin
-                  lParameters = iProductParameters + iActionParameters
                   eval("#{iProductID}::#{iToolID}::#{iActionID}::execute(iUserScriptID, *lParameters)")
                   log 'Adapter completed action without error.'
                 rescue RuntimeError
