@@ -92,7 +92,7 @@ module WEACE
           end
         end
         log "#{lConfig.RegisteredAdapters.size} adapters configuration:"
-        # map< ToolID, [ ProductID, Parameters ] >
+        # map< ToolID, list< [ ProductID, Parameters ] > >
         lAdapterPerTool = {}
         lIdx = 0
         lConfig.RegisteredAdapters.each do |iAdapterInfo|
@@ -103,7 +103,10 @@ module WEACE
           log "** Parameters: #{iParameters.inspect}"
           lIdx += 1
           # Profit from this loop to index adapters per ToolID
-          lAdapterPerTool[iToolID] = [ iProductID, iParameters ]
+          if (lAdapterPerTool[iToolID] == nil)
+            lAdapterPerTool[iToolID] = []
+          end
+          lAdapterPerTool[iToolID] << [ iProductID, iParameters ]
         end
         # For each tool having an action, call all the adapters for this tool
         lErrors = []

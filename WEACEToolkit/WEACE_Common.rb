@@ -40,7 +40,7 @@ module WEACE
       puts iCompleteMessage
       if ($LogFile != nil)
         File.open($LogFile, 'a') do |iFile|
-          iFile << iCompleteMessage
+          iFile << "#{iCompleteMessage}\n"
         end
       end
     end
@@ -54,7 +54,7 @@ module WEACE
       puts iCompleteMessage
       if ($LogFile != nil)
         File.open($LogFile, 'a') do |iFile|
-          iFile << iCompleteMessage
+          iFile << "#{iCompleteMessage}\n"
         end
       end
     end
