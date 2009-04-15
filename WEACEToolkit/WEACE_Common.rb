@@ -120,10 +120,10 @@ module WEACE
     # * *iBeginMarker* (_RegExp_): The begin marker (can be nil if it represents the beginning of the file)
     # * *iNewLines* (_String_): The text to insert between the markers (can be nil if it represents the end of the file)
     # * *iEndMarker* (_RegExp_): The end marker
-    # * *iOptions* (_Hash_): Additional parameters:
+    # * *iOptions* (_Hash_): Additional parameters: [ optional = {} ]
     # ** *:Replace* (_Boolean_): Do we completely replace the text between the markers ?
     # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ?
-    def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions)
+    def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions = {})
       log "Modify file #{iFileName} ..."
       if (iOptions[:NoBackup] == nil)
         # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
@@ -138,7 +138,6 @@ module WEACE
         lContent = iFile.readlines
       end
       # Find the 2 markers among the file
-      lIdx = 0
       lIdxBegin = nil
       if (iBeginMarker == nil)
         lIdxBegin = -1
@@ -147,6 +146,7 @@ module WEACE
       if (iEndMarker == nil)
         lIdxEnd = lContent.size
       end
+      lIdx = 0
       lContent.each do |iLine|
         if ((lIdxBegin == nil) and
             (iLine.match(iBeginMarker) != nil))
@@ -163,6 +163,7 @@ module WEACE
           lIdxEnd = lIdx
           break
         end
+        lIdx += 1
       end
       # If we didn't find both of them, stop it
       if (lIdxBegin == nil)
