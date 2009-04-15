@@ -150,7 +150,7 @@ module WEACE
                 begin
                   require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                   begin
-                    eval("#{iProductID}::#{iToolID}::#{iActionID}::execute(iUserScriptID, *lParameters)")
+                    eval("#{iProductID}::#{iToolID}::#{iActionID}.new.execute(iUserScriptID, *lParameters)")
                     log 'Adapter completed action without error.'
                   rescue RuntimeError
                     logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
