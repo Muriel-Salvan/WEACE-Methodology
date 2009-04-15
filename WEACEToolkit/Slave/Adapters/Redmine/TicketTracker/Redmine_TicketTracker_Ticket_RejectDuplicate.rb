@@ -41,7 +41,7 @@ module Redmine
       def execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
         execMySQL(__FILE__, iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID) do |iMySQL|
           # Get the User ID
-          lRedmineUserID = Redmine::getUserID(iMySQL, iUserID)
+          lRedmineUserID = getUserID(iMySQL, iUserID)
           # Insert a comment on the Master ticket
           iMySQL.query(
             "insert
