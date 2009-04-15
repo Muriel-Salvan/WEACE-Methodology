@@ -38,7 +38,7 @@ module Redmine
       # * *iDBPassword* (_String_): The pasword of the database user
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
-      def self.execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
+      def execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
         if (__FILE__ != $0)
           # We were included.
           # Don't accept that, as the environment might not be set up correctly.
@@ -164,7 +164,7 @@ if (__FILE__ == $0)
     exit 1
   else
     # Execute
-    Redmine::TicketTracker::Ticket_RejectDuplicate::execute(lUserLogin, lMySQLHost, lDBName, lDBUser, lDBPassword, lMasterTicketID, lSlaveTicketID)
+    Redmine::TicketTracker::Ticket_RejectDuplicate.new.execute(lUserLogin, lMySQLHost, lDBName, lDBUser, lDBPassword, lMasterTicketID, lSlaveTicketID)
     exit 0
   end
 end
