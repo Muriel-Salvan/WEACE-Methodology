@@ -60,7 +60,7 @@ module WEACEInstall
               # First, modify common parts
               WEACEInstall::Slave::Adapters::RedmineInstall.new.execute(@RedmineDir, iProviderEnv)
               # Generate the database environment file that will be used by the Adapter scripts
-              lDBEnvFileName = "#{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.rb"
+              lDBEnvFileName = "#{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh"
               log "Generate database environment file for Redmine (#{lDBEnvFileName}) ..."
               File.open(lDBEnvFileName, 'w') do |iFile|
                 iFile << "
@@ -68,35 +68,23 @@ module WEACEInstall
 # Do not modify it.
 # It is used by some WEACE Slave Adapters scripts to get the environment necessary to access the underlying Redmine's database.
 
-module WEACE
+# The Ruby Gems library path
+if [ -z ${RUBYLIB} ]
+then
+  export RUBYLIB=#{@RubyGemsLibDir}
+else
+  export RUBYLIB=${RUBYLIB}:#{@RubyGemsLibDir}
+fi
 
-  module Slave
-  
-    module Adapters
-    
-      module Redmine
-      
-        # Set the database environment
-        def self.setDBEnv
-          # The RubyGems library
-          $LOAD_PATH << '#{@RubyGemsLibDir}'
-          # The Gems home
-          ENV['GEM_HOME'] = '#{@GemsDir}'
-          # The Mysql library
-          if (ENV['LD_LIBRARY_PATH'] == nil)
-            ENV['LD_LIBRARY_PATH'] = '#{@MySQLLibDir}'
-          else
-            ENV['LD_LIBRARY_PATH'] = \"\#{ENV['LD_LIBRARY_PATH']}:#{@MySQLLibDir}\"
-          end
-        end
-        
-      end
-      
-    end
-    
-  end
-  
-end
+# The Gems home
+export GEM_HOME=#{@GemsDir}
+
+# The MySQL library path
+if [ -z ${LD_LIBRARY_PATH} ]
+  export LD_LIBRARY_PATH=#{@MySQLLibDir}
+else
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:#{@MySQLLibDir}
+fi
 "
               end
               log "Installation completed successfully."

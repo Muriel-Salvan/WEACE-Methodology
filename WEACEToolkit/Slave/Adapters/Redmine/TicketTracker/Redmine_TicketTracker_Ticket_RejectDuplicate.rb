@@ -8,7 +8,16 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require "#{File.dirname(__FILE__)}/../Redmine_Common"
+# Get WEACE base directory, and add it to the LOAD_PATH
+lOldDir = Dir.getwd
+Dir.chdir("#{File.dirname(__FILE__)}/../../../..")
+$WEACEToolkitDir = Dir.getwd
+Dir.chdir(lOldDir)
+$LOAD_PATH << $WEACEToolkitDir
+
+require 'WEACE_Common.rb'
+
+require 'Slave/Adapters/Redmine/Redmine_Common.rb'
 require 'date'
 
 module Redmine
@@ -28,99 +37,102 @@ module Redmine
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
       def self.execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
-        # Set the environment created when installing the adapter
-        require 'Slave/Adapters/Redmine/DBEnv.rb'
-        WEACE::Slave::Adapters::Redmine::setDBEnv
-        # Go on
-        require 'rubygems'
-        require 'mysql'
-        # Connect to the db
-        lMySQLConnection = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-        # Get the User ID
-        lRedmineUserID = Redmine::getUserID(lMySQLConnection, iUserID)
-        # Create a transaction
-        lMySQLConnection.query("start transaction")
-        begin
-          # Insert a comment on the Master ticket
-          lMySQLConnection.query(
-            "insert
-               into journals
-               ( journalized_id,
-                 journalized_type,
-                 user_id,
-                 notes,
-                 created_on )
-               values (
-                 #{iMasterTicketID},
-                 'Issue',
-                 #{lRedmineUserID},
-                 'Another Ticket (ID=#{iSlaveTicketID}) has been closed as a duplicate of this one.',
-                 '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
-               )")
-          # Insert a relation on the Master ticket
-          lMySQLConnection.query(
-            "insert
-               into issue_relations
-               ( issue_from_id,
-                 issue_to_id,
-                 relation_type,
-                 delay )
-               values (
-                 #{iMasterTicketID},
-                 #{iSlaveTicketID},
-                 'duplicates',
-                 NULL
-               )")
-          # Insert a comment on the Slave ticket
-          lMySQLConnection.query(
-            "insert
-               into journals
-               ( journalized_id,
-                 journalized_type,
-                 user_id,
-                 notes,
-                 created_on )
-               values (
-                 #{iSlaveTicketID},
-                 'Issue',
-                 #{lRedmineUserID},
-                 'This Ticket is a duplicate of another Ticket (ID=#{iMasterTicketID}).',
-                 '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
-               )")
-          # Close the Slave ticket
-          lJournalID = lMySQLConnection.insert_id()
-          lOldValue = nil
-          lMySQLConnection.query(
-            "select status_id
-             from issues
-             where
-               id = #{iSlaveTicketID}").each do |iRow|
-            lOldValue = iRow[0]
-          end
-          lMySQLConnection.query(
-            "update issues
-               set status_id = 6
+        if (__FILE__ != $0)
+          # We were included.
+          # Don't accept that, as the environment might not be set up correctly.
+          system(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh; ruby -w #{__FILE__} #{iUserID} #{iMySQLHost} #{iDBName} #{iDBUser} #{iDBPassword} #{iMasterTicketID} #{iSlaveTicketID}")
+        else
+          # Go on
+          require 'rubygems'
+          require 'mysql'
+          # Connect to the db
+          lMySQLConnection = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
+          # Get the User ID
+          lRedmineUserID = Redmine::getUserID(lMySQLConnection, iUserID)
+          # Create a transaction
+          lMySQLConnection.query("start transaction")
+          begin
+            # Insert a comment on the Master ticket
+            lMySQLConnection.query(
+              "insert
+                 into journals
+                 ( journalized_id,
+                   journalized_type,
+                   user_id,
+                   notes,
+                   created_on )
+                 values (
+                   #{iMasterTicketID},
+                   'Issue',
+                   #{lRedmineUserID},
+                   'Another Ticket (ID=#{iSlaveTicketID}) has been closed as a duplicate of this one.',
+                   '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
+                 )")
+            # Insert a relation on the Master ticket
+            lMySQLConnection.query(
+              "insert
+                 into issue_relations
+                 ( issue_from_id,
+                   issue_to_id,
+                   relation_type,
+                   delay )
+                 values (
+                   #{iMasterTicketID},
+                   #{iSlaveTicketID},
+                   'duplicates',
+                   NULL
+                 )")
+            # Insert a comment on the Slave ticket
+            lMySQLConnection.query(
+              "insert
+                 into journals
+                 ( journalized_id,
+                   journalized_type,
+                   user_id,
+                   notes,
+                   created_on )
+                 values (
+                   #{iSlaveTicketID},
+                   'Issue',
+                   #{lRedmineUserID},
+                   'This Ticket is a duplicate of another Ticket (ID=#{iMasterTicketID}).',
+                   '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
+                 )")
+            # Close the Slave ticket
+            lJournalID = lMySQLConnection.insert_id()
+            lOldValue = nil
+            lMySQLConnection.query(
+              "select status_id
+               from issues
                where
-                 id = #{iSlaveTicketID}")
-          lMySQLConnection.query(
-            "insert
-               into journal_details
-               ( journal_id,
-                 property,
-                 prop_key,
-                 old_value,
-                 value )
-               values (
-                 #{lJournalID},
-                 'attr',
-                 'status_id',
-                 #{lOldValue},
-                 6
-               )")
-          lMySQLConnection.query("commit")
-        rescue RuntimeError
-          lMySQLConnection.query("rollback")
-          raise
+                 id = #{iSlaveTicketID}").each do |iRow|
+              lOldValue = iRow[0]
+            end
+            lMySQLConnection.query(
+              "update issues
+                 set status_id = 6
+                 where
+                   id = #{iSlaveTicketID}")
+            lMySQLConnection.query(
+              "insert
+                 into journal_details
+                 ( journal_id,
+                   property,
+                   prop_key,
+                   old_value,
+                   value )
+                 values (
+                   #{lJournalID},
+                   'attr',
+                   'status_id',
+                   #{lOldValue},
+                   6
+                 )")
+            lMySQLConnection.query("commit")
+          rescue RuntimeError
+            lMySQLConnection.query("rollback")
+            raise
+          end
         end
       end
       
