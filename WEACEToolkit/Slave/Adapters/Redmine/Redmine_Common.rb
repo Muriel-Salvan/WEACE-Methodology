@@ -40,9 +40,9 @@ module WEACE
               lMySQL.query("start transaction")
               begin
                 yield(lMySQL)
-                lMySQLConnection.query("commit")
+                lMySQL.query("commit")
               rescue RuntimeError
-                lMySQLConnection.query("rollback")
+                lMySQL.query("rollback")
                 raise
               end
             end
