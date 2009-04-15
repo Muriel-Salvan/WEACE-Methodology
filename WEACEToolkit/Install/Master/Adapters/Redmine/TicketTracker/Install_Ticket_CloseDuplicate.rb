@@ -22,7 +22,9 @@ module WEACEInstall
           class Ticket_CloseDuplicate
           
             include WEACE::Logging
+            include WEACE::Toolbox
             include WEACEInstall::Common
+            include WEACEInstall::Master::Adapters::Redmine::CommonInstall
             
             # Get options of this installer
             #
@@ -47,57 +49,18 @@ module WEACEInstall
             # Parameters:
             # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
             # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
-            # Return:
-            # * _Boolean_: Has the operation completed successfully ?
             def execute(iParameters, iProviderEnv)
               # First, modify common parts
-              WEACEInstall::Master::Adapters::Redmine::CommonInstall.new.execute(@RedmineDir, iProviderEnv)
+              executeRedmineCommonInstall(@RedmineDir, iProviderEnv)
               # Modify the issue_relations view to add the WEACE icon
-              log "Modify issue_relations view ..."
-              lIssueRelationsViewFileName = "#{@RedmineDir}/app/views/issue_relations/_form.rhtml"
-              lContent = []
-              File.open(lIssueRelationsViewFileName, 'r') do |iFile|
-                lContent = iFile.readlines
-              end
-              File.open(lIssueRelationsViewFileName, 'w') do |iFile|
-                lIdxLine = 0
-                lModified = false
-                lContent.each do |iLine|
-                  iFile << iLine
-                  if ((!lModified) and
-                      (iLine.match(/<%= toggle_link l\(:button_cancel\), 'new-relation-form'%>/) != nil))
-                    # Check the next line if it was already inserted
-                    if ((lContent[lIdxLine + 1] != nil) and
-                        (lContent[lIdxLine + 1].match(/<a title=/) != nil))
-                      # Already inserted
-                      logWarn "The issue_relations view (#{lIssueRelationsViewFileName}) was already modified."
-                    else
-                      # Insert it
-                      iFile << "<a title=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\" href=\"#{iProviderEnv.CGIURL}/WEACE/ShowInstalledMasterAdapters.cgi#Redmine.TicketTracker.Ticket_CloseDuplicate\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/1/1e/MasterIcon.png\" alt=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\"/></a>\n"
-                    end
-                    lModified = true
-                  end
-                  lIdxLine += 1
-                end
-                if (!lModified)
-                  logErr "The issue_relations view (#{lIssueRelationsViewFileName}) could not be modified: no line matched the pattern /<%= toggle_link l\(:button_cancel\), 'new-relation-form'%>/"
-                end
-              end
+              modifyFile("#{@RedmineDir}/app/views/issue_relations/_form.rhtml",
+                /<%= toggle_link l\(:button_cancel\), 'new-relation-form'%>/,
+                "<a title=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\" href=\"#{iProviderEnv.CGIURL}/WEACE/ShowInstalledMasterAdapters.cgi#Redmine.TicketTracker.Ticket_CloseDuplicate\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/1/1e/MasterIcon.png\" alt=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\"/></a>\n",
+                /<\/p>/)
               # Modify the issue_relations controller
-              log "Modify issue_relations controller ..."
-              lIssueRelationsControllerFileName = "#{@RedmineDir}/app/controllers/issue_relations_controller.rb"
-              lContent = []
-              File.open(lIssueRelationsControllerFileName, 'r') do |iFile|
-                lContent = iFile.readlines
-              end
-              File.open(lIssueRelationsControllerFileName, 'w') do |iFile|
-                lIdxLine = 0
-                lModified = false
-                lContent.each do |iLine|
-                  if (!lModified)
-                    if (iLine.match(/@relation.save if request.post?/) != nil)
-                      # Insert the modifications
-                      iFile << "
+              modifyFile("#{@RedmineDir}/app/controllers/issue_relations_controller.rb",
+                /@relation.issue_from = @issue/,
+                "
     # === Changed by WEACE Master Adapter for Redmine/TicketTracker... ===
     if (request.post?)
       if (@relation.relation_type == IssueRelation::TYPE_DUPLICATES)
@@ -108,7 +71,7 @@ module WEACEInstall
         if (lErrorCode != 0)
           @relation.save
           logger.error(\"Call to WEACE Master Server failed (error code \#{lErrorCode}). Here is the command: \#{lCommand}. Here is its output: \#{lOutput}.\")
-          flash[:warning] = l('Error while calling WEACE Master Server. Please check logs to get further details. The action has still be performed without notifying WEACE Master Server.')
+          flash[:warning] = l('Error while calling WEACE Master Server. Please check logs to get further details. The action was still performed without notifying WEACE Master Server.')
         else
           flash[:notice] = l('WEACE Master Server processed request successfully.')
         end
@@ -121,26 +84,9 @@ module WEACEInstall
       end
     end
     # === ... End of change ===
-"
-                      lModified = true
-                    elsif (iLine.match(/WEACE Master Adapter/) != nil)
-                      logWarn "The issue_relations controller (#{lIssueRelationsControllerFileName}) was already modified."
-                      lModified = true
-                      iFile << iLine
-                    else
-                      iFile << iLine
-                    end
-                  else
-                    iFile << iLine
-                  end
-                  lIdxLine += 1
-                end
-                if (!lModified)
-                  logErr "The issue_relations controller (#{lIssueRelationsControllerFileName}) could not be modified: no line matched the pattern /@relation.save if request.post?/"
-                end
-              end
-              log "Installation completed successfully."
-              return true
+",
+                /respond_to do |format|/,
+                :iReplace => true)
             end
             
           end

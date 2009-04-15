@@ -22,6 +22,7 @@ module WEACEInstall
           class Ticket_RejectDuplicate
           
             include WEACE::Logging
+            include WEACEInstall::Slave::Adapters::Redmine::CommonInstall
           
             # Get options of this installer
             #
@@ -54,11 +55,9 @@ module WEACEInstall
             # Parameters:
             # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
             # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
-            # Return:
-            # * _Boolean_: Has the operation completed successfully ?
             def execute(iParameters, iProviderEnv)
               # First, modify common parts
-              WEACEInstall::Slave::Adapters::RedmineInstall.new.execute(@RedmineDir, iProviderEnv)
+              executeRedmineCommonInstall(@RedmineDir, iProviderEnv)
               # Generate the database environment file that will be used by the Adapter scripts
               lDBEnvFileName = "#{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh"
               log "Generate database environment file for Redmine (#{lDBEnvFileName}) ..."
@@ -88,8 +87,6 @@ else
 fi
 "
               end
-              log "Installation completed successfully."
-              return true
             end
             
           end

@@ -9,6 +9,7 @@
 #++
 
 require 'date'
+require 'fileutils'
 
 module WEACE
 
@@ -60,10 +61,118 @@ module WEACE
       lOutput = `#{iCmd}`
       lErrorCode = $?
       if (lErrorCode != 0)
-        lErrorMsg = "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
-        logErr lErrorMsg
-        raise RuntimError, lErrorMsg
+        logExc RuntimeError, "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
       end
+    end
+    
+    # Modify a file in a safe way (exception protected, keep copy of original...).
+    # It inserts or replaces some of the content of this file, between 2 markers (1 begin and 1 end markers).
+    #
+    # Parameters:
+    # * *iFileName* (_String_): The file to modify
+    # * *iBeginMarker* (_RegExp_): The begin marker (can be nil if it represents the beginning of the file)
+    # * *iNewLines* (_String_): The text to insert between the markers (can be nil if it represents the end of the file)
+    # * *iEndMarker* (_RegExp_): The end marker
+    # * *iOptions* (_Hash_): Additional parameters:
+    # ** *:Replace* (_Boolean_): Do we completely replace the text between the markers ?
+    # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ?
+    def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions)
+      log "Modify file #{iFileName} ..."
+      if (iOptions[:NoBackup] == nil)
+        # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
+        lBackupName = "#{iFileName}.WEACEBackup"
+        if (!File.exists?(lBackupName))
+          FileUtils.cp(iFileName, lBackupName)
+        end
+      end
+      # Read the file
+      lContent = nil
+      File.open(iFileName, 'r') do |iFile|
+        lContent = iFile.readlines
+      end
+      # Find the 2 markers among the file
+      lIdx = 0
+      lIdxBegin = nil
+      if (iBeginMarker == nil)
+        lIdxBegin = -1
+      end
+      lIdxEnd = nil
+      if (iEndMarker == nil)
+        lIdxEnd = lContent.size
+      end
+      lContent.each do |iLine|
+        if ((lIdxBegin == nil) and
+            (iLine.match(iBeginMarker) != nil))
+          # We found the beginning
+          lIdxBegin = lIdx
+          if (lIdxEnd != nil)
+            # We already know the end is at the end
+            break
+          end
+        elsif ((lIdxBegin != nil) and
+               (lIdxEnd == nil) and
+               (iLine.match(iEndMarker) != nil))
+          # We found the end
+          lIdxEnd = lIdx
+          break
+        end
+      end
+      # If we didn't find both of them, stop it
+      if (lIdxBegin == nil)
+        logExc "Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification."
+      elsif (lIdxEnd == nil)
+        logExc "Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification."
+      else
+        # Ensure that new lines separate the content of iNewLines, and each line terminates with a \n
+        lNewLines = nil
+        if (iNewLines.is_a?(String))
+          lNewLines = iNewLines.split("\n")
+        else
+          lNewLines = iNewLines.join("\n").split("\n")
+        end
+        if (lNewLines[-1][-1..-1] != "\n")
+          lNewLines[-1] += "\n"
+        end
+        # Check if the new content is not already in lContent (starting from lIdxBegin)
+        lFound = false
+        if (lIdxBegin < lIdxEnd-lNewLines.size)
+          (lIdxBegin+1 .. lIdxEnd-lNewLines.size).each do |iIdx|
+            if (lContent[iIdx .. iIdx+lNewLines.size] == lNewLines)
+              lFound = true
+              break
+            end
+          end
+        end
+        if (lFound)
+          # Already here
+          logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
+        else
+          # Modify the content in memory
+          if (iOptions[:Replace] == true)
+            # Erase everything between markers
+            if (lIdxBegin == -1)
+              lContent = lContent[lIdxEnd..-1]
+            else
+              lContent = lContent[0..lIdxBegin] + lContent[lIdxEnd..-1]
+            end
+            lIdxEnd = lIdxBegin + 1
+          end
+          # Insert at lIdxEnd position
+          lContent.insert(lIdxEnd, iNewLines)
+          # Write the file
+          begin
+            File.open(iFileName, 'w') do |iFile|
+              iFile << lContent
+            end
+          rescue Exception
+            # Revert the file content
+            FileUtils.cp("#{iFileName}.WEACEBackup", iFileName)
+            logExc RuntimeError, "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
+          end
+          log "File #{iFileName} modified successfully."
+        end
+      end
+      
     end
     
   end
@@ -96,6 +205,16 @@ module WEACE
           iFile << "#{iCompleteMessage}\n"
         end
       end
+    end
+    
+    # Log something as an exception
+    #
+    # Parameters:
+    # * *iError* (_Exception_): The exception to raise
+    # * *iMessage* (_String_): The message to log
+    def logExc(iError, iMessage)
+      logErr iMessage
+      raise iError, iMessage
     end
     
     # Log something as a warning

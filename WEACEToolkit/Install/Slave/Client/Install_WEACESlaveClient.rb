@@ -75,8 +75,6 @@ module WEACEInstall
       #
       # Parameters:
       # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
-      # Return:
-      # * _Boolean_: Has the operation completed successfully ?
       def execute(iParameters)
         log "Read specific type #{@ProviderID} configuration ..."
         lProviderInstaller, lAdditionalArgs = getInitializedInstallerFromFile("Install/Slave/Providers/#{@ProviderID}.rb", "WEACEInstall::Slave::Providers::#{@ProviderID}", iParameters)
@@ -178,7 +176,6 @@ end
 "
         end
         log 'WEACE Slave Client installed successfully. You can install WEACE Slave Adapters.'
-        return true
       end
     
     end

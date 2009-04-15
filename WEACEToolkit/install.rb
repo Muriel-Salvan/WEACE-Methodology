@@ -28,6 +28,7 @@ module WEACEInstall
   class Installer
   
     include WEACE::Logging
+    include WEACE::Toolbox
     include WEACEInstall::Common
       
     # Get the list of Adapters from a directory
@@ -235,17 +236,9 @@ module WEACEInstall
     # * *iDescription* (_ComponentDescription_): The description
     def registerNewAdapter(iFileName, iProductID, iToolID, iScriptID, iDescription)
       log "Register WEACE Master Adapter #{iProductID}.#{iToolID}.#{iScriptID} in file #{iFileName} ..."
-      lContent = nil
-      File.open(iFileName, 'r') do |iFile|
-        lContent = iFile.readlines
-      end
-      File.open(iFileName, 'w') do |iFile|
-        lModified = false
-        lContent.each do |iLine|
-          if (!lModified)
-            if (iLine.match(/# === INSERT ===/) != nil)
-              # Insert here
-              iFile << "
+      modifyFile(iFileName,
+        nil,
+        "
       lDesc = InstalledComponentDescription.new
       lDesc.Date = '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
       lDesc.Version = '#{iDescription.Version}'
@@ -258,20 +251,8 @@ module WEACEInstall
         rInstalledAdapters['#{iProductID}']['#{iToolID}'] = {}
       end
       rInstalledAdapters['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc
-"
-              log "Adapter registered successfully."
-              lModified = true
-            elsif (iLine.match(/rInstalledAdapters\['#{iProductID}'\]\['#{iToolID}'\]\['#{iScriptID}'\] = lDesc/) != nil)
-              # The adapter was already registered
-              logWarn "WEACE Master Adapter #{iProductID}.#{iToolID}.#{iScriptID} was already registered in file #{iFileName}."
-              lModified = true
-            end
-          end
-          iFile << iLine
-        end
-        if (!lModified)
-          logErr "Unable to register WEACE Master Adapter #{iProductID}.#{iToolID}.#{iScriptID}: the registry file (#{iFileName}) did not math the pattern /# === INSERT ===/."
-        end
+",
+        /# === INSERT ===/)
       end
     end
 
@@ -305,14 +286,10 @@ module WEACEInstall
       log "Install Component #{iComponentName} with parameters: #{iParameters.inspect}"
       lInstaller, lAdditionalArgs = getInitializedInstallerFromFile(iFileName, iClassName, iParameters)
       # And now execute the installer code
-      lSuccess = false
       if (iProviderEnv != nil)
-        lSuccess = lInstaller.execute(lAdditionalArgs, iProviderEnv)
+        lInstaller.execute(lAdditionalArgs, iProviderEnv)
       else
-        lSuccess = lInstaller.execute(lAdditionalArgs)
-      end
-      if (!lSuccess)
-        raise RuntimeError, "Installation of component #{iComponentName} ended in error."
+        lInstaller.execute(lAdditionalArgs)
       end
     end
     
@@ -344,7 +321,7 @@ module WEACEInstall
             lDescription = getDescriptionFromFile(lFileName, lClassName)
             registerNewAdapter("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb", lProductID, lToolID, lScriptID, lDescription)
           else
-            raise RuntimeError, 'You must first install WEACE Master Server.'
+            logExc RuntimeError, 'You must first install WEACE Master Server.'
           end
         else
           lSlaveMatch = iComponent.match(/^WEACESlaveAdapter\.(.*)\.(.*)\.(.*)$/)
@@ -361,10 +338,10 @@ module WEACEInstall
               lDescription = getDescriptionFromFile(lFileName, lClassName)
               registerNewAdapter("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb", lProductID, lToolID, lScriptID, lDescription)
             else
-              raise RuntimeError, 'You must first install WEACE Slave Client.'
+              logExc RuntimeError, 'You must first install WEACE Slave Client.'
             end
           else
-            raise RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
+            logExc RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
           end
         end
       end

@@ -85,7 +85,7 @@ end
         end
       end
       if (lFailure)
-        raise RuntimeError, 'Some mandatory options were missing.'
+        logExc RuntimeError, 'Some mandatory options were missing.'
       end
     end
     
@@ -163,7 +163,7 @@ end
       # First, get the installer
       rInstaller = getInstallerFromFile(iFileName, iClassName)
       if (rInstaller == nil)
-        raise RuntimeError, "Could not get an installer from file #{iFileName}. Check that class #{iClassName} is correctly defined in it."
+        logExc RuntimeError, "Could not get an installer from file #{iFileName}. Check that class #{iClassName} is correctly defined in it."
       end
       # Get the options
       lDescription = WEACEInstall::ComponentDescription.new(rInstaller)

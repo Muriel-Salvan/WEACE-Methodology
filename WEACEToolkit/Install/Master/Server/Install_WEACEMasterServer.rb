@@ -76,8 +76,6 @@ module WEACEInstall
       #
       # Parameters:
       # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
-      # Return:
-      # * _Boolean_: Has the operation completed successfully ?
       def execute(iParameters)
         log "Read specific type #{@ProviderID} configuration ..."
         lProviderInstaller, lAdditionalArgs = getInitializedInstallerFromFile("Install/Master/Providers/#{@ProviderID}.rb", "WEACEInstall::Master::Providers::#{@ProviderID}", iParameters)
@@ -195,7 +193,6 @@ end
 "
         end
         log 'WEACE Master Server installed successfully. You can install WEACE Master Adapters.'
-        return true
       end
     
     end
