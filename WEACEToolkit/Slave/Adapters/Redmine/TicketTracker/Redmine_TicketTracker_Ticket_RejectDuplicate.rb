@@ -28,6 +28,10 @@ module Redmine
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
       def self.execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
+        # Set the environment created when installing the adapter
+        require 'Slave\Adapters\Redmine\DBEnv.rb'
+        WEACE::Slave::Adapters::Redmine::setDBEnv
+        # Go on
         require 'rubygems'
         require 'mysql'
         # Connect to the db

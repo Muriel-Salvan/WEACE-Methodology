@@ -1,15 +1,11 @@
 # Usage:
-# ruby -w WEACESlaveClient.rb <UserScriptID> <ScriptID> <ScriptParameters>
+# ruby -w WEACESlaveClient.rb <UserScriptID> [ -t <ToolID> [ -a <ActionID> <ActionParameters> ]* ]*
 #
-# <ScriptParameters> depend on <ScriptID>. Here are the possible <ScriptID> values and their corresponding possible <ScriptParameters>:
-# * Task_LinkTicket <TicketID> <TaskID>
-# * Ticket_CloseDuplicate <MasterTicketID> <SlaveTicketID>
-# * Plan_PublishProjects
-# * Dev_Commit <Comment> -t [ <TaskID> ]* -f [ <FileName> ]*
-# * Dev_Release <BranchID> <Comment>
-# * Dev_NewBranch <BranchID> <Comment>
+# <ActionParameters> depend on <ActionID>. Here are the possible <ActionID> values and their corresponding possible <ActionParameters>:
+# * Ticket_AddLinkToTask <TicketID> <TaskID>
+# * Ticket_RejectDuplicate <MasterTicketID> <SlaveTicketID>
 #
-# Example: ruby -w WEACEMasterServer.rb Scripts_Validator Ticket_CloseDuplicate 123 456
+# Example: ruby -w WEACESlaveClient.rb Scripts_Validator -t TicketTracker -a Ticket_RejectDuplicate 123 456 -a Ticket_AddLinkToTask 789 234
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
@@ -17,7 +13,14 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require "#{File.dirname(__FILE__)}/../../WEACE_Common.rb"
+# Get WEACE base directory, and add it to the LOAD_PATH
+lOldDir = Dir.getwd
+Dir.chdir("#{File.dirname(__FILE__)}/../..")
+lWEACEToolkitDir = Dir.getwd
+Dir.chdir(lOldDir)
+$LOAD_PATH << lWEACEToolkitDir
+
+require 'WEACE_Common.rb'
 
 module WEACE
 
@@ -74,7 +77,7 @@ module WEACE
         # Read the configuration file
         begin
           require 'Slave/Client/config/Config.rb'
-        rescue RuntimeError
+        rescue Exception
           puts '!!! Unable to load the configuration from file \'config/Config.rb\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.'
           return false
         end
@@ -109,37 +112,56 @@ module WEACE
           lAdapterPerTool[iToolID] << [ iProductID, iParameters ]
         end
         # For each tool having an action, call all the adapters for this tool
+        # Require the file registering WEACE Slave Adapters
+        require 'Slave/Client/InstalledWEACESlaveAdapters.rb'
+        # Get the list
+        lInstalledAdapters = WEACE::Slave::getInstalledAdapters
         lErrors = []
         iActions.each do |iToolID, iActionsList|
           # For each adapter adapting iToolID
           lAdapterPerTool[iToolID].each do |iAdapterInfo|
             iProductID, iProductParameters = iAdapterInfo
-            # For action to give to this adapter
+            # For each action to give to this adapter
             iActionsList.each do |iActionInfo|
               iActionID, iActionParameters = iActionInfo
-              log 'Executing action on a product using an adapter:'
-              log "* Action: #{iActionID}"
-              log "* Action parameters: #{iActionParameters.inspect}"
-              log "* Product: #{iProductID}"
-              log "* Product config: #{iProductParameters.inspect}"
-              log "* Tool: #{iToolID}"
-              log "* Adapter: #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
-              log "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
-              lParameters = iProductParameters + iActionParameters
-              log "* Adapter parameters: #{lParameters.inspect}"
-              # Require the correct adapter file for the given action
-              begin
-                require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+              # First check that iProductID.iToolID.iActionID is registered
+              lAdapterFound = false
+              if ((lInstalledAdapters[iProductID] != nil) and
+                  (lInstalledAdapters[iProductID][iToolID] != nil))
+                lInstalledAdapters[iProductID][iToolID].each do |iAdapterInfo|
+                  iScriptID, iDate, iDescription = iAdapterInfo
+                  if (iScriptID == iActionID)
+                    lAdapterFound = true
+                  end
+                end
+              end
+              if (lAdapterFound)
+                log 'Executing action on a product using an adapter:'
+                log "* Action: #{iActionID}"
+                log "* Action parameters: #{iActionParameters.inspect}"
+                log "* Product: #{iProductID}"
+                log "* Product config: #{iProductParameters.inspect}"
+                log "* Tool: #{iToolID}"
+                log "* Adapter: #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                log "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
+                lParameters = iProductParameters + iActionParameters
+                log "* Adapter parameters: #{lParameters.inspect}"
+                # Require the correct adapter file for the given action
                 begin
-                  eval("#{iProductID}::#{iToolID}::#{iActionID}::execute(iUserScriptID, *lParameters)")
-                  log 'Adapter completed action without error.'
+                  require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                  begin
+                    eval("#{iProductID}::#{iToolID}::#{iActionID}::execute(iUserScriptID, *lParameters)")
+                    log 'Adapter completed action without error.'
+                  rescue RuntimeError
+                    logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                    lErrors << "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                  end
                 rescue RuntimeError
-                  logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                  logErr "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                   lErrors << "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                 end
-              rescue RuntimeError
-                logErr "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
-                lErrors << "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+              else
+                logWarn "Adapter #{iProductID}.#{iToolID}.#{iActionID} has not been registered on this WEACE Slave Provider. The action has been ignored: #{iActionID} (#{iActionParameters})."
               end
             end
           end
@@ -162,30 +184,70 @@ end
 # If we were invoked directly
 if (__FILE__ == $0)
   # Parse command line arguments, check them, and call the main function
-  lUserScriptID, lScriptID = ARGV[0..1]
-  lScriptParameters = ARGV[2..-1]
+  lUserScriptID = ARGV[0..0]
+  lActions = {}
+  lInvalid = false
+  lBeginNewTool = false
+  lCurrentTool = nil
+  lBeginNewAction = false
+  lIdxCurrentAction = nil
+  ARGV[1..-1].each do |iArg|
+    case iArg
+    when '-t'
+      if ((lBeginNewAction) or
+          ((lCurrentTool != nil) and
+           (lIdxCurrentAction == nil)))
+        lInvalid = true
+      else
+        lBeginNewTool = true
+        lIdxCurrentAction = nil
+      end
+    when '-a'
+      if ((lBeginNewTool) or
+          (lCurrentTool == nil))
+        lInvalid = true
+      else
+        lBeginNewAction = true
+        lIdxCurrentAction = nil
+      end
+    else
+      if (lBeginNewTool)
+        # Name of the tool
+        if (lActions[iArg] == nil)
+          lActions[iArg] = {}
+        end
+        lCurrentTool = iArg
+        lBeginNewTool = false
+      elsif (lBeginNewAction)
+        # Name of an action
+        lActions[lCurrentTool] << [ iArg, [] ]
+        lIdxCurrentAction = lActions[lCurrentTool].size - 1
+        lBeginNewAction = false
+      elsif (lIdxCurrentAction != nil)
+        # Name of a parameter
+        lActions[lCurrentTool][lIdxCurrentAction][1] << iArg
+      else
+        lInvalid = true
+      end
+    end
+  end
   if ((lUserScriptID == nil) or
-      (lScriptID == nil) or
-      (lScriptParameters == nil))
+      (lInvalid))
     # Print some usage
     puts 'Usage:'
-    puts 'ruby -w WEACEMasterServer.rb <UserScriptID> <ScriptID> <ScriptParameters>'
+    puts 'ruby -w WEACESlaveClient.rb <UserScriptID> [ -t <ToolID> [ -a <ActionID> <ActionParameters> ]* ]*'
     puts ''
-    puts '<ScriptParameters> depend on <ScriptID>. Here are the possible <ScriptID> values and their corresponding possible <ScriptParameters>:'
-    puts '* Task_LinkTicket <TicketID> <TaskID>'
-    puts '* Ticket_CloseDuplicate <MasterTicketID> <SlaveTicketID>'
-    puts '* Plan_PublishProjects'
-    puts '* Dev_Commit <Comment> -t [ <TaskID> ]* -f [ <FileName> ]*'
-    puts '* Dev_Release <BranchID> <Comment>'
-    puts '* Dev_NewBranch <BranchID> <Comment>'
+    puts '<ActionParameters> depend on <ActionID>. Here are the possible <ActionID> values and their corresponding possible <ActionParameters>:'
+    puts '* Ticket_AddLinkToTask <TicketID> <TaskID>'
+    puts '* Ticket_RejectDuplicate <MasterTicketID> <SlaveTicketID>'
     puts ''
-    puts 'Example: ruby -w WEACEMasterServer.rb Scripts_Validator Ticket_CloseDuplicate 123 456'
+    puts 'Example: ruby -w WEACESlaveClient.rb Scripts_Validator -t TicketTracker -a Ticket_RejectDuplicate 123 456 -a Ticket_AddLinkToTask 789 234'
     puts ''
     puts 'Check http://weacemethod.sourceforge.net for details.'
     exit 1
   else
     # Execute
-    if (WEACE::Slave::Client.new.execute(lUserScriptID, lScriptID, lScriptParameters))
+    if (WEACE::Slave::Client.new.execute(lUserScriptID, lActions))
       exit 0
     else
       exit 1

@@ -17,7 +17,14 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require "#{File.dirname(__FILE__)}/../../WEACE_Common.rb"
+# Get WEACE base directory, and add it to the LOAD_PATH
+lOldDir = Dir.getwd
+Dir.chdir("#{File.dirname(__FILE__)}/../..")
+lWEACEToolkitDir = Dir.getwd
+Dir.chdir(lOldDir)
+$LOAD_PATH << lWEACEToolkitDir
+
+require 'WEACE_Common.rb'
 
 module WEACE
 
@@ -97,7 +104,7 @@ module WEACE
         # Read the configuration file
         begin
           require 'Master/Server/config/Config.rb'
-        rescue RuntimeError
+        rescue Exception
           puts '!!! Unable to load the configuration from file \'config/Config.rb\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.'
           return false
         end
