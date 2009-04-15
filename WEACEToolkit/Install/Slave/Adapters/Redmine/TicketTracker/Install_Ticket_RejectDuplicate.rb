@@ -81,6 +81,7 @@ export GEM_HOME=#{@GemsDir}
 
 # The MySQL library path
 if [ -z ${LD_LIBRARY_PATH} ]
+then
   export LD_LIBRARY_PATH=#{@MySQLLibDir}
 else
   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:#{@MySQLLibDir}
