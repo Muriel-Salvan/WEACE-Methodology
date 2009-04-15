@@ -50,6 +50,24 @@ module WEACE
   # Project Manager
   Tools_ProjectManager = 'ProjectManager'
 
+  module Toolbox
+  
+    # Execute a command
+    #
+    # Parameters:
+    # * *iCmd* (_String_): The command to execute
+    def execCmd(iCmd)
+      lOutput = `#{iCmd}`
+      lErrorCode = $?
+      if (lErrorCode != 0)
+        lErrorMsg = "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
+        logErr lErrorMsg
+        raise RuntimError, lErrorMsg
+      end
+    end
+    
+  end
+
   module Logging
   
     # Log something

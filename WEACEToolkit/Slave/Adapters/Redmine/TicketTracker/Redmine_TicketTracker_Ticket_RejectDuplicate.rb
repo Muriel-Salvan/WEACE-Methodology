@@ -26,6 +26,8 @@ module Redmine
   
     class Ticket_RejectDuplicate
     
+      include WEACE::Toolbox
+    
       # Mark 2 tickets as duplicated and close the slave ticket
       #
       # Parameters:
@@ -40,7 +42,7 @@ module Redmine
         if (__FILE__ != $0)
           # We were included.
           # Don't accept that, as the environment might not be set up correctly.
-          system(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh; ruby -w #{__FILE__} #{iUserID} #{iMySQLHost} #{iDBName} #{iDBUser} #{iDBPassword} #{iMasterTicketID} #{iSlaveTicketID}")
+          execCmd(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh; ruby -w #{__FILE__} #{iUserID} #{iMySQLHost} #{iDBName} #{iDBUser} #{iDBPassword} #{iMasterTicketID} #{iSlaveTicketID}")
         else
           # Go on
           require 'rubygems'
