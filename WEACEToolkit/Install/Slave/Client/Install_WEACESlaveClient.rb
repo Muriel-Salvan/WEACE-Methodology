@@ -100,6 +100,7 @@ puts ''
 WEACE::Slave::dumpInstalledSlaveAdapters_HTML
 "
         end
+        FileUtils.chmod(0755, lShowAdaptersFileName)
         # Generate the installation's environment file that will be used by Adapters' installers
         lEnvProviderFileName = "#{$WEACEToolkitDir}/Install/Slave/ProviderEnv.rb"
         log "Generate environment file that will be used by WEACE Slave Adapters' installers (#{lEnvProviderFileName}) ..."

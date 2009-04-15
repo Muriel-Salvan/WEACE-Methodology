@@ -101,6 +101,7 @@ puts ''
 WEACE::Master::dumpKnownSlaveClients_HTML
 "
         end
+        FileUtils.chmod(0755, lShowClientsFileName)
         # Generate the cgi script that will give details about the installed WEACE Master Adapters
         lShowAdaptersFileName = "#{lProviderConfig.CGIDir}/WEACE/ShowInstalledMasterAdapters.cgi"
         log "Generate CGI script that shows installed WEACE Master Adapters (#{lShowAdaptersFileName}) ..."
@@ -116,6 +117,7 @@ puts ''
 WEACE::Master::dumpInstalledMasterAdapters_HTML
 "
         end
+        FileUtils.chmod(0755, lShowAdaptersFileName)
         # Generate the installation's environment file that will be used by Adapters' installers
         lEnvProviderFileName = "#{$WEACEToolkitDir}/Install/Master/ProviderEnv.rb"
         log "Generate environment file that will be used by WEACE Master Adapters' installers (#{lEnvProviderFileName}) ..."

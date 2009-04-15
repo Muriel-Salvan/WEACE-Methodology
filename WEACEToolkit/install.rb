@@ -12,8 +12,11 @@ $WEACEToolkitVersion = '0.0.1.20090414'
 
 require 'optparse'
 
-# Get WEACE base directory, and add it to the LOAD_PATH
-$WEACEToolkitDir = File.dirname(__FILE__)
+# Get WEACE base directory (in absolute form), and add it to the LOAD_PATH
+lOldDir = Dir.getwd
+Dir.chdir(File.dirname(__FILE__))
+$WEACEToolkitDir = Dir.getwd
+Dir.chdir(lOldDir)
 $LOAD_PATH << $WEACEToolkitDir
 
 require 'WEACE_Common.rb'
@@ -405,27 +408,31 @@ module WEACEInstall
     def execute(iParameters)
       # STDOUT is enough to log the installation (otherwise add a parameter from the command line)
       $LogFile = nil
-      # Parse options
-      lInstallerArgs, lAdditionalArgs = splitParameters(iParameters)
       lOptions = getOptions
-      lSuccess = true
-      begin
-        lOptions.parse(lInstallerArgs)
-      rescue
-        puts "Error while parsing arguments: #{$!}"
+      if (iParameters.size == 0)
         puts lOptions
-        lSuccess = false
-      end
-      if (lSuccess)
-        # Execute what was asked by the options
-        if (@OutputVersion)
-          puts $WEACEToolkitVersion
+      else
+        # Parse options
+        lInstallerArgs, lAdditionalArgs = splitParameters(iParameters)
+        lSuccess = true
+        begin
+          lOptions.parse(lInstallerArgs)
+        rescue
+          puts "Error while parsing arguments: #{$!}"
+          puts lOptions
+          lSuccess = false
         end
-        if (@OutputComponents)
-          outputComponents
-        end
-        if (@ComponentToInstall != nil)
-          installComponent(@ComponentToInstall, lAdditionalArgs)
+        if (lSuccess)
+          # Execute what was asked by the options
+          if (@OutputVersion)
+            puts $WEACEToolkitVersion
+          end
+          if (@OutputComponents)
+            outputComponents
+          end
+          if (@ComponentToInstall != nil)
+            installComponent(@ComponentToInstall, lAdditionalArgs)
+          end
         end
       end
     end
