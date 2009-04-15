@@ -29,7 +29,7 @@ module WEACE
             if (iRubyExecFileName != $0)
               # We were included.
               # Don't accept that, as the environment might not be set up correctly.
-              execCmd(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh; ruby -w #{iRubyExecFileName} #{iUserID} #{iMySQLHost} #{iDBName} #{iDBUser} #{iDBPassword} #{iParameters.join(' ')")
+              execCmd(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh; ruby -w #{iRubyExecFileName} #{iUserID} #{iMySQLHost} #{iDBName} #{iDBUser} #{iDBPassword} #{iParameters.join(' ')}")
             else
               # Go on
               require 'rubygems'
