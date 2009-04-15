@@ -31,8 +31,6 @@ module WEACEInstall
               /Powered by <%= link_to Redmine/,
               "<a title=\"Some content of this website can be modified by some WEACE processes. Click for explanations.\" href=\"#{iProviderEnv.CGIURL}/WEACE/ShowInstalledSlaveAdapters.cgi#Redmine\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png\" alt=\"Some content of this website can be modified by some WEACE processes. Click for explanations.\"/></a>\n",
               /<\/div>/)
-            end
-            
           end
           
         end

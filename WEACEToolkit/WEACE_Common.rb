@@ -1,5 +1,4 @@
-# Usage:
-# This file is used by others.
+# Usage: This file is used by others.
 # Do not call it directly.
 #
 # Check http://weacemethod.sourceforge.net for details.
@@ -50,8 +49,56 @@ module WEACE
   Tools_TicketTracker = 'TicketTracker'
   # Project Manager
   Tools_ProjectManager = 'ProjectManager'
+  
+  # Class containing info for serialized method calls
+  class MethodCallInfo
+
+    #  Object: Object to call the function on,
+    attr_accessor :Object
+    
+    #  String: Function name to call,
+    attr_accessor :FunctionName
+    
+    #  list<Object>: Parameters,
+    attr_accessor :Parameters
+    
+    #  list<String>: Load path,
+    attr_accessor :LoadPath
+    
+    #  list<String>: List of files to require
+    attr_accessor :RequireFiles
+
+  end
 
   module Toolbox
+  
+    # Execute a command in another Ruby session, executing some Shell commands before invocation.
+    #
+    # Parameters:
+    # * *iShellCmd* (_String_): Shell command to invoke before Ruby
+    # * *iObject* (_Object_): Object that will have a function to call in the new session
+    # * *iFunctionName* (_String_): Function name to call on the object
+    # * *Parameters*: Remaining parameters
+    def execCmdOtherSession(iShellCmd, iObject, iFunctionName, *iParameters)
+      # Create an object that we will serialize, containing all needded information for the session
+      lInfo = MethodCallInfo.new
+      lInfo.RequireFiles = $".clone
+      lInfo.LoadPath = $LOAD_PATH.clone
+      lInfo.Parameters = iParameters
+      lInfo.FunctionName = iFunctionName
+      lInfo.Object = iObject
+      # Dump this object in a temporary file
+      require 'tmpdir'
+      lFileName = "#{Dir.tmpdir}/WEACE_#{Thread.object_id}_Call", 'w'
+      File.open(lFileName) do |iFile|
+        iFile.write(Marshal.dump(lInfo))
+      end
+      # For security reasons, ensure that only us can read this file. It can contain passwords.
+      require 'fileutils'
+      FileUtils.chmod(0700, lFileName)
+      # Call the other session
+      execCmd("#{iShellCmd}; ruby -w #{$WEACEToolkitDir}/Execute.rb #{lFileName}")
+    end
   
     # Execute a command
     #

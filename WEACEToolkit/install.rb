@@ -383,8 +383,8 @@ module WEACEInstall
     # Parameters:
     # * *iParameters* (<em>list<String></em>): Parameters given to the installer
     def execute(iParameters)
-      # STDOUT is enough to log the installation (otherwise add a parameter from the command line)
-      $LogFile = nil
+      # Store a log file in the Install directory
+      $LogFile = "#{$WEACEToolkitDir}/Install/install.log"
       lOptions = getOptions
       if (iParameters.size == 0)
         puts lOptions
