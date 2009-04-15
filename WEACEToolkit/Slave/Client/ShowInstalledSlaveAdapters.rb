@@ -59,19 +59,19 @@ module WEACE
         lIdxProduct = 0
         lInstalledAdapters.each do |iProductID, iAdaptersForProduct|
           puts "  <li>Product n.#{lIdxProduct}:"
-          puts "    <h2>#{iProductID}</h2>"
+          puts "    <a name=\"#{iProductID}\"><h2>#{iProductID}</h2></a>"
           puts "    #{iAdaptersForProduct.size} tools of this product have some adapters:"
           puts '    <ul>'
           lIdxTool = 0
           iAdaptersForProduct.each do |iToolID, iAdaptersForTool|
             puts "      <li>Tool n.#{lIdxProduct}.#{lIdxTool}:"
-            puts "        <h3>#{iProductID}.#{iToolID}</h3>"
+            puts "        <a name=\"#{iProductID}.#{iToolID}\"><h3>#{iProductID}.#{iToolID}</h3></a>"
             puts "        #{iAdaptersForTool.size} Slave Adapters installed:"
             puts '        <ul>'
             lIdxAdapter = 0
-            iAdaptersforTool.each do |iScriptID, iDescription|
+            iAdaptersForTool.each do |iScriptID, iDescription|
               puts "          <li>Adapter n.#{lIdxProduct}.#{lIdxTool}.#{lIdxAdapter}:"
-              puts "          <h4>#{iProductID}.#{iToolID}.#{iScriptID}</h4>"
+              puts "          <a name=\"#{iProductID}.#{iToolID}.#{iScriptID}\"><h4>#{iProductID}.#{iToolID}.#{iScriptID}</h4></a>"
               puts '          <ul>'
               puts "            <li>Script: #{iScriptID}.</li>"
               puts "            <li>Installed on #{iDescription.Date}.</li>"
