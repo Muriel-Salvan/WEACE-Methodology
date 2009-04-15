@@ -15,10 +15,7 @@ module WEACEInstall
     
       module Redmine
   
-        class CommonInstall
-          
-          include WEACE::Logging
-          include WEACE::Toolbox
+        module CommonInstall
           
           # Install the common part of every adapter for Redmine.
           #
@@ -31,8 +28,6 @@ module WEACEInstall
               /Powered by <%= link_to Redmine/,
               "<a title=\"Some actions on this website can trigger some WEACE processes. Click for explanations.\" href=\"#{iProviderEnv.CGIURL}/WEACE/ShowInstalledMasterAdapters.cgi#Redmine\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png\" alt=\"Some actions on this website can trigger some WEACE processes. Click for explanations.\"/></a>\n",
               /<\/div>/)
-            end
-            
           end
           
         end

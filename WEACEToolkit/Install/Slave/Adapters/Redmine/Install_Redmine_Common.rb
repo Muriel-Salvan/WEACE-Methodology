@@ -15,10 +15,7 @@ module WEACEInstall
     
       module Redmine
   
-        class CommonInstall
-          
-          include WEACE::Logging
-          include WEACE::Toolbox
+        module CommonInstall
           
           # Install the common part of every adapter for Redmine.
           #
