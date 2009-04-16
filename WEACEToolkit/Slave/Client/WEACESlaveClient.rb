@@ -78,6 +78,7 @@ module WEACE
           lActions = Marshal.load(iSerializedActions)
         rescue Exception
           puts "!!! Exception while unserializing data: #{$!}."
+          puts $!.backtrace.join("\n")
           raise
         end
         

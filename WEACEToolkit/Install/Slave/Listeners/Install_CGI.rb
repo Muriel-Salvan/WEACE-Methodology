@@ -53,11 +53,14 @@ puts 'Content-type: text/html'
 puts ''
 puts ''
 
+# Redirect STDERR on STDOUT
+$stderr.reopen $stdout
+
 # Get the parameters
 require 'cgi'
 lCgi = CGI.new
-lUserID = lCgi.params['userid']
-lSerializedActions = lCgi.params['actions']
+lUserID = lCgi['userid']
+lSerializedActions = lCgi['actions']
 
 # Call WEACE Slave Client
 require '#{$WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb'

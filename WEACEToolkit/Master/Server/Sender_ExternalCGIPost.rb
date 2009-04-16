@@ -35,6 +35,9 @@ module WEACE
         lResult = Net::HTTP.post_form(lParsedURL, {'userid' => iUserScriptID, 'actions' => lData} )
         if (lResult.response.is_a?(Net::HTTPOK))
           log "POST successful to #{iURL}."
+          log '===== Response ====='
+          log lResult.message
+          log '===== End of Response ====='
         else
           logErr "POST to #{iURL} ended in error: #{lResult.message}"
           rResult = false
