@@ -17,7 +17,7 @@ module WEACE
     # Class that sends messages to an URL in a CGI script via POST HTTP method
     class Sender_ExternalCGIPost
     
-      require WEACE::Logging
+      include WEACE::Logging
       
       # Parameters:
       # * *iUserScriptID* (_String_): The user ID of the script
