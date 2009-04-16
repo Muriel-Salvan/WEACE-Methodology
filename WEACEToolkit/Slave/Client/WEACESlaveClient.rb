@@ -16,9 +16,9 @@
 # Get WEACE base directory, and add it to the LOAD_PATH
 lOldDir = Dir.getwd
 Dir.chdir("#{File.dirname(__FILE__)}/../..")
-lWEACEToolkitDir = Dir.getwd
+$WEACEToolkitDir = Dir.getwd
 Dir.chdir(lOldDir)
-$LOAD_PATH << lWEACEToolkitDir
+$LOAD_PATH << $WEACEToolkitDir
 
 require 'WEACE_Common.rb'
 
@@ -132,7 +132,7 @@ module WEACE
         end
         # For each tool having an action, call all the adapters for this tool
         # Require the file registering WEACE Slave Adapters
-        require 'Slave/Client/InstalledWEACESlaveAdapters.rb'
+        require 'Slave/Client/InstalledWEACESlaveComponents.rb'
         # Get the list
         lInstalledAdapters = WEACE::Slave::getInstalledAdapters
         lErrors = []

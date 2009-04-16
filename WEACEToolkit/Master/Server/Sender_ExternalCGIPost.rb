@@ -34,12 +34,22 @@ module WEACE
         lData = Marshal.dump(iSlaveActions)
         lResult = Net::HTTP.post_form(lParsedURL, {'userid' => iUserScriptID, 'actions' => lData} )
         if (lResult.response.is_a?(Net::HTTPOK))
-          log "POST successful to #{iURL}."
-          log '===== Response ====='
-          log lResult.message
-          log '===== End of Response ====='
+          # Check the last line as it contains the error code
+          lLinesResult = lResult.entity.strip.split("\n")
+          if (lLinesResult[-1] == 'EXIT: OK')
+            log "POST successful to #{iURL}."
+          else
+            logErr "POST to #{iURL} ended in error."
+            logErr '===== Response (#{iURL}) ====='
+            logErr lResult.entity
+            logErr '===== End of Response (#{iURL}) ====='
+            rResult = false
+          end
         else
           logErr "POST to #{iURL} ended in error: #{lResult.message}"
+          logErr '===== Response (#{iURL}) ====='
+          logErr lResult.entity
+          logErr '===== End of Response (#{iURL}) ====='
           rResult = false
         end
         
