@@ -146,8 +146,8 @@ module WEACEInstall
 end
 "
         end
-        # Generate the file where WEACE Master Adapters will register themselves.
-        lAdaptersRegisterFile = "#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb"
+        # Generate the file where WEACE Master Components will register themselves.
+        lAdaptersRegisterFile = "#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb"
         log "Generate file where WEACE Master Adapters register themselves (#{lAdaptersRegisterFile}) ..."
         File.open(lAdaptersRegisterFile, 'w') do |iFile|
           iFile << "
@@ -179,12 +179,12 @@ module WEACE
     # Return:
     # * <em>map< ProductID, map< ToolID, map< ScriptID, InstalledComponentDescription> > > ></em>: The registered Adapters.
     def self.getInstalledAdapters
-      rInstalledAdapters = {}
+      rInstalledComponents = {}
       
       # === INSERT ===
       # Don't remove the previous marker as it tells where to insert following adapters in this file.
       
-      return rInstalledAdapters
+      return rInstalledComponents
     end
     
   end

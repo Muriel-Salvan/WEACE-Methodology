@@ -65,6 +65,24 @@ module WEACE
     class Client
     
       include WEACE::Logging
+      
+      # Execute the server with the configuration given serialized
+      #
+      # Parameters:
+      # * *iUserScriptID* (_String_): The user name of the script
+      # * *iSerializedActions* (_String_): The serialized actions to execute
+      # Return:
+      # * _Boolean_: Has the operation completed successfully ?
+      def executeMarshalled(iUserScriptID, iSerializedActions)
+        begin
+          lActions = Marshal.load(iSerializedActions)
+        rescue Exception
+          puts "!!! Exception while unserializing data: #{$!}."
+          raise
+        end
+        
+        return execute(iUserScriptID, lActions)
+      end
     
       # Execute the server for a given configuration
       #

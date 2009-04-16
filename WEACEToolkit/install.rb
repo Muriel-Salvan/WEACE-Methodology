@@ -37,7 +37,7 @@ module WEACEInstall
     # * *iDirectory* (_String_): The directory to parse for Adapters
     # 
     # Return:
-    # * <em>map< ProductID, map< ToolID, map< ScriptID, OptionParser > > ></em>: The list of Adapters and their description
+    # * <em>map< ProductID, map< ToolID, map< ScriptID, ComponentDescription > > ></em>: The list of Adapters and their description
     def getAdaptersComponents(iDirectory)
       rComponents = {}
       
@@ -71,6 +71,28 @@ module WEACEInstall
       return rComponents
     end
     
+    # Get the list of Listeners from a directory
+    #
+    # Parameters:
+    # * *iDirectory* (_String_): The directory to parse for Listeners
+    # 
+    # Return:
+    # * <em>map< ListenerID, ComponentDescription ></em>: The list of Listeners and their description
+    def getListenersComponents(iDirectory)
+      rComponents = {}
+      
+      Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Listeners/*") do |iFileName|
+        lListenerID = File.basename(iFileName).match(/Install_(.*)\.rb/)[1]
+        # Load description from this file
+        lDescription = getDescriptionFromFile("Install/#{iDirectory}/Listeners/Install_#{lListenerID}.rb", "WEACEInstall::#{iDirectory}::Listeners::#{lListenerID}")
+        if (lDescription != nil)
+          rComponents[lListenerID] = lDescription
+        end
+      end
+      
+      return rComponents
+    end
+    
     # Get the list of components
     #
     # Return:
@@ -95,8 +117,10 @@ module WEACEInstall
       end
       # WEACE Slave Adapters
       rWEACESlaveAdaptersList = getAdaptersComponents('Slave')
+      # WEACE Slave Adapters
+      rWEACESlaveListenersList = getListenersComponents('Slave')
       
-      return rWEACEMasterServerDesc, rWEACEMasterAdaptersList, rWEACESlaveClientDesc, rWEACESlaveAdaptersList
+      return rWEACEMasterServerDesc, rWEACEMasterAdaptersList, rWEACESlaveClientDesc, rWEACESlaveAdaptersList, rWEACESlaveListenersList
     end
     
     # Get the list of installed components
@@ -106,11 +130,13 @@ module WEACEInstall
     # * <em>map< ProductID, map< ToolID, map< ScriptID, InstalledComponentDescription > > ></em>: The list of installed WEACE Master Adapters
     # * _InstalledComponentDescription_: WEACE Slave Client installed description (nil if not installed)
     # * <em>map< ProductID, map< ToolID, map< ScriptID, InstalledComponentDescription > > ></em>: The list of installed WEACE Slave Adapters
+    # * <em>map< ListenerID, InstalledComponentDescription ></em>: The list of installed WEACE Slave Listeners
     def getInstalledComponents
       rWEACEMasterServerInstalled = nil
       rWEACEMasterAdaptersInstalled = {}
       rWEACESlaveClientInstalled = nil
       rWEACESlaveAdaptersInstalled = {}
+      rWEACESlaveListenersInstalled = {}
       
       if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb"))
         # Require the file registering WEACE Master Adapters
@@ -130,13 +156,14 @@ module WEACEInstall
         end
       end
       if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb"))
-        # Require the file registering WEACE Slave Adapters
+        # Require the file registering WEACE Slave Adapters and Listeners
         begin
           require 'Slave/Client/InstalledWEACESlaveAdapters.rb'
           begin
             # Get the list
             rWEACESlaveClientInstalled = WEACE::Slave::getInstallationDescription
             rWEACESlaveAdaptersInstalled = WEACE::Slave::getInstalledAdapters
+            rWEACESlaveListenersInstalled = WEACE::Slave::getInstalledListeners
           rescue Exception
             logErr "Error while getting installed WEACE Slave Adapters from file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb: #{$!}"
             logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
@@ -147,7 +174,7 @@ module WEACEInstall
         end
       end
       
-      return rWEACEMasterServerInstalled, rWEACEMasterAdaptersInstalled, rWEACESlaveClientInstalled, rWEACESlaveAdaptersInstalled
+      return rWEACEMasterServerInstalled, rWEACEMasterAdaptersInstalled, rWEACESlaveClientInstalled, rWEACESlaveAdaptersInstalled, rWEACESlaveListenersInstalled
     end
     
     # Output information of a component
@@ -174,8 +201,8 @@ module WEACEInstall
 
     # Outputs the list of components
     def outputComponents
-      lWEACEMasterServerDesc, lWEACEMasterAdaptersList, lWEACESlaveClientDesc, lWEACESlaveAdaptersList = getComponents
-      lWEACEMasterServerInstalled, lWEACEMasterAdaptersInstalledList, lWEACESlaveClientInstalled, lWEACESlaveAdaptersInstalledList = getInstalledComponents
+      lWEACEMasterServerDesc, lWEACEMasterAdaptersList, lWEACESlaveClientDesc, lWEACESlaveAdaptersList, lWEACESlaveListenersList = getComponents
+      lWEACEMasterServerInstalled, lWEACEMasterAdaptersInstalledList, lWEACESlaveClientInstalled, lWEACESlaveAdaptersInstalledList, lWEACESlaveListenersInstalledList = getInstalledComponents
       puts ''
       puts 'Installable components:'
       # WEACE Master Server
@@ -224,9 +251,17 @@ module WEACEInstall
           end
         end
       end
+      # WEACE Slave Listeners
+      lWEACESlaveListenersList.each do |iListenerID, iDescription|
+        lInstalledDescription = nil
+        if (lWEACESlaveListenersInstalledList[iListenerID] != nil)
+          lInstalledDescription = lWEACESlaveListenersInstalledList[iListenerID]
+        end
+        outputComponent("WEACESlaveListener.#{iListenerID}", iDescription, lInstalledDescription, lInstallFirstWEACESlaveClientMessage)
+      end
     end
   
-    # Register a new WEACE Master Adapter
+    # Register a new WEACE Adapter
     #
     # Parameters:
     # * *iFileName* (_String_): File where Adapters are registered
@@ -235,22 +270,22 @@ module WEACEInstall
     # * *iScriptID* (_String_): The Script ID
     # * *iDescription* (_ComponentDescription_): The description
     def registerNewAdapter(iFileName, iProductID, iToolID, iScriptID, iDescription)
-      log "Register WEACE Master Adapter #{iProductID}.#{iToolID}.#{iScriptID} in file #{iFileName} ..."
+      log "Register WEACE Adapter #{iProductID}.#{iToolID}.#{iScriptID} in file #{iFileName} ..."
       modifyFile(iFileName,
-        nil,
+        /getInstalledAdapters/,
         "
       lDesc = InstalledComponentDescription.new
       lDesc.Date = '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
       lDesc.Version = '#{iDescription.Version}'
       lDesc.Description = '#{iDescription.Description}'
       lDesc.Author = '#{iDescription.Author}'
-      if (rInstalledAdapters['#{iProductID}'] == nil)
-        rInstalledAdapters['#{iProductID}'] = {}
+      if (rInstalledComponents['#{iProductID}'] == nil)
+        rInstalledComponents['#{iProductID}'] = {}
       end
-      if (rInstalledAdapters['#{iProductID}']['#{iToolID}'] == nil)
-        rInstalledAdapters['#{iProductID}']['#{iToolID}'] = {}
+      if (rInstalledComponents['#{iProductID}']['#{iToolID}'] == nil)
+        rInstalledComponents['#{iProductID}']['#{iToolID}'] = {}
       end
-      rInstalledAdapters['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc
+      rInstalledComponents['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc
 ",
         /# === INSERT ===/,
         :CheckMatch => [
@@ -259,13 +294,41 @@ module WEACEInstall
 "      lDesc.Version = '#{iDescription.Version}'\n",
 "      lDesc.Description = '#{iDescription.Description}'\n",
 "      lDesc.Author = '#{iDescription.Author}'\n",
-"      if (rInstalledAdapters['#{iProductID}'] == nil)\n",
-"        rInstalledAdapters['#{iProductID}'] = {}\n",
+"      if (rInstalledComponents['#{iProductID}'] == nil)\n",
+"        rInstalledComponents['#{iProductID}'] = {}\n",
 "      end\n",
-"      if (rInstalledAdapters['#{iProductID}']['#{iToolID}'] == nil)\n",
-"        rInstalledAdapters['#{iProductID}']['#{iToolID}'] = {}\n",
+"      if (rInstalledComponents['#{iProductID}']['#{iToolID}'] == nil)\n",
+"        rInstalledComponents['#{iProductID}']['#{iToolID}'] = {}\n",
 "      end\n",
-"      rInstalledAdapters['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc\n"])
+"      rInstalledComponents['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc\n"])
+    end
+
+    # Register a new WEACE Listener
+    #
+    # Parameters:
+    # * *iFileName* (_String_): File where Listeners are registered
+    # * *iListenerID* (_String_): The Listener ID
+    # * *iDescription* (_ComponentDescription_): The description
+    def registerNewListener(iFileName, iListenerID, iDescription)
+      log "Register WEACE Slave Listener #{iListenerID} in file #{iFileName} ..."
+      modifyFile(iFileName,
+        /getInstalledListeners/,
+        "
+      lDesc = InstalledComponentDescription.new
+      lDesc.Date = '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
+      lDesc.Version = '#{iDescription.Version}'
+      lDesc.Description = '#{iDescription.Description}'
+      lDesc.Author = '#{iDescription.Author}'
+      rInstalledComponents['#{iListenerID}'] = lDesc
+",
+        /# === INSERT ===/,
+        :CheckMatch => [
+"      lDesc = InstalledComponentDescription.new\n",
+/      lDesc.Date = /,
+"      lDesc.Version = '#{iDescription.Version}'\n",
+"      lDesc.Description = '#{iDescription.Description}'\n",
+"      lDesc.Author = '#{iDescription.Author}'\n",
+"      rInstalledComponents['#{iListenerID}'] = lDesc\n"])
     end
 
     # Get the provider specific environment, generated by the installation of WEACE Master Server or WEACE Slave Client
@@ -324,37 +387,55 @@ module WEACEInstall
           lProductID, lToolID, lScriptID = lMasterMatch[1..3]
           # Got a WEACE Master Adapter installation
           # First, check that WEACE Master Server is installed
-          if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb"))
-            # Get the Provider specific environment 
+          if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb"))
+            # Get the Provider specific environment
             lProviderEnv = getProviderEnv('Install/Master/ProviderEnv.rb', 'WEACEInstall::Master::ProviderEnv')
             lFileName = "Install/Master/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
             lClassName = "WEACEInstall::Master::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
             installComponentFromFile(iComponent, lFileName, lClassName, iParameters, lProviderEnv)
             # Register this Adapter
             lDescription = getDescriptionFromFile(lFileName, lClassName)
-            registerNewAdapter("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb", lProductID, lToolID, lScriptID, lDescription)
+            registerNewAdapter("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb", lProductID, lToolID, lScriptID, lDescription)
           else
             logExc RuntimeError, 'You must first install WEACE Master Server.'
           end
         else
-          lSlaveMatch = iComponent.match(/^WEACESlaveAdapter\.(.*)\.(.*)\.(.*)$/)
-          if (lSlaveMatch != nil)
-            lProductID, lToolID, lScriptID = lSlaveMatch[1..3]
+          lSlaveAdapterMatch = iComponent.match(/^WEACESlaveAdapter\.(.*)\.(.*)\.(.*)$/)
+          if (lSlaveAdapterMatch != nil)
+            lProductID, lToolID, lScriptID = lSlaveAdapterMatch[1..3]
             # Got a WEACE Slave Adapter installation
-            if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb"))
-            # Get the Provider specific environment 
+            if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb"))
+              # Get the Provider specific environment 
               lProviderEnv = getProviderEnv('Install/Slave/ProviderEnv.rb', 'WEACEInstall::Slave::ProviderEnv')
               lFileName = "Install/Slave/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
               lClassName = "WEACEInstall::Slave::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
               installComponentFromFile(iComponent, lFileName, lClassName, iParameters, lProviderEnv)
               # Register this Adapter
               lDescription = getDescriptionFromFile(lFileName, lClassName)
-              registerNewAdapter("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb", lProductID, lToolID, lScriptID, lDescription)
+              registerNewAdapter("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb", lProductID, lToolID, lScriptID, lDescription)
             else
               logExc RuntimeError, 'You must first install WEACE Slave Client.'
             end
           else
-            logExc RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
+            lSlaveListenerMatch = iComponent.match(/^WEACESlaveListener\.(.*)$/)
+            if (lSlaveListenerMatch != nil)
+              lListenerID = lSlaveListenerMatch[1]
+              # Got a WEACE Slave Listener installation
+              if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb"))
+                # Get the Provider specific environment 
+                lProviderEnv = getProviderEnv('Install/Slave/ProviderEnv.rb', 'WEACEInstall::Slave::ProviderEnv')
+                lFileName = "Install/Slave/Listeners/Install_#{lListenerID}.rb"
+                lClassName = "WEACEInstall::Slave::Listeners::#{lListenerID}"
+                installComponentFromFile(iComponent, lFileName, lClassName, iParameters, lProviderEnv)
+                # Register this Listener
+                lDescription = getDescriptionFromFile(lFileName, lClassName)
+                registerNewListener("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb", lListenerID, lDescription)
+              else
+                logExc RuntimeError, 'You must first install WEACE Slave Client.'
+              end
+            else
+              logExc RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
+            end
           end
         end
       end

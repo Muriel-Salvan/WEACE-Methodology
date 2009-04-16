@@ -71,15 +71,16 @@ module WEACE
             lIdxAdapter = 0
             iAdaptersForTool.each do |iScriptID, iDescription|
               puts "          <li>Adapter n.#{lIdxProduct}.#{lIdxTool}.#{lIdxAdapter}:"
-              puts "          <a name=\"#{iProductID}.#{iToolID}.#{iScriptID}\"><h4>#{iProductID}.#{iToolID}.#{iScriptID}</h4></a>"
-              puts '          <ul>'
-              puts "            <li>Script: #{iScriptID}.</li>"
-              puts "            <li>Installed on #{iDescription.Date}.</li>"
-              puts "            <li>Version: #{iDescription.Version}.</li>"
-              puts "            <li>#{iDescription.Description}</li>"
-              puts "            <li>Author: #{iDescription.Author}.</li>"
-              puts "            <li><a href=\"http://weacemethod.sourceforge.net/wiki/index.php/#{iScriptID}\">Detailed process of #{iScriptID}</a></li>"
-              puts '          </ul>'
+              puts "            <a name=\"#{iProductID}.#{iToolID}.#{iScriptID}\"><h4>#{iProductID}.#{iToolID}.#{iScriptID}</h4></a>"
+              puts '            <ul>'
+              puts "              <li>Script: #{iScriptID}.</li>"
+              puts "              <li>Installed on #{iDescription.Date}.</li>"
+              puts "              <li>Version: #{iDescription.Version}.</li>"
+              puts "              <li>#{iDescription.Description}</li>"
+              puts "              <li>Author: #{iDescription.Author}.</li>"
+              puts "              <li><a href=\"http://weacemethod.sourceforge.net/wiki/index.php/#{iScriptID}\">Detailed process of #{iScriptID}</a></li>"
+              puts '            </ul>'
+              puts '          </li>'
               lIdxAdapter += 1
             end
             puts '        </ul>'

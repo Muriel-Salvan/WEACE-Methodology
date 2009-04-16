@@ -21,6 +21,7 @@ module WEACEInstall
         
           class Ticket_RejectDuplicate
           
+            include WEACE::Toolbox
             include WEACE::Logging
             include WEACEInstall::Slave::Adapters::Redmine::CommonInstall
           

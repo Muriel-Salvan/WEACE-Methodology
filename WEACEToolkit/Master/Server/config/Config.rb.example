@@ -20,6 +20,14 @@ module WEACE
         ],
         '/home/groups/m/my/myproject/WEACEToolkit'
       )
+      ioConfig.addWEACESlaveClient(
+        ClientType_ExternalCGIPost,
+        [
+          Tools_Wiki,
+          Tools_TicketTracker
+        ],
+        'http://www.otherprovider.com/path/to/cgi/cgilistener.cgi'
+      )
       ioConfig.LogFile = '/home/groups/m/my/myproject/persistent/tmp/WEACEMasterServer.log'
     end
     
