@@ -53,21 +53,32 @@ module WEACE
   # Class containing info for serialized method calls
   class MethodCallInfo
 
-    #  Object: Object to call the function on,
-    attr_accessor :Object
+    #  String: LogFile
+    attr_accessor :LogFile
     
-    #  String: Function name to call,
-    attr_accessor :FunctionName
-    
-    #  list<Object>: Parameters,
-    attr_accessor :Parameters
-    
-    #  list<String>: Load path,
+    #  list<String>: Load path
     attr_accessor :LoadPath
     
     #  list<String>: List of files to require
     attr_accessor :RequireFiles
+    
+    #  String: Serialized MethodDetails
+    # It is stored serialized as to unserialize it we first need to unserialize the RequireFiles
+    attr_accessor :SerializedMethodDetails
+    
+    class MethodDetails
 
+      #  Object: Object to call the function on,
+      attr_accessor :Object
+    
+      #  String: Function name to call,
+      attr_accessor :FunctionName
+    
+      #  list<Object>: Parameters,
+      attr_accessor :Parameters
+      
+    end
+    
   end
 
   module Toolbox
@@ -82,11 +93,14 @@ module WEACE
     def execCmdOtherSession(iShellCmd, iObject, iFunctionName, *iParameters)
       # Create an object that we will serialize, containing all needded information for the session
       lInfo = MethodCallInfo.new
+      lInfo.LogFile = $LogFile
       lInfo.RequireFiles = $".clone
       lInfo.LoadPath = $LOAD_PATH.clone
-      lInfo.Parameters = iParameters
-      lInfo.FunctionName = iFunctionName
-      lInfo.Object = iObject
+      lMethodDetails = MethodCallInfo::MethodDetails.new
+      lMethodDetails.Parameters = iParameters
+      lMethodDetails.FunctionName = iFunctionName
+      lMethodDetails.Object = iObject
+      lInfo.SerializedMethodDetails = Marshal.dump(lMethodDetails)
       # Dump this object in a temporary file
       require 'tmpdir'
       lFileName = "#{Dir.tmpdir}/WEACE_#{Thread.object_id}_Call"

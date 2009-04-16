@@ -33,18 +33,22 @@ module WEACE
     end
     # Remove the file
     FileUtils.rm_f(iFileName)
-    # 1. Set the load path
+    # 1. Set the $LogFile
+    $LogFile = lInfo.LogFile
+    # 2. Set the load path
     lInfo.LoadPath.each do |iDir|
       if (!$LOAD_PATH.include?(iDir))
         $LOAD_PATH << iDir
       end
     end
-    # 2. Require all given files
+    # 3. Require all given files
     lInfo.RequireFiles.each do |iRequireName|
       require iRequireName
     end
-    # 3. Call the method on the object with all its parameters
-    eval("lInfo.Object.#{lInfo.FunctionName}(*lInfo.Parameters)")
+    # 4. Unserialize the method details
+    lMethodDetails = Marshal.load(lInfo.SerializedMethodDetails)
+    # 5. Call the method on the object with all its parameters
+    eval("lMethodDetails.Object.#{lMethodDetails.FunctionName}(*lMethodDetails.Parameters)")
   end
 
 end

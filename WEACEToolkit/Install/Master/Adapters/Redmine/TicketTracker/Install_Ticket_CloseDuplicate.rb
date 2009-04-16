@@ -71,7 +71,7 @@ module WEACEInstall
         if (lErrorCode != 0)
           @relation.save
           logger.error(\"Call to WEACE Master Server failed (error code \#{lErrorCode}). Here is the command: \#{lCommand}. Here is its output: \#{lOutput}.\")
-          flash[:warning] = l('Error while calling WEACE Master Server. Please check logs to get further details. The action was still performed without notifying WEACE Master Server.')
+          flash[:warning] = l('Error while calling WEACE Master Server. Please check logs to get further details. The action was still performed as if WEACE Master Server was not installed.')
         else
           flash[:notice] = l('WEACE Master Server processed request successfully.')
         end
