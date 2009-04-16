@@ -158,18 +158,18 @@ module WEACEInstall
       if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb"))
         # Require the file registering WEACE Slave Adapters and Listeners
         begin
-          require 'Slave/Client/InstalledWEACESlaveAdapters.rb'
+          require 'Slave/Client/InstalledWEACESlaveComponents.rb'
           begin
             # Get the list
             rWEACESlaveClientInstalled = WEACE::Slave::getInstallationDescription
             rWEACESlaveAdaptersInstalled = WEACE::Slave::getInstalledAdapters
             rWEACESlaveListenersInstalled = WEACE::Slave::getInstalledListeners
           rescue Exception
-            logErr "Error while getting installed WEACE Slave Adapters from file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb: #{$!}"
+            logErr "Error while getting installed WEACE Slave Adapters and Listeners from file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb: #{$!}"
             logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
           end
         rescue Exception
-          logErr "Error while loading file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb: #{$!}"
+          logErr "Error while loading file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb: #{$!}"
           logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
         end
       end

@@ -38,7 +38,7 @@ module WEACEInstall
         # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
         def execute(iParameters, iProviderEnv)
           # Generate the CGI script
-          lCGIScriptFileName = "#{@CGIDir}/WEACE/GetAction.cgi"
+          lCGIScriptFileName = "#{@CGIDir}/WEACE/Actions.cgi"
           log "Generate CGI script (#{lCGIScriptFileName}) ..."
           File.open(lCGIScriptFileName, 'w') do |iFile|
             iFile << "#!/usr/bin/env ruby
