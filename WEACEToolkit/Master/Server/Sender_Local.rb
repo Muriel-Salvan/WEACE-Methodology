@@ -34,10 +34,10 @@ module WEACE
         # Save the Log file location before, and restore it after
         lOldLogFile = $LogFile
         # Call the Slave Client directly
-        WEACE::Slave::Client.new.execute(iUserScriptID, iSlaveActions)
+        lSuccess = WEACE::Slave::Client.new.execute(iUserScriptID, iSlaveActions)
         $LogFile = lOldLogFile
         
-        return true
+        return lSuccess
       end
       
     end

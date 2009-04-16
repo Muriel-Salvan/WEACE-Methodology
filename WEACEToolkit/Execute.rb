@@ -25,7 +25,7 @@ module WEACE
   #
   # Parameters:
   # * *iFileName* (_String_): The file containing info
-  def executeEmbeddedFunction(iFileName)
+  def self.executeEmbeddedFunction(iFileName)
     # Read the file
     lInfo = nil
     File.open(iFileName, 'r') do |iFile|
