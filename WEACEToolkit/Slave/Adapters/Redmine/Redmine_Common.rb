@@ -17,31 +17,6 @@ module WEACE
       
         module Common
         
-          # Exec some Ruby code in the MySQL environment
-          #
-          # Parameters:
-          # * *iMySQLHost* (_String_): The name of the MySQL host
-          # * *iDBName* (_String_): The name of the database of Redmine
-          # * *iDBUser* (_String_): The name of the database user
-          # * *iDBPassword* (_String_): The password of the database user
-          # * *Parameters* (<em>list<String></em>): Additional parameters
-          def execMySQL(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-            # Go on
-            require 'rubygems'
-            require 'mysql'
-            # Connect to the db
-            lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-            # Create a transaction
-            lMySQL.query("start transaction")
-            begin
-              executeSQL(lMySQL, *iParameters)
-              lMySQL.query("commit")
-            rescue RuntimeError
-              lMySQL.query("rollback")
-              raise
-            end
-          end
-          
           # Create a new Ruby session to execute the executeSQL method in a new environment
           #
           # Parameters:
@@ -50,21 +25,21 @@ module WEACE
           # * *iDBUser* (_String_): The name of the database user
           # * *iDBPassword* (_String_): The password of the database user
           # * *Parameters* (<em>list<String></em>): Additional parameters
-          def execSQLOtherSession(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
+          def execMySQLOtherSession(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
             execCmdOtherSession(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh", self, 'execMySQL', iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
           end
 
           # Get the User ID based on its name
           #
           # Parameters:
-          # * *iMySQL* (_Mysql_): The MySQL connection
+          # * *iSQL* (_Object_): The SQL connection
           # * *iUserName* (_String_): User name to look for
           # Return:
           # * _String_: Corresponding user ID
-          def getUserID(iMySQL, iUserName)
+          def getUserID(iSQL, iUserName)
             rUserID = nil
             
-            iMySQL.query(
+            iSQL.query(
               "select id
                from users
                where
@@ -75,7 +50,7 @@ module WEACE
             if (rUserID == nil)
               if ((iUserName == 'Scripts_Validator') or
                   (iUserName == 'Scripts_Developer'))
-                rUserID = createUser(iMySQL, iUserName)
+                rUserID = createUser(iSQL, iUserName)
               else
                 logExc RuntimeError, "User #{iUserName} is not allowed to perform operations."
               end
@@ -87,14 +62,14 @@ module WEACE
           # Create a user, and get its ID back
           #
           # Parameters:
-          # * *iMySQL* (_Mysql_): The MySQL connection
+          # * *iSQL* (_Object_): The SQL connection
           # * *iUserName* (_String_): User name to look for
           # Return:
           # * _String_: Corresponding user ID
-          def createUser(iMySQL, iUserName)
+          def createUser(iSQL, iUserName)
             rUserID = nil
               
-            iMySQL.query(
+            iSQL.query(
               "insert
                  into users
                  ( login,
@@ -121,7 +96,7 @@ module WEACE
                    '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}',
                    '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
                  )")
-            rUserID = iMySQL.insert_id()
+            rUserID = iSQL.insert_id()
             
             return rUserID
           end

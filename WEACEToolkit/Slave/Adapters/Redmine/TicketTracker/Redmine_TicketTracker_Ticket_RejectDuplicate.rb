@@ -23,15 +23,15 @@ module Redmine
       # Mark 2 tickets as duplicated and close the slave ticket
       #
       # Parameters:
-      # * *iMySQL* (_MySQL_): The MySQL connection
+      # * *iSQL* (_Object_): The SQL connection
       # * *iUserID* (_String_): User ID of the script adding this info
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
-      def executeSQL(iMySQL, iUserID, iMasterTicketID, iSlaveTicketID)
+      def executeSQL(iSQL, iUserID, iMasterTicketID, iSlaveTicketID)
         # Get the User ID
-        lRedmineUserID = getUserID(iMySQL, iUserID)
+        lRedmineUserID = getUserID(iSQL, iUserID)
         # Insert a comment on the Master ticket
-        iMySQL.query(
+        iSQL.query(
           "insert
              into journals
              ( journalized_id,
@@ -47,7 +47,7 @@ module Redmine
                '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
              )")
         # Insert a relation on the Master ticket
-        iMySQL.query(
+        iSQL.query(
           "insert
              into issue_relations
              ( issue_from_id,
@@ -61,7 +61,7 @@ module Redmine
                NULL
              )")
         # Insert a comment on the Slave ticket
-        iMySQL.query(
+        iSQL.query(
           "insert
              into journals
              ( journalized_id,
@@ -77,21 +77,21 @@ module Redmine
                '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
              )")
         # Close the Slave ticket
-        lJournalID = iMySQL.insert_id()
+        lJournalID = iSQL.insert_id()
         lOldValue = nil
-        iMySQL.query(
+        iSQL.query(
           "select status_id
            from issues
            where
              id = #{iSlaveTicketID}").each do |iRow|
           lOldValue = iRow[0]
         end
-        iMySQL.query(
+        iSQL.query(
           "update issues
              set status_id = 6
              where
                id = #{iSlaveTicketID}")
-        iMySQL.query(
+        iSQL.query(
           "insert
              into journal_details
              ( journal_id,
@@ -119,7 +119,7 @@ module Redmine
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
       def execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
-        execSQLOtherSession(iMySQLHost, iDBName, iDBUser, iDBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
+        execMySQLOtherSession(iMySQLHost, iDBName, iDBUser, iDBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
       end
       
     end

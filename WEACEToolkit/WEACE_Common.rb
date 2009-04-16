@@ -83,6 +83,32 @@ module WEACE
 
   module Toolbox
   
+    # Execute some Ruby code in the MySQL environment.
+    # The code executed has to be in a method named executeSQL that takes the SQL connection as a first parameter.
+    #
+    # Parameters:
+    # * *iMySQLHost* (_String_): The name of the MySQL host
+    # * *iDBName* (_String_): The name of the database of Redmine
+    # * *iDBUser* (_String_): The name of the database user
+    # * *iDBPassword* (_String_): The password of the database user
+    # * *Parameters* (<em>list<String></em>): Additional parameters
+    def execMySQL(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
+      # Go on
+      require 'rubygems'
+      require 'mysql'
+      # Connect to the db
+      lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
+      # Create a transaction
+      lMySQL.query("start transaction")
+      begin
+        executeSQL(lMySQL, *iParameters)
+        lMySQL.query("commit")
+      rescue RuntimeError
+        lMySQL.query("rollback")
+        raise
+      end
+    end
+    
     # Execute a command in another Ruby session, executing some Shell commands before invocation.
     #
     # Parameters:
