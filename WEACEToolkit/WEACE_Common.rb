@@ -197,7 +197,8 @@ module WEACE
             (0 .. lMatchLines.size-1).each do |iIdxMatch|
               if (((lMatchLines[iIdxMatch].is_a?(String)) and
                    (lContent[iIdx+iIdxMatch] != lMatchLines[iIdxMatch])) or
-                  (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil))
+                  ((lMatchLines[iIdxMatch].is_a?(Regexp)) and 
+                   (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil)))
                 # It differs
                 lFound = false
                 break
