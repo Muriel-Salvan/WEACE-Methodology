@@ -89,8 +89,8 @@ module WEACE
       lInfo.Object = iObject
       # Dump this object in a temporary file
       require 'tmpdir'
-      lFileName = "#{Dir.tmpdir}/WEACE_#{Thread.object_id}_Call", 'w'
-      File.open(lFileName) do |iFile|
+      lFileName = "#{Dir.tmpdir}/WEACE_#{Thread.object_id}_Call"
+      File.open(lFileName, 'w') do |iFile|
         iFile.write(Marshal.dump(lInfo))
       end
       # For security reasons, ensure that only us can read this file. It can contain passwords.
