@@ -50,7 +50,7 @@ module WEACE
           # * *iDBUser* (_String_): The name of the database user
           # * *iDBPassword* (_String_): The password of the database user
           # * *Parameters* (<em>list<String></em>): Additional parameters
-          def execSQLOtherSession(
+          def execSQLOtherSession(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
             execCmdOtherSession(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh", self, 'execMySQL', iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
           end
 
