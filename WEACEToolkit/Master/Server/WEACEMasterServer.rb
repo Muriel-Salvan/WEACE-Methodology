@@ -20,9 +20,9 @@
 # Get WEACE base directory, and add it to the LOAD_PATH
 lOldDir = Dir.getwd
 Dir.chdir("#{File.dirname(__FILE__)}/../..")
-lWEACEToolkitDir = Dir.getwd
+$WEACEToolkitDir = Dir.getwd
 Dir.chdir(lOldDir)
-$LOAD_PATH << lWEACEToolkitDir
+$LOAD_PATH << $WEACEToolkitDir
 
 require 'WEACE_Common.rb'
 
