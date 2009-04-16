@@ -86,7 +86,7 @@ module WEACEInstall
     # === ... End of change ===
 ",
                 /respond_to do \|format\|/,
-                :iReplace => true)
+                :Replace => true)
             end
             
           end

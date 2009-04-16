@@ -72,12 +72,13 @@ module WEACE
               rUserID = iRow[0]
             end
             # If the user does not exist, create it if it is Scripts_Validator or Scripts_Developer
-            if ((rUserID == nil) and
-                ((iUserName == 'Scripts_Validator') or
-                 (iUserName == 'Scripts_Developer')))
-              rUserID = createUser(iMySQL, iUserName)
-            else
-              logExc RuntimeError, "User #{iUserName} is not allowed to perform operations."
+            if (rUserID == nil)
+              if ((iUserName == 'Scripts_Validator') or
+                  (iUserName == 'Scripts_Developer'))
+                rUserID = createUser(iMySQL, iUserName)
+              else
+                logExc RuntimeError, "User #{iUserName} is not allowed to perform operations."
+              end
             end
             
             return rUserID
