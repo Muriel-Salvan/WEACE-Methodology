@@ -94,7 +94,7 @@ module WEACE
         # Exception protected
         begin
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
-          puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACEMasterExplanation">More info about WEACE Master Server</a></p>'
+          puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACESlaveExplanation">More info about WEACE Slave Client</a></p>'
           dumpInstalledSlaveAdapters_HTML
           dumpInstalledSlaveListeners_HTML
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'

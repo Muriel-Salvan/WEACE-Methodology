@@ -480,6 +480,7 @@ module WEACEInstall
     def execute(iParameters)
       # Store a log file in the Install directory
       $LogFile = "#{$WEACEToolkitDir}/Install/install.log"
+      log ''
       log "> install.rb #{iParameters.join(' ')}"
       lOptions = getOptions
       if (iParameters.size == 0)
