@@ -33,6 +33,8 @@ module WEACE
     # Types of the clients
     # Local: The WEACE Slave Client is present in this host
     ClientType_Local = 'Local'
+    # ExternalCGIPost: The WEACE Slave Client is present behind a CGI script accessible via an URL
+    ClientType_ExternalCGIPost = 'ExternalCGIPost'
     
     # This class is used by the configuration file
     class Config
