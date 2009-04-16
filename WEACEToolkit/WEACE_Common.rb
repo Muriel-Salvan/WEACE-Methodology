@@ -123,6 +123,7 @@ module WEACE
     # * *iOptions* (_Hash_): Additional parameters: [ optional = {} ]
     # ** *:Replace* (_Boolean_): Do we completely replace the text between the markers ?
     # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ?
+    # ** *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed.
     def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions = {})
       log "Modify file #{iFileName} ..."
       if (iOptions[:NoBackup] == nil)
@@ -178,15 +179,31 @@ module WEACE
         else
           lNewLines = iNewLines.join("\n").split("\n")
         end
-        if (lNewLines[-1][-1..-1] != "\n")
-          lNewLines[-1] += "\n"
+        (0 .. lNewLines.size-1).each do |iIdx|
+          if (lNewLines[iIdx][-1..-1] != "\n")
+            lNewLines[iIdx] += "\n"
+          end
         end
         # Check if the new content is not already in lContent (starting from lIdxBegin)
+        lMatchLines = lNewLines
+        if (iOptions[:CheckMatch] != nil)
+          lMatchLines = iOptions[:CheckMatch]
+        end
         lFound = false
-        if (lIdxBegin < lIdxEnd-lNewLines.size)
-          (lIdxBegin+1 .. lIdxEnd-lNewLines.size).each do |iIdx|
-            if (lContent[iIdx .. iIdx+lNewLines.size] == lNewLines)
-              lFound = true
+        if (lIdxBegin < lIdxEnd-lMatchLines.size)
+          (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
+            # Validate that each line equals or matches
+            lFound = true
+            (0 .. lMatchLines.size-1).each do |iIdxMatch|
+              if (((lMatchLines[iIdxMatch].is_a?(String)) and
+                   (lContent[iIdx+iIdxMatch] != lMatchLines[iIdxMatch])) or
+                  (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil))
+                # It differs
+                lFound = false
+                break
+              end
+            end
+            if (lFound)
               break
             end
           end
@@ -206,7 +223,7 @@ module WEACE
             lIdxEnd = lIdxBegin + 1
           end
           # Insert at lIdxEnd position
-          lContent.insert(lIdxEnd, iNewLines)
+          lContent.insert(lIdxEnd, lNewLines)
           # Write the file
           begin
             File.open(iFileName, 'w') do |iFile|
