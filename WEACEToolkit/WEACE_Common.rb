@@ -83,6 +83,45 @@ module WEACE
 
   module Toolbox
   
+    # Dump HTML header
+    #
+    # Parameters:
+    # * *iTitle* (_String_): Title of the header
+    def dumpHeader_HTML(iTitle)
+      puts '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+      puts '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'
+      puts "  <title>#{iTitle}</title>"
+      puts '  <style>'
+      puts '    body {'
+      puts '      font-family: Trebuchet MS,Georgia,"Times New Roman",serif;'
+      puts '      color:#303030;'
+      puts '      margin:10px;'
+      puts '    }'
+      puts '    h1 {'
+      puts '      font-size:1.5em;'
+      puts '    }'
+      puts '    h2 {'
+      puts '      font-size:1.2em;'
+      puts '    }'
+      puts '    h3 {'
+      puts '      font-size:1.0em;'
+      puts '    }'
+      puts '    h4 {'
+      puts '      font-size:0.9em;'
+      puts '    }'
+      puts '    p {'
+      puts '      font-size:0.8em;'
+      puts '    }'
+      puts '  </style>'
+      puts '<body>'
+    end
+
+    # Dump HTML footer
+    def dumpFooter_HTML
+      puts '</body>'
+      puts '</html>'
+    end
+
     # Execute some Ruby code in the MySQL environment.
     # The code executed has to be in a method named executeSQL that takes the SQL connection as a first parameter.
     #

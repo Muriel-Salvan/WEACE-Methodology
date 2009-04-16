@@ -1,6 +1,6 @@
 # Usage:
-# ruby -w ShowInstalledSlaveComponents.rb
-# Dumps the installed slave components in an HTML page
+# ruby -w ShowWEACESlaveInfo.rb
+# Dumps WEACE Slave info in an HTML page
 
 # Get WEACE base directory, and add it to the LOAD_PATH
 lOldDir = Dir.getwd
@@ -15,43 +15,14 @@ module WEACE
 
   module Slave
   
-    # Dump HTML content of the installed components in STDOUT
-    def self.dumpInstalledSlaveComponents_HTML
-      puts '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-      puts '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'
-      puts '  <title>WEACE Slave Adapters installed in this provider</title>'
-      puts '  <style>'
-      puts '    body {'
-      puts '      font-family: Trebuchet MS,Georgia,"Times New Roman",serif;'
-      puts '      color:#303030;'
-      puts '      margin:10px;'
-      puts '    }'
-      puts '    h1 {'
-      puts '      font-size:1.5em;'
-      puts '    }'
-      puts '    h2 {'
-      puts '      font-size:1.2em;'
-      puts '    }'
-      puts '    h3 {'
-      puts '      font-size:1.0em;'
-      puts '    }'
-      puts '    h4 {'
-      puts '      font-size:0.9em;'
-      puts '    }'
-      puts '    p {' 
-      puts '      font-size:0.8em;' 
-      puts '    }' 
-      puts '  </style>' 
-      puts '<body>' 
-      
-      # Exception protected
-      begin
-        puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
-        puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACESlaveExplanation">More info about WEACE Slave Client</a></p>'
-
+    class Dump_HTML
+    
+      include WEACE::Toolbox
+  
+      # Dump Adapters info
+      def dumpInstalledSlaveAdapters_HTML
         # Require the file registering WEACE Slave Components
         require 'Slave/Client/InstalledWEACESlaveComponents.rb'
-        
         # Get the Adapters list
         lInstalledAdapters = WEACE::Slave::getInstalledAdapters
         puts "<h1>#{lInstalledAdapters.size} products have installed WEACE Slave Adapters:</h1>"
@@ -90,7 +61,12 @@ module WEACE
           puts '  </li>'
         end
         puts '</ul>'
-
+      end
+        
+      # Dump Listeners info
+      def dumpInstalledSlaveListeners_HTML
+        # Require the file registering WEACE Slave Components
+        require 'Slave/Client/InstalledWEACESlaveComponents.rb'
         # Get the Listeners list
         lInstalledListeners = WEACE::Slave::getInstalledListeners
         puts "<h1>#{lInstalledListeners.size} listeners are installed on this WEACE Slave Client:</h1>"
@@ -110,27 +86,35 @@ module WEACE
           lIdxListener += 1
         end
         puts '</ul>'
-
-        puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
-
-      rescue Exception
-        puts "<p>Exception encountered while reading installed WEACE Slave Components configuration: #{$!}</p>"
-        puts '<p>Callstack:</p>'
-        puts '<p>'
-        puts $!.backtrace.join("\n</p><p>")
-        puts '</p>'
       end
-
-      puts '</body>'
-      puts '</html>'
+      
+      # Dump every info
+      def dumpWEACESlaveInfo_HTML
+        dumpHeader_HTML('WEACE Slave information of this provider')
+        # Exception protected
+        begin
+          puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
+          puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACEMasterExplanation">More info about WEACE Master Server</a></p>'
+          dumpInstalledSlaveAdapters_HTML
+          dumpInstalledSlaveListeners_HTML
+          puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
+        rescue Exception
+          puts "<p>Exception encountered while reading installed WEACE Slave information: #{$!}</p>"
+          puts '<p>Callstack:</p>'
+          puts '<p>'
+          puts $!.backtrace.join("\n</p><p>")
+          puts '</p>'
+        end
+        dumpFooter_HTML
+      end
       
     end
-    
+
   end
   
 end
 
 # If we were invoked directly
 if (__FILE__ == $0)
-  WEACE::Slave::dumpInstalledSlaveComponents_HTML
+  WEACE::Slave::Dump_HTML.new.dumpWEACESlaveInfo_HTML
 end

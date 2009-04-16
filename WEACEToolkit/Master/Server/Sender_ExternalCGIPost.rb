@@ -36,20 +36,20 @@ module WEACE
         if (lResult.response.is_a?(Net::HTTPOK))
           # Check the last line as it contains the error code
           lLinesResult = lResult.entity.strip.split("\n")
-          if (lLinesResult[-1] == 'EXIT: OK')
+          if (lLinesResult[-1] == 'CGI_EXIT: OK')
             log "POST successful to #{iURL}."
           else
             logErr "POST to #{iURL} ended in error."
-            logErr '===== Response (#{iURL}) ====='
+            logErr "===== Response (#{iURL}) ====="
             logErr lResult.entity
-            logErr '===== End of Response (#{iURL}) ====='
+            logErr "===== End of Response (#{iURL}) ====="
             rResult = false
           end
         else
           logErr "POST to #{iURL} ended in error: #{lResult.message}"
-          logErr '===== Response (#{iURL}) ====='
+          logErr "===== Response (#{iURL}) ====="
           logErr lResult.entity
-          logErr '===== End of Response (#{iURL}) ====='
+          logErr "===== End of Response (#{iURL}) ====="
           rResult = false
         end
         

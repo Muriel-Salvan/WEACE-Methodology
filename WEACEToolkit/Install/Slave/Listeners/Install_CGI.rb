@@ -65,9 +65,9 @@ lSerializedActions = lCgi['actions']
 # Call WEACE Slave Client
 require '#{$WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb'
 if (WEACE::Slave::Client.new.executeMarshalled(lUserID, lSerializedActions))
-  puts 'EXIT: OK'
+  puts 'CGI_EXIT: OK'
 else
-  puts 'EXIT: ERROR'
+  puts 'CGI_EXIT: ERROR'
 end
 "
             FileUtils.chmod(0755, lCGIScriptFileName)

@@ -1,6 +1,6 @@
 # Usage:
-# ruby -w ShowInstalledMasterAdapters.rb
-# Dumps the installed master adapters in an HTML page
+# ruby -w ShowWEACEMasterInfo.rb
+# Dumps WEACE Master info in an HTML page
 
 # Get WEACE base directory, and add it to the LOAD_PATH
 lOldDir = Dir.getwd
@@ -15,45 +15,16 @@ module WEACE
 
   module Master
   
-    # Dump HTML content of the installed adapters in STDOUT
-    def self.dumpInstalledMasterAdapters_HTML
-      puts '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-      puts '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">'
-      puts '  <title>WEACE Master Adapters installed in this provider</title>'
-      puts '  <style>'
-      puts '    body {'
-      puts '      font-family: Trebuchet MS,Georgia,"Times New Roman",serif;'
-      puts '      color:#303030;'
-      puts '      margin:10px;'
-      puts '    }'
-      puts '    h1 {'
-      puts '      font-size:1.5em;'
-      puts '    }'
-      puts '    h2 {'
-      puts '      font-size:1.2em;'
-      puts '    }'
-      puts '    h3 {'
-      puts '      font-size:1.0em;'
-      puts '    }'
-      puts '    h4 {'
-      puts '      font-size:0.9em;'
-      puts '    }'
-      puts '    p {' 
-      puts '      font-size:0.8em;' 
-      puts '    }' 
-      puts '  </style>' 
-      puts '<body>' 
-      
-      # Exception protected
-      begin
+    class Dump_HTML
+    
+      include WEACE::Toolbox
+  
+      # Dump Adapters info
+      def dumpInstalledMasterAdapters_HTML
         # Require the file registering WEACE Master Adapters
         require 'Master/Server/InstalledWEACEMasterAdapters.rb'
-        
         # Get the list
         lInstalledAdapters = WEACE::Master::getInstalledAdapters
-       
-        puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png"/></td></tr></table>'
-        puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACEMasterExplanation">More info about WEACE Master Server</a></p>'
         puts "<h1>#{lInstalledAdapters.size} products have installed WEACE Master Adapters:</h1>"
         puts '<ul>'
         lIdxProduct = 0
@@ -91,18 +62,60 @@ module WEACE
           puts '  </li>'
         end
         puts '</ul>'
-        puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png"/></td></tr></table>'
-
-      rescue Exception
-        puts "<p>Exception encountered while reading installed WEACE Master Adapters configuration: #{$!}</p>"
-        puts '<p>Callstack:</p>'
-        puts '<p>'
-        puts $!.backtrace.join("\n</p><p>")
-        puts '</p>'
       end
-
-      puts '</body>'
-      puts '</html>'
+      
+      # Dump known clients info
+      def dumpKnownSlaveClients_HTML
+        # Require the WEACE Master Server
+        require 'Master/Server/WEACEMasterServer.rb'
+        # Require the WEACE Master Server configuration
+        require 'Master/Server/config/Config.rb'
+        # Get config
+        lConfig = WEACE::Master::Config.new
+        WEACE::Master::getWEACEMasterServerConfig(lConfig)
+        puts "<h1>#{lConfig.RegisteredClients.size} clients registered in this WEACE Master provider:</h1>"
+        puts '<ul>'
+        lIdx = 0
+        lConfig.RegisteredClients.each do |iSlaveClientInfo|
+          iClientType, iClientTools, iClientParameters = iSlaveClientInfo
+          puts "  <li>Client n.#{lIdx}:"
+          puts '    <ul>'
+          puts "      <li>Type: #{iClientType}</li>"
+          # Don't display parameters, as they can contain passwords
+          # puts "      <li>Parameters: #{iClientParameters.inspect}</li>"
+          puts "      <li>#{iClientTools.size} tools are installed on this client:"
+          puts '        <ul>'
+          iClientTools.each do |iToolID|
+            puts "          <li>#{iToolID}</li>"
+          end
+          puts '        </ul>'
+          puts '      </li>'
+          puts '    </ul>'
+          puts '  </li>'
+          lIdx += 1
+        end
+        puts '</ul>'
+      end
+      
+      # Dump every info
+      def dumpWEACEMasterInfo_HTML
+        dumpHeader_HTML('WEACE Master information of this provider')
+        # Exception protected
+        begin
+          puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png"/></td></tr></table>'
+          puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACEMasterExplanation">More info about WEACE Master Server</a></p>'
+          dumpInstalledMasterAdapters_HTML
+          dumpKnownSlaveClients_HTML
+          puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png"/></td></tr></table>'
+        rescue Exception
+          puts "<p>Exception encountered while reading installed WEACE Master information: #{$!}</p>"
+          puts '<p>Callstack:</p>'
+          puts '<p>'
+          puts $!.backtrace.join("\n</p><p>")
+          puts '</p>'
+        end
+        dumpFooter_HTML
+      end
       
     end
     
@@ -112,5 +125,5 @@ end
 
 # If we were invoked directly
 if (__FILE__ == $0)
-  WEACE::Master::dumpInstalledMasterAdapters_HTML
+  WEACE::Master::Dump_HTML.new.dumpWEACEMasterInfo_HTML
 end
