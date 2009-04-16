@@ -97,7 +97,7 @@ module WEACE
       require 'fileutils'
       FileUtils.chmod(0700, lFileName)
       # Call the other session
-      execCmd("#{iShellCmd}; ruby -w #{$WEACEToolkitDir}/Execute.rb #{lFileName}")
+      execCmd("#{iShellCmd}; ruby -w #{$WEACEToolkitDir}/Execute.rb #{lFileName} 2>&1")
     end
   
     # Execute a command
