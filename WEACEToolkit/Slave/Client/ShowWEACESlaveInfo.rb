@@ -19,6 +19,21 @@ module WEACE
     
       include WEACE::Toolbox
   
+      # Dump Client info
+      def dumpSlaveClient_HTML
+        # Require the file containing WEACE Slave Info
+        require 'Master/Server/InstalledWEACESlaveComponents.rb'
+        # Get the info
+        lDescription = WEACE::Master::getInstallationDescription
+        puts '<h1>WEACE Slave Client installed:</h1>'
+        puts '<ul>'
+        puts "  <li>Installed on #{lDescription.Date}.</li>"
+        puts "  <li>Version: #{lDescription.Version}.</li>"
+        puts "  <li>#{lDescription.Description}</li>"
+        puts "  <li>Author: #{lDescription.Author}.</li>"
+        puts '</ul>'
+      end
+
       # Dump Adapters info
       def dumpInstalledSlaveAdapters_HTML
         # Require the file registering WEACE Slave Components
@@ -95,6 +110,7 @@ module WEACE
         begin
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
           puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACESlaveExplanation">More info about WEACE Slave Client</a></p>'
+          dumpSlaveClient_HTML
           dumpInstalledSlaveAdapters_HTML
           dumpInstalledSlaveListeners_HTML
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'

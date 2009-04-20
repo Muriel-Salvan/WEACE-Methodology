@@ -198,7 +198,7 @@ end
       lInstaller = getInstallerFromFile(iFileName, iClassName)
       # Get options
       begin
-        rDescription = WEACEInstall::ComponentDescription.new(iClassName)
+        rDescription = WEACEInstall::ComponentDescription.new(lInstaller)
         lInstaller.getDescription(rDescription)
       rescue Exception
         logErr "Error while getting description from file #{iFileName}: #{$!}"

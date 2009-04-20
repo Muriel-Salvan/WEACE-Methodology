@@ -19,10 +19,25 @@ module WEACE
     
       include WEACE::Toolbox
   
+       Dump Server info
+      def dumpMasterServer_HTML
+         Require the file containing WEACE Master Info
+        require 'Master/Server/InstalledWEACEMasterComponents.rb'
+         Get the info
+        lDescription = WEACE::Master::getInstallationDescription
+        puts '<h1>WEACE Master Server installed:</h1>'
+        puts '<ul>'
+        puts "  <li>Installed on #{lDescription.Date}.</li>"
+        puts "  <li>Version: #{lDescription.Version}.</li>"
+        puts "  <li>#{lDescription.Description}</li>"
+        puts "  <li>Author: #{lDescription.Author}.</li>"
+        puts '</ul>'
+      end
+
       # Dump Adapters info
       def dumpInstalledMasterAdapters_HTML
         # Require the file registering WEACE Master Adapters
-        require 'Master/Server/InstalledWEACEMasterAdapters.rb'
+        require 'Master/Server/InstalledWEACEMasterComponents.rb'
         # Get the list
         lInstalledAdapters = WEACE::Master::getInstalledAdapters
         puts "<h1>#{lInstalledAdapters.size} products have installed WEACE Master Adapters:</h1>"
@@ -104,6 +119,7 @@ module WEACE
         begin
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png"/></td></tr></table>'
           puts '<p><a href="http://weacemethod.sourceforge.net/wiki/index.php/WEACEMasterExplanation">More info about WEACE Master Server</a></p>'
+          dumpMasterServer_HTML
           dumpInstalledMasterAdapters_HTML
           dumpKnownSlaveClients_HTML
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png"/></td></tr></table>'

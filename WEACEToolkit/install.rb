@@ -20,7 +20,7 @@ Dir.chdir(lOldDir)
 $LOAD_PATH << $WEACEToolkitDir
 
 require 'WEACE_Common.rb'
-require 'WEACE_InstallCommon.rb'
+require 'Install/WEACE_InstallCommon.rb'
 
 module WEACEInstall
 
@@ -40,7 +40,7 @@ module WEACEInstall
     # * <em>map< ProductID, map< ToolID, map< ScriptID, ComponentDescription > > ></em>: The list of Adapters and their description
     def getAdaptersComponents(iDirectory)
       rComponents = {}
-      
+
       Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/*") do |iFileName1|
         if (File.directory?(iFileName1))
           lProductID = File.basename(iFileName1)
@@ -138,25 +138,25 @@ module WEACEInstall
       rWEACESlaveAdaptersInstalled = {}
       rWEACESlaveListenersInstalled = {}
       
-      if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb"))
-        # Require the file registering WEACE Master Adapters
+      if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb"))
+        # Require the file registering WEACE Master info
         begin
-          require 'Master/Server/InstalledWEACEMasterAdapters.rb'
+          require 'Master/Server/InstalledWEACEMasterComponents.rb'
           begin
             # Get the list
             rWEACEMasterServerInstalled = WEACE::Master::getInstallationDescription
             rWEACEMasterAdaptersInstalled = WEACE::Master::getInstalledAdapters
           rescue Exception
-            logErr "Error while getting installed WEACE Master Adapters from file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb: #{$!}"
+            logErr "Error while getting installed WEACE Master Adapters from file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb: #{$!}"
             logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Master Server and Adapters.'
           end
         rescue Exception
-          logErr "Error while loading file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterAdapters.rb: #{$!}"
+          logErr "Error while loading file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb: #{$!}"
           logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Master Server and Adapters.'
         end
       end
-      if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveAdapters.rb"))
-        # Require the file registering WEACE Slave Adapters and Listeners
+      if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb"))
+        # Require the file registering WEACE Slave info
         begin
           require 'Slave/Client/InstalledWEACESlaveComponents.rb'
           begin
@@ -448,7 +448,8 @@ module WEACEInstall
     # * _OptionParser_: The options parser
     def getOptions
       rOptions = OptionParser.new
-      
+
+      rOptions.banner = 'install.rb [-h|--help] [-v|--version] [-l|--list] [-i|--install <Component> -- <AdditionalParameters>]'
       # Options are defined here
       rOptions.on('-h', '--help',
         'Display help on this script.') do
@@ -482,6 +483,9 @@ module WEACEInstall
       $LogFile = "#{$WEACEToolkitDir}/Install/install.log"
       log ''
       log "> install.rb #{iParameters.join(' ')}"
+      @ComponentToInstall = nil
+      @OutputComponents = false
+      @OutputVersion = false
       lOptions = getOptions
       if (iParameters.size == 0)
         puts lOptions
@@ -512,10 +516,8 @@ module WEACEInstall
     end
     
   end
-  
+
 end
 
-# Create the installer
-lInstaller = WEACEInstall::Installer.new
-# Execute it
-lInstaller.execute(ARGV)
+# Create the installer, and execute it
+WEACEInstall::Installer.new.execute(ARGV)
