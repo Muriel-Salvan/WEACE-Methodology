@@ -17,22 +17,18 @@ module WEACEInstall
       
         module TicketTracker
         
-          class Test_Ticket_CloseDuplicate
+          class Test_Ticket_CloseDuplicate < Test::Unit::TestCase
+
+            include WEACEInstall::TestToolbox::Adapters
 
             # Test normal behaviour
-            #
-            # Parameters:
-            # * *iRepository* (_String_): The directory where the test repository has been created
-            def test_Normal(iRepository)
-              executeTest("--redminedir #{iRepository}/redmine-0.8.2 --ruby /usr/bin/ruby", 'Normal')
+            def testNormal
+              executeTest('TestSample', "--redminedir %{Repository}/redmine-0.8.2 --ruby /usr/bin/ruby", 'Normal')
             end
 
             # Test duplicate behaviour
-            #
-            # Parameters:
-            # * *iRepository* (_String_): The directory where the test repository has been created
-            def test_Duplicate(iRepository)
-              executeTest("--redminedir #{iRepository}/redmine-0.8.2 --ruby /usr/bin/ruby", 'Normal')
+            def testDuplicate
+              executeTest('Normal', "--redminedir %{Repository}/redmine-0.8.2 --ruby /usr/bin/ruby", 'Normal')
             end
 
           end

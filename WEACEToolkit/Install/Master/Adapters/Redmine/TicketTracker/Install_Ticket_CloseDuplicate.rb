@@ -77,7 +77,7 @@ module WEACEInstall
         end
         render :update do |page|
           page.redirect_to(:controller => 'issues', :action => 'show', :id => @issue)
-        end 
+        end
         return
       else
         @relation.save

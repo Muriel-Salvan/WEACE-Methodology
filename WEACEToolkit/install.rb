@@ -34,37 +34,24 @@ module WEACEInstall
     # Get the list of Adapters from a directory
     #
     # Parameters:
-    # * *iDirectory* (_String_): The directory to parse for Adapters
+    # * *iDirectory* (_String_): The directory to parse for Adapters (Master/Slave)
     # 
     # Return:
     # * <em>map< ProductID, map< ToolID, map< ScriptID, ComponentDescription > > ></em>: The list of Adapters and their description
     def getAdaptersComponents(iDirectory)
       rComponents = {}
 
-      Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/*") do |iFileName1|
-        if (File.directory?(iFileName1))
-          lProductID = File.basename(iFileName1)
-          Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/#{lProductID}/*") do |iFileName2|
-            if (File.directory?(iFileName2))
-              lToolID = File.basename(iFileName2)
-              Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/#{lProductID}/#{lToolID}/Install_*.rb") do |iFileName3|
-                if (!File.directory?(iFileName3))
-                  lScriptID = File.basename(iFileName3).match(/Install_(.*)\.rb/)[1]
-                  # Load description from this file
-                  lDescription = getDescriptionFromFile("Install/#{iDirectory}/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb", "WEACEInstall::#{iDirectory}::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}")
-                  if (lDescription != nil)
-                    if (rComponents[lProductID] == nil)
-                      rComponents[lProductID] = {}
-                    end
-                    if (rComponents[lProductID][lToolID] == nil)
-                      rComponents[lProductID][lToolID] = {}
-                    end
-                    rComponents[lProductID][lToolID][lScriptID] = lDescription
-                  end
-                end
-              end
-            end
+      eachAdapter(iDirectory) do |iProductID, iToolID, iScriptID|
+        # Load description from this file
+        lDescription = getDescriptionFromFile("Install/#{iDirectory}/Adapters/#{iProductID}/#{iToolID}/Install_#{iScriptID}.rb", "WEACEInstall::#{iDirectory}::Adapters::#{iProductID}::#{iToolID}::#{iScriptID}")
+        if (lDescription != nil)
+          if (rComponents[lProductID] == nil)
+            rComponents[lProductID] = {}
           end
+          if (rComponents[lProductID][lToolID] == nil)
+            rComponents[lProductID][lToolID] = {}
+          end
+          rComponents[lProductID][lToolID][lScriptID] = lDescription
         end
       end
       
@@ -519,5 +506,8 @@ module WEACEInstall
 
 end
 
-# Create the installer, and execute it
-WEACEInstall::Installer.new.execute(ARGV)
+# It is possible that we are required by the test framework
+if (__FILE__ == $0)
+  # Create the installer, and execute it
+  WEACEInstall::Installer.new.execute(ARGV)
+end

@@ -379,7 +379,3 @@ module WEACE
   end
 
 end
-
-# Add this directory to the load path.
-# This way it will be possible to require using this directory as reference.
-$LOAD_PATH << File.dirname(__FILE__)
