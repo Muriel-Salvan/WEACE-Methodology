@@ -21,26 +21,35 @@ module WEACEInstall
     include WEACE::Logging
     include WEACEInstall::Common
 
-    # Create classes
-    def createClasses
+    # Create classes for given adapters
+    #
+    # Parameters:
+    # * *iDirectory* (_String_): The directory in which we are looking for Adapters (Master|Slave)
+    def createAdapterClasses(iDirectory)
       # Parse all test cases, and create classes/methods for each one of them
-      eachAdapter('Master') do |iProductID, iToolID, iScriptID|
+      eachAdapter(iDirectory) do |iProductID, iToolID, iScriptID|
         # Test that a test suite exists for this Adapter
-        lTestFileName = "#{$WEACEToolkitDir}/Install/Master/Adapters/#{iProductID}/#{iToolID}/test/Test_Install_#{iScriptID}.rb"
+        lTestFileName = "#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/#{iProductID}/#{iToolID}/test/Test_Install_#{iScriptID}.rb"
         if (File.exists?(lTestFileName))
           # Require the test file
           begin
             log "Require test suite in #{lTestFileName}"
             require lTestFileName
           rescue Exception
-            logErr "WEACE Master Adapter #{iProductID}.#{iToolID}.#{iScriptID} test suite (#{lTestFileName}) could not be required: #{$!}"
+            logErr "WEACE #{iDirectory} Adapter #{iProductID}.#{iToolID}.#{iScriptID} test suite (#{lTestFileName}) could not be required: #{$!}"
             logErr $!.backtrace.join("\n")
             logErr 'Ignoring this test suite.'
           end
         else
-          logWarn "WEACE Master Adapter #{iProductID}.#{iToolID}.#{iScriptID} does not have any test suite."
+          logWarn "WEACE #{iDirectory} Adapter #{iProductID}.#{iToolID}.#{iScriptID} does not have any test suite."
         end
       end
+    end
+
+    # Create classes
+    def createClasses
+      createAdapterClasses('Master')
+      createAdapterClasses('Slave')
     end
 
   end
@@ -48,4 +57,10 @@ module WEACEInstall
 end
 
 $LogFile = nil
+if ((ARGV.include?('--verbose')) or
+    (ARGV.include?('-v')))
+  $LogIO = $stdout
+else
+  $LogIO = nil
+end
 WEACEInstall::TestCreator.new.createClasses

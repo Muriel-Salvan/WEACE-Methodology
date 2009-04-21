@@ -103,6 +103,7 @@ module WEACE
         lConfig = WEACE::Slave::Config.new
         WEACE::Slave::getWEACESlaveClientConfig(lConfig)
         $LogFile = lConfig.LogFile
+        $LogIO = $stdout
         log '== WEACE Slave Client called =='
         log "* User: #{iUserScriptID}"
         log "* #{iActions.size} tools to update:"

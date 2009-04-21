@@ -135,10 +135,12 @@ module WEACEInstall
             rWEACEMasterAdaptersInstalled = WEACE::Master::getInstalledAdapters
           rescue Exception
             logErr "Error while getting installed WEACE Master Adapters from file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb: #{$!}"
+            logErr $!.backtrace.join("\n")
             logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Master Server and Adapters.'
           end
         rescue Exception
           logErr "Error while loading file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb: #{$!}"
+          logErr $!.backtrace.join("\n")
           logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Master Server and Adapters.'
         end
       end
@@ -153,10 +155,12 @@ module WEACEInstall
             rWEACESlaveListenersInstalled = WEACE::Slave::getInstalledListeners
           rescue Exception
             logErr "Error while getting installed WEACE Slave Adapters and Listeners from file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb: #{$!}"
+            logErr $!.backtrace.join("\n")
             logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
           end
         rescue Exception
           logErr "Error while loading file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb: #{$!}"
+          logErr $!.backtrace.join("\n")
           logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
         end
       end
@@ -331,6 +335,7 @@ module WEACEInstall
         require iProviderEnvFileName
       rescue Exception
         logErr "Unable to load the environment from file \'#{iProviderEnvFileName}\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path."
+        logErr $!.backtrace.join("\n")
         raise
       end
       return eval("#{iClassName}.new")
@@ -468,6 +473,7 @@ module WEACEInstall
     def execute(iParameters)
       # Store a log file in the Install directory
       $LogFile = "#{$WEACEToolkitDir}/Install/install.log"
+      $LogIO = $stdout
       log ''
       log "> install.rb #{iParameters.join(' ')}"
       @ComponentToInstall = nil
@@ -482,7 +488,7 @@ module WEACEInstall
         lSuccess = true
         begin
           lOptions.parse(lInstallerArgs)
-        rescue
+        rescue Exception
           puts "Error while parsing arguments: #{$!}"
           puts lOptions
           lSuccess = false

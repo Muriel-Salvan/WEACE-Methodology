@@ -20,13 +20,14 @@ module WEACE
           # Create a new Ruby session to execute the executeSQL method in a new environment
           #
           # Parameters:
+          # * *iRedmineDir* (_String_): The directory where Redmine is installed
           # * *iMySQLHost* (_String_): The name of the MySQL host
           # * *iDBName* (_String_): The name of the database of Redmine
           # * *iDBUser* (_String_): The name of the database user
           # * *iDBPassword* (_String_): The password of the database user
           # * *Parameters* (<em>list<String></em>): Additional parameters
-          def execMySQLOtherSession(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-            execCmdOtherSession(". #{$WEACEToolkitDir}/Slave/Adapters/Redmine/DBEnv.sh", self, 'execMySQL', iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
+          def execMySQLOtherSession(iRedmineDir, iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
+            execCmdOtherSession(". #{iRedmineDir}/DBEnv.sh", self, 'execMySQL', iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
           end
 
           # Get the User ID based on its name

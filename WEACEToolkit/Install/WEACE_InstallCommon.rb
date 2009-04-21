@@ -57,8 +57,11 @@ module WEACEInstall
     # * *iVariable* (_Symbol_): The variable to feed with this option argument
     # * *Parameters*: The parameters to give to OptionParser.on
     def addVarOption(iVariable, *iParameters)
-      # Give access to iVariable
-      @Installer.class.module_eval("
+      # Avoid duplicates
+      if (@MandatoryVariables[iVariable] == nil)
+        if (!@Installer.class.method_defined?("getVar_#{iVariable}"))
+          # Give access to iVariable
+          @Installer.class.module_eval("
 def getVar_#{iVariable}
   return @#{iVariable}
 end
@@ -66,13 +69,18 @@ def setVar_#{iVariable}(iValue)
   @#{iVariable} = iValue
 end
 ")
+        end
+        # Create a little OptionParser to format the parameters correctly
+        lSingleOption = OptionParser.new
+        lSingleOption.on(*iParameters)
+        @MandatoryVariables[iVariable] = lSingleOption
+      else
+        # Add this option to the variable help: 2 options can define the same variable
+        @MandatoryVariables[iVariable].on(*iParameters)
+      end
       @Options.on(*iParameters) do |iArg|
         eval("@Installer.setVar_#{iVariable}(iArg)")
       end
-      # Create a little OptionParser to format the parameters correctly
-      lSingleOption = OptionParser.new
-      lSingleOption.on(*iParameters)
-      @MandatoryVariables[iVariable] = lSingleOption
     end
     
     # Check that mandatory variables are affected
@@ -167,12 +175,13 @@ end
         begin
           rInstaller = eval("#{iClassName}.new")
         rescue Exception
-          logErr "Error while getting installer from file #{iFileName}: #{$!}"
-          logErr "Check that class #{iClassName} is correctly defined in it."
+          logErr "Error while getting installer from file #{iFileName}: #{$!}. Check that class #{iClassName} is correctly defined in it."
+          logErr $!.backtrace.join("\n")
           logErr 'This file will be ignored.'
         end
       rescue Exception
         logErr "Error while requiring file #{iFileName}: #{$!}"
+        logErr $!.backtrace.join("\n")
         logErr 'This file will be ignored.'
       end
       
@@ -204,7 +213,8 @@ end
         lOptions.parse(lInstallerArgs)
       rescue
         logErr "Error while parsing arguments of the #{iClassName} installer: #{$!}"
-        puts lOptions.summarize
+        logErr $!.backtrace.join("\n")
+        logErr lOptions.summarize
         raise
       end
       # check mandatory variables
@@ -230,8 +240,8 @@ end
         rDescription = WEACEInstall::ComponentDescription.new(lInstaller)
         lInstaller.getDescription(rDescription)
       rescue Exception
-        logErr "Error while getting description from file #{iFileName}: #{$!}"
-        logErr "Check that method #{iClassName}.getDescription is correctly defined in it."
+        logErr "Error while getting description from file #{iFileName}: #{$!}. Check that method #{iClassName}.getDescription is correctly defined in it."
+        logErr $!.backtrace.join("\n")
         logErr 'This file will be ignored.'
         rDescription = nil
       end

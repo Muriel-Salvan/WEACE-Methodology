@@ -329,13 +329,7 @@ module WEACE
     # Parameters:
     # * *iMessage* (_String_): The message to log
     def log(iMessage)
-      iCompleteMessage = "[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - #{iMessage}"
-      puts iCompleteMessage
-      if ($LogFile != nil)
-        File.open($LogFile, 'a') do |iFile|
-          iFile << "#{iCompleteMessage}\n"
-        end
-      end
+      logInternal("[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - #{iMessage}")
     end
 
     # Log something as an error
@@ -343,13 +337,7 @@ module WEACE
     # Parameters:
     # * *iMessage* (_String_): The message to log
     def logErr(iMessage)
-      iCompleteMessage = "[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - !!! ERROR !!! - #{iMessage}"
-      puts iCompleteMessage
-      if ($LogFile != nil)
-        File.open($LogFile, 'a') do |iFile|
-          iFile << "#{iCompleteMessage}\n"
-        end
-      end
+      logInternal("[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - !!! ERROR !!! - #{iMessage}")
     end
     
     # Log something as an exception
@@ -367,15 +355,24 @@ module WEACE
     # Parameters:
     # * *iMessage* (_String_): The message to log
     def logWarn(iMessage)
-      iCompleteMessage = "[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - ! WARNING ! - #{iMessage}"
-      puts iCompleteMessage
+      logInternal("[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - ! WARNING ! - #{iMessage}")
+    end
+    
+    # Log something (internal use only)
+    #
+    # Parameters:
+    # * *iMessage* (_String_): The message to log
+    def logInternal(iMessage)
+      if ($LogIO != nil)
+        $LogIO.puts iMessage
+      end
       if ($LogFile != nil)
         File.open($LogFile, 'a') do |iFile|
-          iFile << "#{iCompleteMessage}\n"
+          iFile << "#{iMessage}\n"
         end
       end
     end
-    
+
   end
 
 end

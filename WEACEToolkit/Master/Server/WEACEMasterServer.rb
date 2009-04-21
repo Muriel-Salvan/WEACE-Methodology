@@ -113,6 +113,7 @@ module WEACE
         lConfig = WEACE::Master::Config.new
         WEACE::Master::getWEACEMasterServerConfig(lConfig)
         $LogFile = lConfig.LogFile
+        $LogIO = $stdout
         log '== WEACE Master Server called =='
         log "* User: #{iUserScriptID}"
         log "* Script: #{iScriptID}"

@@ -20,6 +20,7 @@ module WEACE
       ioConfig.addWEACESlaveAdapter(
         Product_Redmine,
         Tools_TicketTracker,
+        '/home/groups/m/my/myproject/redmine',
         'mysql-r',
         'redminedb',
         'dbuser',

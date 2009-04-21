@@ -36,12 +36,15 @@ module WEACEInstall
       #
       # Parameters:
       # * *iLine* (_String_): The line containing variables
+      # * *iContext* (<em>map< String, String ></em>): The map of variables to be replaced by their values
       # Return:
       # * _String_: The line with variables replaced
-      def replaceVars(iLine)
-        rResult = iLine.gsub('%{WEACEToolkitDir}', $WEACEToolkitDir)
+      def replaceVars(iLine, iContext)
+        rResult = iLine.clone
 
-        rResult.gsub!('%{ProviderCGIURL}', 'http://mytest.com/cgi')
+        iContext.each do |iVariable, iValue|
+          rResult.gsub!("%{#{iVariable}}", iValue)
+        end
         rResult.gsub!('%%', '%')
 
         return rResult
@@ -56,9 +59,10 @@ module WEACEInstall
       # Parameters:
       # * *iFile1* (_String_): First directory
       # * *iFile2* (_String_): Second directory
+      # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
       # Return:
       # * _Boolean_: Are files the same ?
-      def compareFiles(iFile1, iFile2)
+      def compareFiles(iFile1, iFile2, iVarContext)
         rResult = false
 
         lContent1 = nil
@@ -73,9 +77,7 @@ module WEACEInstall
           rResult = true
           (0..lContent1.size-1).each do |iIdx|
             # Replace variables in lContent1 and lContent2
-            lReference = lContent2[iIdx].gsub('%{WEACEToolkitDir}', $WEACEToolkitDir)
-            lReference.gsub!('%{ProviderCGIURL}', 'http://mytest.com/cgi')
-            lReference.gsub!('%%', '%')
+            lReference = replaceVars(lContent2[iIdx], iVarContext)
             # Look for a regexp
             if (lContent2[iIdx][0..1] == '%/')
               # Remove the %/ .. / characters
@@ -109,9 +111,10 @@ module WEACEInstall
       # Parameters:
       # * *iDir1* (_String_): First directory
       # * *iDir2* (_String_): Second directory
+      # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
       # Return:
       # * _Boolean_: Are directories the same ?
-      def compareDirs(iDir1, iDir2)
+      def compareDirs(iDir1, iDir2, iVarContext)
         rResult = false
 
         # First, the contents
@@ -166,7 +169,7 @@ module WEACEInstall
           if (rResult)
             # Now we compare each directory
             lDirs.each do |iDir|
-              rResult = compareDirs("#{iDir1}/#{iDir}", "#{iDir2}/#{iDir}")
+              rResult = compareDirs("#{iDir1}/#{iDir}", "#{iDir2}/#{iDir}", iVarContext)
               if (!rResult)
                 break
               end
@@ -174,7 +177,7 @@ module WEACEInstall
             if (rResult)
               # Now we compare each file
               lFiles.each do |iFile|
-                rResult = compareFiles("#{iDir1}/#{iFile}", "#{iDir2}/#{iFile}")
+                rResult = compareFiles("#{iDir1}/#{iFile}", "#{iDir2}/#{iFile}", iVarContext)
                 if (!rResult)
                   break
                 end
@@ -193,14 +196,15 @@ module WEACEInstall
       # Parameters:
       # * *iSrcDir* (_String_): Source directory
       # * *iDstDir* (_String_): Destination directory
-      def copyDir(iSrcDir, iDstDir)
+      # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
+      def copyDir(iSrcDir, iDstDir, iVarContext)
         FileUtils.mkdir_p(iDstDir)
         Dir.glob("#{iSrcDir}/*").each do |iFileName|
           lBaseName = File.basename(iFileName)
           if (File.directory?(iFileName))
             # Ignore .svn directory
             if (lBaseName != '.svn')
-              copyDir(iFileName, "#{iDstDir}/#{lBaseName}")
+              copyDir(iFileName, "#{iDstDir}/#{lBaseName}", iVarContext)
             end
           else
             # Copy a file, eventually replacing variables in it
@@ -210,7 +214,7 @@ module WEACEInstall
             end
             File.open("#{iDstDir}/#{lBaseName}", 'w') do |iFile|
               lContent.each do |iLine|
-                iFile << replaceVars(iLine)
+                iFile << replaceVars(iLine, iVarContext)
               end
             end
           end
@@ -232,7 +236,6 @@ module WEACEInstall
         else
           lType, lProductID, lToolID, lScriptID = lMatchData[1..4]
           lRepositoriesDir = "#{$WEACEToolkitDir}/Install/#{lType}/Adapters/#{lProductID}/#{lToolID}/test/#{lScriptID}"
-          # 1. Copy the repository in a temporary folder to execute the test on
           # Get the test name
           lTestName = 'unknown'
           caller.each do |iLine|
@@ -242,39 +245,47 @@ module WEACEInstall
             end
           end
           lRepositoryDir = "#{Dir.tmpdir}/WEACETesting/#{lType}/#{lProductID}/#{lToolID}/#{lScriptID}/test#{lTestName}"
+          # 1. Create the variables context.
+          # They are variables and values that can be replaced in the command line and the source and reference repository files
+          lVarsContext = {}
+          lVarsContext['Repository'] = lRepositoryDir
+          lVarsContext['WEACEToolkitDir'] = $WEACEToolkitDir
+          lVarsContext['ProviderCGIURL'] = 'http://mytest.com/cgi'
+          # 2. Copy the repository in a temporary folder to execute the test on
           log "Create temporary repository in #{lRepositoryDir}"
           # Copy files without SVN contents
-          copyDir("#{lRepositoriesDir}/#{iRepositoryName}", lRepositoryDir)
-          # 2. Execute the testing
+          copyDir("#{lRepositoriesDir}/#{iRepositoryName}", lRepositoryDir, lVarsContext)
+          # 3. Execute the testing
           lComponentName = "WEACE#{lType}Adapter.#{lProductID}.#{lToolID}.#{lScriptID}"
           log "Execute installation of component #{lComponentName}"
           require 'install.rb'
           lProviderEnv = DummyProviderEnv.new
           lProviderEnv.ProviderType = 'Test'
           lProviderEnv.CGIURL = 'http://mytest.com/cgi'
-          lParameters = iCmdLine.gsub(/%\{Repository\}/, lRepositoryDir).split(' ')
-          lFileName = "Install/Master/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
-          lClassName = "WEACEInstall::Master::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
+          lParameters = replaceVars(iCmdLine, lVarsContext).split(' ')
+          lFileName = "Install/#{lType}/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
+          lClassName = "WEACEInstall::#{lType}::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
           lSuccess = true
           begin
             WEACEInstall::Installer.new.installComponentFromFile(lComponentName, lFileName, lClassName, lParameters, lProviderEnv)
           rescue Exception
             logErr "Exception while installing component #{lComponentName}: #{$!}"
+            logErr $!.backtrace.join("\n")
             lSuccess = false
           end
-          # 3. Compare the repository with the reference
+          # 4. Compare the repository with the reference
           if (lSuccess)
             log "Compare repositories for component #{lComponentName} with reference #{iRepositoryReferenceName}"
-            lSuccess = compareDirs(lRepositoryDir, "#{lRepositoriesDir}/#{iRepositoryReferenceName}")
+            lSuccess = compareDirs(lRepositoryDir, "#{lRepositoriesDir}/#{iRepositoryReferenceName}", lVarsContext)
           end
-          # 4. Delete the temporary directory
+          # 5. Delete the temporary directory
           if (lSuccess)
             log "Delete temporary repository #{lRepositoryDir}"
             FileUtils.rm_rf(lRepositoryDir)
           else
             logWarn "Temporary repository #{lRepositoryDir} is not deleted for investigation purposes."
           end
-          # 5. Give the result
+          # 6. Give the result
           assert(lSuccess)
         end
       end
