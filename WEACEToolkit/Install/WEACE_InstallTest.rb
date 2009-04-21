@@ -36,13 +36,12 @@ module WEACEInstall
       #
       # Parameters:
       # * *iLine* (_String_): The line containing variables
-      # * *iContext* (<em>map< String, String ></em>): The map of variables to be replaced by their values
       # Return:
       # * _String_: The line with variables replaced
-      def replaceVars(iLine, iContext)
+      def replaceVars(iLine)
         rResult = iLine.clone
 
-        iContext.each do |iVariable, iValue|
+        @ContextVars.each do |iVariable, iValue|
           rResult.gsub!("%{#{iVariable}}", iValue)
         end
         rResult.gsub!('%%', '%')
@@ -62,7 +61,7 @@ module WEACEInstall
       # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
       # Return:
       # * _Boolean_: Are files the same ?
-      def compareFiles(iFile1, iFile2, iVarContext)
+      def compareFiles(iFile1, iFile2)
         rResult = false
 
         lContent1 = nil
@@ -77,7 +76,7 @@ module WEACEInstall
           rResult = true
           (0..lContent1.size-1).each do |iIdx|
             # Replace variables in lContent1 and lContent2
-            lReference = replaceVars(lContent2[iIdx], iVarContext)
+            lReference = replaceVars(lContent2[iIdx])
             # Look for a regexp
             if (lContent2[iIdx][0..1] == '%/')
               # Remove the %/ .. / characters
@@ -111,10 +110,9 @@ module WEACEInstall
       # Parameters:
       # * *iDir1* (_String_): First directory
       # * *iDir2* (_String_): Second directory
-      # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
       # Return:
       # * _Boolean_: Are directories the same ?
-      def compareDirs(iDir1, iDir2, iVarContext)
+      def compareDirs(iDir1, iDir2)
         rResult = false
 
         # First, the contents
@@ -169,7 +167,7 @@ module WEACEInstall
           if (rResult)
             # Now we compare each directory
             lDirs.each do |iDir|
-              rResult = compareDirs("#{iDir1}/#{iDir}", "#{iDir2}/#{iDir}", iVarContext)
+              rResult = compareDirs("#{iDir1}/#{iDir}", "#{iDir2}/#{iDir}")
               if (!rResult)
                 break
               end
@@ -177,7 +175,7 @@ module WEACEInstall
             if (rResult)
               # Now we compare each file
               lFiles.each do |iFile|
-                rResult = compareFiles("#{iDir1}/#{iFile}", "#{iDir2}/#{iFile}", iVarContext)
+                rResult = compareFiles("#{iDir1}/#{iFile}", "#{iDir2}/#{iFile}")
                 if (!rResult)
                   break
                 end
@@ -196,15 +194,14 @@ module WEACEInstall
       # Parameters:
       # * *iSrcDir* (_String_): Source directory
       # * *iDstDir* (_String_): Destination directory
-      # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
-      def copyDir(iSrcDir, iDstDir, iVarContext)
+      def copyDir(iSrcDir, iDstDir)
         FileUtils.mkdir_p(iDstDir)
         Dir.glob("#{iSrcDir}/*").each do |iFileName|
           lBaseName = File.basename(iFileName)
           if (File.directory?(iFileName))
             # Ignore .svn directory
             if (lBaseName != '.svn')
-              copyDir(iFileName, "#{iDstDir}/#{lBaseName}", iVarContext)
+              copyDir(iFileName, "#{iDstDir}/#{lBaseName}")
             end
           else
             # Copy a file, eventually replacing variables in it
@@ -214,10 +211,103 @@ module WEACEInstall
             end
             File.open("#{iDstDir}/#{lBaseName}", 'w') do |iFile|
               lContent.each do |iLine|
-                iFile << replaceVars(iLine, iVarContext)
+                iFile << replaceVars(iLine)
               end
             end
           end
+        end
+      end
+      
+      # Get details about the test case currently running (based on the class name)
+      #
+      # Return:
+      # * _String_: The type (Master|Slave)
+      # * _String_: The Product ID
+      # * _String_: The Tool ID
+      # * _String_: The Script ID
+      # * _String_: The test case name
+      def getTestDetails
+        rType = nil
+        rProductID = nil
+        rToolID = nil
+        rScriptID = nil
+        rTestName = 'unknown'
+        
+        # Get the ID of the test, based on its class name
+        lMatchData = self.class.name.match(/^WEACEInstall::(.*)::Adapters::(.*)::(.*)::Test_(.*)$/)
+        if (lMatchData == nil)
+          logExc "Testing class (#{self.class.name}) is not of the form WEACEInstall::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
+        else
+          rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
+        end
+        # Remove the beginning 'test' from the method name
+        rTestName = @method_name[4..-1]
+        
+        return rType, rProductID, rToolID, rScriptID, rTestName
+      end
+      
+      # Setup each test
+      def setup
+        # The map of variables that will be replaced by their values in the test files and command lines
+        #   map< Symbol, Object >
+        @ContextVars = {
+          'WEACEToolkitDir' => $WEACEToolkitDir,
+          'ProviderCGIURL' => 'http://mytest.com/cgi'
+        }
+        @Type, @ProductID, @ToolID, @ScriptID, @TestName = getTestDetails
+        @ComponentName = "WEACE#{@Type}Adapter.#{@ProductID}.#{@ToolID}.#{@ScriptID}"
+        @TestSuccess = true
+        log "Running test for #{@ComponentName}: Test #{@TestName}"
+      end
+      
+      # Finalize each test
+      def teardown
+        assert(@TestSuccess)
+      end
+
+      # Setup a temporary repository as an image of a given repository.
+      # The repository is then deleted once the code block finishes.
+      #
+      # Parameters:
+      # * *iRepositoryName* (_String_): Name of the repository to use as an image.
+      # * *CodeBlock*: Code called once the repository is created.
+      # ** *iRepositoryDir* (_String_): Directory to the created temporary repository
+      def setupRepository(iRepositoryName)
+        if ((defined?(@RepositoryDir)) and
+            (@RepositoryDir != nil))
+          logExc "A repository has already been setup in this test case: #{@RepositoryDir}. You can not cascade repository setups."
+        end
+        @RepositoriesDir = "#{$WEACEToolkitDir}/Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/test/#{@ScriptID}"
+        @RepositoryDir = "#{Dir.tmpdir}/WEACETesting/#{@Type}/#{@ProductID}/#{@ToolID}/#{@ScriptID}/test#{@TestName}"
+        @ContextVars['Repository'] = @RepositoryDir
+        # Copy the repository in a temporary folder to execute the test on
+        log "Create temporary repository in #{@RepositoryDir}"
+        # Copy files without SVN contents
+        copyDir("#{@RepositoriesDir}/#{iRepositoryName}", @RepositoryDir)
+        # Call the code block
+        yield(@RepositoryDir)
+        # Clean up if everything went ok
+        if (@TestSuccess)
+          log "Delete temporary repository #{@RepositoryDir}"
+          FileUtils.rm_rf(@RepositoryDir)
+        else
+          logWarn "Temporary repository #{@RepositoryDir} is not deleted for investigation purposes."
+        end
+        @RepositoryDir = nil
+      end
+
+      # Compare the current repository with a reference repository
+      #
+      # Parameters:
+      # * *iRepositoryName* (_String_): Name of the repository to use as a reference.
+      def compareWithRepository(iRepositoryName)
+        if ((!defined?(@RepositoryDir)) or
+            (@RepositoryDir == nil))
+          logExc "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
+        end
+        if (@TestSuccess)
+          log "Compare repositories for component #{@ComponentName} with reference #{iRepositoryName}"
+          @TestSuccess = compareDirs(@RepositoryDir, "#{@RepositoriesDir}/#{iRepositoryName}")
         end
       end
 
@@ -225,68 +315,22 @@ module WEACEInstall
       # This is called by test cases.
       #
       # Parameters:
-      # * *iRepositoryName* (_String_): Name of the repository to use the script on.
       # * *iCmdLine* (_String_): The command line to give the installer to test.
-      # * *iRepositoryReference* (_String_): Name of the repository to use as a reference.
-      def executeTest(iRepositoryName, iCmdLine, iRepositoryReferenceName)
-        # Get the ID of the test, based on its class name
-        lMatchData = self.class.name.match(/^WEACEInstall::(.*)::Adapters::(.*)::(.*)::Test_(.*)$/)
-        if (lMatchData == nil)
-          logErr "Testing class (#{self.class.name}) is not of the form WEACEInstall::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
-        else
-          lType, lProductID, lToolID, lScriptID = lMatchData[1..4]
-          lRepositoriesDir = "#{$WEACEToolkitDir}/Install/#{lType}/Adapters/#{lProductID}/#{lToolID}/test/#{lScriptID}"
-          # Get the test name
-          lTestName = 'unknown'
-          caller.each do |iLine|
-            lMatch = iLine.match(/^.*\`test(.*)'$/)
-            if (lMatch != nil)
-              lTestName = lMatch[1]
-            end
-          end
-          lRepositoryDir = "#{Dir.tmpdir}/WEACETesting/#{lType}/#{lProductID}/#{lToolID}/#{lScriptID}/test#{lTestName}"
-          # 1. Create the variables context.
-          # They are variables and values that can be replaced in the command line and the source and reference repository files
-          lVarsContext = {}
-          lVarsContext['Repository'] = lRepositoryDir
-          lVarsContext['WEACEToolkitDir'] = $WEACEToolkitDir
-          lVarsContext['ProviderCGIURL'] = 'http://mytest.com/cgi'
-          # 2. Copy the repository in a temporary folder to execute the test on
-          log "Create temporary repository in #{lRepositoryDir}"
-          # Copy files without SVN contents
-          copyDir("#{lRepositoriesDir}/#{iRepositoryName}", lRepositoryDir, lVarsContext)
-          # 3. Execute the testing
-          lComponentName = "WEACE#{lType}Adapter.#{lProductID}.#{lToolID}.#{lScriptID}"
-          log "Execute installation of component #{lComponentName}"
-          require 'install.rb'
-          lProviderEnv = DummyProviderEnv.new
-          lProviderEnv.ProviderType = 'Test'
-          lProviderEnv.CGIURL = 'http://mytest.com/cgi'
-          lParameters = replaceVars(iCmdLine, lVarsContext).split(' ')
-          lFileName = "Install/#{lType}/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
-          lClassName = "WEACEInstall::#{lType}::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
-          lSuccess = true
-          begin
-            WEACEInstall::Installer.new.installComponentFromFile(lComponentName, lFileName, lClassName, lParameters, lProviderEnv)
-          rescue Exception
-            logErr "Exception while installing component #{lComponentName}: #{$!}"
-            logErr $!.backtrace.join("\n")
-            lSuccess = false
-          end
-          # 4. Compare the repository with the reference
-          if (lSuccess)
-            log "Compare repositories for component #{lComponentName} with reference #{iRepositoryReferenceName}"
-            lSuccess = compareDirs(lRepositoryDir, "#{lRepositoriesDir}/#{iRepositoryReferenceName}", lVarsContext)
-          end
-          # 5. Delete the temporary directory
-          if (lSuccess)
-            log "Delete temporary repository #{lRepositoryDir}"
-            FileUtils.rm_rf(lRepositoryDir)
-          else
-            logWarn "Temporary repository #{lRepositoryDir} is not deleted for investigation purposes."
-          end
-          # 6. Give the result
-          assert(lSuccess)
+      def executeAdapterInstallTest(iCmdLine)
+        log "Execute installation of component #{@ComponentName}"
+        require 'install.rb'
+        lProviderEnv = DummyProviderEnv.new
+        lProviderEnv.ProviderType = 'Test'
+        lProviderEnv.CGIURL = @ContextVars['ProviderCGIURL']
+        lParameters = replaceVars(iCmdLine).split(' ')
+        lFileName = "Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/Install_#{@ScriptID}.rb"
+        lClassName = "WEACEInstall::#{@Type}::Adapters::#{@ProductID}::#{@ToolID}::#{@ScriptID}"
+        begin
+          WEACEInstall::Installer.new.installComponentFromFile(@ComponentName, lFileName, lClassName, lParameters, lProviderEnv)
+        rescue Exception
+          logErr "Exception while installing component #{@ComponentName}: #{$!}"
+          logErr $!.backtrace.join("\n")
+          @TestSuccess = false
         end
       end
 

@@ -23,12 +23,18 @@ module WEACEInstall
 
             # Test normal behaviour
             def testNormal
-              executeTest('TestSample', "--redminedir %{Repository}/redmine-0.8.2 --ruby /usr/bin/ruby", 'Normal')
+              setupRepository('Virgin') do |iRepositoryDir|
+                executeAdapterInstallTest("--redminedir #{iRepositoryDir}/redmine-0.8.2 --ruby /usr/bin/ruby")
+                compareWithRepository('Normal')
+              end
             end
 
             # Test duplicate behaviour
             def testDuplicate
-              executeTest('Normal', "--redminedir %{Repository}/redmine-0.8.2 --ruby /usr/bin/ruby", 'Normal')
+              setupRepository('Normal') do |iRepositoryDir|
+                executeAdapterInstallTest("--redminedir #{iRepositoryDir}/redmine-0.8.2 --ruby /usr/bin/ruby")
+                compareWithRepository('Normal')
+              end
             end
 
           end

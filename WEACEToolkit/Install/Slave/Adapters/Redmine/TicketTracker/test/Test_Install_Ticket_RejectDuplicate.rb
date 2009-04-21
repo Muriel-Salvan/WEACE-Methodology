@@ -23,12 +23,18 @@ module WEACEInstall
 
             # Test normal behaviour
             def testNormal
-              executeTest('TestSample', "--redminedir %{Repository}/redmine-0.8.2 --rubygemslib %{Repository}/rubygems/lib --gems %{Repository}/rubygems/gems --mysql %{Repository}/mysql/lib", 'Normal')
+              setupRepository('Virgin') do |iRepositoryDir|
+                executeAdapterInstallTest("--redminedir #{iRepositoryDir}/redmine-0.8.2 --rubygemslib #{iRepositoryDir}/rubygems/lib --gems #{iRepositoryDir}/rubygems/gems --mysql #{iRepositoryDir}/mysql/lib")
+                compareWithRepository('Normal')
+              end
             end
 
             # Test duplicate behaviour
             def testDuplicate
-              executeTest('Normal', "--redminedir %{Repository}/redmine-0.8.2  --rubygemslib %{Repository}/rubygems/lib --gems %{Repository}/rubygems/gems --mysql %{Repository}/mysql/lib", 'Normal')
+              setupRepository('Normal') do |iRepositoryDir|
+                executeAdapterInstallTest("--redminedir #{iRepositoryDir}/redmine-0.8.2 --rubygemslib #{iRepositoryDir}/rubygems/lib --gems #{iRepositoryDir}/rubygems/gems --mysql #{iRepositoryDir}/mysql/lib")
+                compareWithRepository('Normal')
+              end
             end
 
           end

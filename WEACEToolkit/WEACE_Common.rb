@@ -164,7 +164,7 @@ end
     # * *iDBPassword* (_String_): The password of the database user
     # * *Parameters* (<em>list<String></em>): Additional parameters
     def execMySQL(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-      # Go on
+      # Go on with real MySQL library
       require 'rubygems'
       require 'mysql'
       # Connect to the db
