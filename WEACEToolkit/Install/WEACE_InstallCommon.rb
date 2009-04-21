@@ -103,33 +103,6 @@ end
   
   module Common
 
-    # Iterate through installed Adapters in the filesystem
-    #
-    # Parameters:
-    # * *iDirectory* (_String_): The directory to parse for Adapters (Master/Slave)
-    # * *CodeBlock*: The code to call for each directory found. Parameters:
-    # ** *iProductID* (_String_): The product ID
-    # ** *iToolID* (_String_): The tool ID
-    # ** *iScriptID* (_String_): The script ID
-    def eachAdapter(iDirectory)
-      Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/*") do |iFileName1|
-        if (File.directory?(iFileName1))
-          lProductID = File.basename(iFileName1)
-          Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/#{lProductID}/*") do |iFileName2|
-            if (File.directory?(iFileName2))
-              lToolID = File.basename(iFileName2)
-              Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Adapters/#{lProductID}/#{lToolID}/Install_*.rb") do |iFileName3|
-                if (!File.directory?(iFileName3))
-                  lScriptID = File.basename(iFileName3).match(/Install_(.*)\.rb/)[1]
-                  yield(lProductID, lToolID, lScriptID)
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-
     # Split parameters, before and after the first -- encountered
     #
     # Parameters:

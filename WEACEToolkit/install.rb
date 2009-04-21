@@ -41,7 +41,7 @@ module WEACEInstall
     def getAdaptersComponents(iDirectory)
       rComponents = {}
 
-      eachAdapter(iDirectory) do |iProductID, iToolID, iScriptID|
+      eachAdapter(iDirectory, true) do |iProductID, iToolID, iScriptID|
         # Load description from this file
         lDescription = getDescriptionFromFile("Install/#{iDirectory}/Adapters/#{iProductID}/#{iToolID}/Install_#{iScriptID}.rb", "WEACEInstall::#{iDirectory}::Adapters::#{iProductID}::#{iToolID}::#{iScriptID}")
         if (lDescription != nil)

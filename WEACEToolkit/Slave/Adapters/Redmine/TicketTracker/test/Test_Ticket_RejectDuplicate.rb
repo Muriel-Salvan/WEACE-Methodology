@@ -25,12 +25,15 @@ module WEACE
             def testNormal
               setupRepository('Virgin') do |iRepositoryDir|
                 setupMySQL('Virgin') do |iDBHost, iDBName, iDBUser, iDBPassword|
-                  executeAdapterTest(
-                    :RedmineDir => "#{iRepositoryDir}/redmine-0.8.2",
-                    :DBHost => iDBHost,
-                    :DBName => iDBName,
-                    :DBUser => iDBUser,
-                    :DBPassword => iDBPassword)
+                  executeSlaveAdapterTest({
+                      :RedmineDir => "#{iRepositoryDir}/redmine-0.8.2",
+                      :DBHost => iDBHost,
+                      :DBName => iDBName,
+                      :DBUser => iDBUser,
+                      :DBPassword => iDBPassword
+                    },
+                    '1',
+                    '2')
                   compareWithMySQL('Normal')
                 end
                 compareWithRepository('Virgin')

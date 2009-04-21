@@ -159,18 +159,20 @@ module WEACE
                 log "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
                 # Require the correct adapter file for the given action
                 begin
-                  require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                  require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iActionID}.rb"
                   begin
                     lAdapter = eval("#{iProductID}::#{iToolID}::#{iActionID}.new")
                     instantiateVars(lAdapter, iProductParameters)
                     lAdapter.execute(iUserScriptID, *iActionParameters)
                     log 'Adapter completed action without error.'
                   rescue RuntimeError
-                    logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                    logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb: #{$!}."
+                    logErr $!.backtrace.join("\n")
                     lErrors << "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                   end
                 rescue RuntimeError
-                  logErr "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                  logErr "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb: #{$!}."
+                  logErr $!.backtrace.join("\n")
                   lErrors << "Unable to load the Slave Adapter Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                 end
               else

@@ -19,7 +19,7 @@ module WEACEInstall
         
           class Test_Ticket_RejectDuplicate < Test::Unit::TestCase
 
-            include WEACEInstall::TestToolbox::Adapters
+            include WEACE::TestToolbox::Adapters
 
             # Test normal behaviour
             def testNormal

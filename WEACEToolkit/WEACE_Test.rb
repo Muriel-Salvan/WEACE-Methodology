@@ -11,7 +11,7 @@ require 'WEACE_Common.rb'
 require 'fileutils'
 require 'tmpdir'
 
-module WEACEInstall
+module WEACE
 
   # This module contains every tool needed for test cases
   module TestToolbox
@@ -226,24 +226,33 @@ module WEACEInstall
       # * _String_: The Tool ID
       # * _String_: The Script ID
       # * _String_: The test case name
+      # * _Boolean_: Does this test case test installation scripts ?
       def getTestDetails
         rType = nil
         rProductID = nil
         rToolID = nil
         rScriptID = nil
         rTestName = 'unknown'
+        rInstallTest = nil
         
         # Get the ID of the test, based on its class name
         lMatchData = self.class.name.match(/^WEACEInstall::(.*)::Adapters::(.*)::(.*)::Test_(.*)$/)
         if (lMatchData == nil)
-          logExc "Testing class (#{self.class.name}) is not of the form WEACEInstall::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
+          lMatchData = self.class.name.match(/^WEACE::(.*)::Adapters::(.*)::(.*)::Test_(.*)$/)
+          if (lMatchData == nil)
+            logExc "Testing class (#{self.class.name}) is not of the form WEACE[Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
+          else
+            rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
+            rInstallTest = false
+          end
         else
           rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
+          rInstallTest = true
         end
         # Remove the beginning 'test' from the method name
         rTestName = @method_name[4..-1]
         
-        return rType, rProductID, rToolID, rScriptID, rTestName
+        return rType, rProductID, rToolID, rScriptID, rTestName, rInstallTest
       end
       
       # Setup each test
@@ -254,10 +263,14 @@ module WEACEInstall
           'WEACEToolkitDir' => $WEACEToolkitDir,
           'ProviderCGIURL' => 'http://mytest.com/cgi'
         }
-        @Type, @ProductID, @ToolID, @ScriptID, @TestName = getTestDetails
+        @Type, @ProductID, @ToolID, @ScriptID, @TestName, @InstallTest = getTestDetails
         @ComponentName = "WEACE#{@Type}Adapter.#{@ProductID}.#{@ToolID}.#{@ScriptID}"
         @TestSuccess = true
-        log "Running test for #{@ComponentName}: Test #{@TestName}"
+        if (@InstallTest)
+          log "Running test for installation of #{@ComponentName}: Test #{@TestName}"
+        else
+          log "Running test for #{@ComponentName}: Test #{@TestName}"
+        end
       end
       
       # Finalize each test
@@ -277,8 +290,13 @@ module WEACEInstall
             (@RepositoryDir != nil))
           logExc "A repository has already been setup in this test case: #{@RepositoryDir}. You can not cascade repository setups."
         end
-        @RepositoriesDir = "#{$WEACEToolkitDir}/Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/test/#{@ScriptID}"
-        @RepositoryDir = "#{Dir.tmpdir}/WEACETesting/#{@Type}/#{@ProductID}/#{@ToolID}/#{@ScriptID}/test#{@TestName}"
+        if (@InstallTest)
+          @RepositoriesDir = "#{$WEACEToolkitDir}/Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/test/#{@ScriptID}"
+          @RepositoryDir = "#{Dir.tmpdir}/WEACETesting/#{@Type}/#{@ProductID}/#{@ToolID}/#{@ScriptID}/testInstall#{@TestName}"
+        else
+          @RepositoriesDir = "#{$WEACEToolkitDir}/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/test/#{@ScriptID}"
+          @RepositoryDir = "#{Dir.tmpdir}/WEACETesting/#{@Type}/#{@ProductID}/#{@ToolID}/#{@ScriptID}/test#{@TestName}"
+        end
         @ContextVars['Repository'] = @RepositoryDir
         # Copy the repository in a temporary folder to execute the test on
         log "Create temporary repository in #{@RepositoryDir}"
@@ -312,7 +330,7 @@ module WEACEInstall
       end
 
       # Execute a test.
-      # This is called by test cases.
+      # This is called by test cases of adapters' installation scripts.
       #
       # Parameters:
       # * *iCmdLine* (_String_): The command line to give the installer to test.
@@ -329,6 +347,33 @@ module WEACEInstall
           WEACEInstall::Installer.new.installComponentFromFile(@ComponentName, lFileName, lClassName, lParameters, lProviderEnv)
         rescue Exception
           logErr "Exception while installing component #{@ComponentName}: #{$!}"
+          logErr $!.backtrace.join("\n")
+          @TestSuccess = false
+        end
+      end
+
+      # Execute a test.
+      # This is called by test cases of normal WEACE Slave Adapters.
+      #
+      # Parameters:
+      # * *iProductParameters* (<em>map<Symbol,Object></em>): The map of product parameters to give the Adapter
+      # * *Parameters*: List of additional Action parameters
+      def executeSlaveAdapterTest(iProductParameters, *iActionParameters)
+        log "Execute component #{@ComponentName}"
+        # Require the correct adapter file for the given action
+        begin
+          require "Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb"
+          begin
+            lAdapter = eval("#{@ProductID}::#{@ToolID}::#{@ActionID}.new")
+            instantiateVars(lAdapter, iProductParameters)
+            lAdapter.execute(iUserScriptID, *iActionParameters)
+          rescue Exception
+            logErr "Error while executing Adapter #{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb: #{$!}."
+            logErr $!.backtrace.join("\n")
+            @TestSuccess = false
+          end
+        rescue RuntimeError
+          logErr "Unable to load the Slave Adapter Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb: #{$!}."
           logErr $!.backtrace.join("\n")
           @TestSuccess = false
         end
