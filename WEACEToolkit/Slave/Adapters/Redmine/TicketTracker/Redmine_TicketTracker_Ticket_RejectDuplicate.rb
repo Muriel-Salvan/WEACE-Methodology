@@ -112,15 +112,15 @@ module Redmine
       #
       # Parameters:
       # * *iUserID* (_String_): User ID of the script adding this info
-      # * *iRedmineDir* (_String_): The directory where Redmine is installed
-      # * *iMySQLHost* (_String_): The name of the MySQL host
-      # * *iDBName* (_String_): The name of the database of Redmine
-      # * *iDBUser* (_String_): The name of the database user
-      # * *iDBPassword* (_String_): The password of the database user
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
-      def execute(iUserID, iRedmineDir, iMySQLHost, iDBName, iDBUser, iDBPassword, iMasterTicketID, iSlaveTicketID)
-        execMySQLOtherSession(iRedmineDir, iMySQLHost, iDBName, iDBUser, iDBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
+      def execute(iUserID, iMasterTicketID, iSlaveTicketID)
+        checkVar(:RedmineDir, 'The directory where Redmine is installed')
+        checkVar(:DBHost, 'The name of the MySQL host')
+        checkVar(:DBName, 'The name of the database of Redmine')
+        checkVar(:DBUser, 'The name of the database user')
+        checkVar(:DBPassword, 'The password of the database user')
+        execMySQLOtherSession(@RedmineDir, @DBHost, @DBName, @DBUser, @DBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
       end
       
     end

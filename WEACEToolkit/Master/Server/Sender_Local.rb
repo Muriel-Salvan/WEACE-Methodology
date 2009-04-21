@@ -20,26 +20,27 @@ module WEACE
       # Parameters:
       # * *iUserScriptID* (_String_): The user ID of the script
       # * *iSlaveActions* (<em>map< ToolID, list< ActionID, Parameters > ></em>): The map of actions to send to the Slave Client
-      # * *iWEACEToolkitDir* (_String_): The installation directory of the WEACE toolkit
       # Return:
       # * _Boolean_: Has sending been performed successfully ?
-      def sendMessage(iUserScriptID, iSlaveActions, iWEACEToolkitDir)
+      def sendMessage(iUserScriptID, iSlaveActions)
+        checkVar(:WEACEToolkitDir, 'The installation directory of the WEACE Slave Toolkit')
         # Try requiring directly the Slave Client
         begin
-          require "#{iWEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
+          require "#{@WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
         rescue RuntimeError
-          puts "!!! Unable to require file #{iWEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
+          logErr "Unable to require file #{@WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb: #{$!}."
+          logErr $!.backtrace.join("\n")
           return false
         end
         # Save the Log file location before, and restore it after
         lOldLogFile = $LogFile
         lOldLogIO = $LogIO = $stdout
         # Call the Slave Client directly
-        lSuccess = WEACE::Slave::Client.new.execute(iUserScriptID, iSlaveActions)
+        rSuccess = WEACE::Slave::Client.new.execute(iUserScriptID, iSlaveActions)
         $LogFile = lOldLogFile
         $LogIO = lOldLogIO
         
-        return lSuccess
+        return rSuccess
       end
       
     end

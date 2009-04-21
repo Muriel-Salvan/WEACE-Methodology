@@ -48,15 +48,8 @@ module WEACE
       # Parameters:
       # * *iType* (_String_): The adapter product type
       # * *iTool* (_String_): The tool for which this adapter adapts
-      # * *iParams* (_Parameters_): Following parameters:
-      # ** If (iType == Product_Mediawiki):
-      # *** *iMediawikiInstallDir* (_String_): The directory where Mediawiki has been installed
-      # ** If (iType == Product_Redmine):
-      # *** *iMySQLHost* (_String_): The name of the MySQL host
-      # *** *iDBName* (_String_): The name of the database of Redmine
-      # *** *iDBUser* (_String_): The name of the database user
-      # *** *iDBPassword* (_String_): The pasword of the database user
-      def addWEACESlaveAdapter(iType, iTool, *iParams)
+      # * *iParams* (<em>map<Symbol,Object></em>): Additional parameters (refer to the documentation of Adapters to know parameters)
+      def addWEACESlaveAdapter(iType, iTool, iParams)
         @RegisteredAdapters << [ iType, iTool, iParams ]
       end
       
@@ -164,13 +157,13 @@ module WEACE
                 log "* Tool: #{iToolID}"
                 log "* Adapter: #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                 log "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
-                lParameters = iProductParameters + iActionParameters
-                log "* Adapter parameters: #{lParameters.inspect}"
                 # Require the correct adapter file for the given action
                 begin
                   require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
                   begin
-                    eval("#{iProductID}::#{iToolID}::#{iActionID}.new.execute(iUserScriptID, *lParameters)")
+                    lAdapter = eval("#{iProductID}::#{iToolID}::#{iActionID}.new")
+                    instantiateVars(lAdapter, iProductParameters)
+                    lAdapter.execute(iUserScriptID, *iActionParameters)
                     log 'Adapter completed action without error.'
                   rescue RuntimeError
                     logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"

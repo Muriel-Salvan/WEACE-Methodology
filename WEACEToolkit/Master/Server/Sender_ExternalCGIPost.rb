@@ -18,38 +18,39 @@ module WEACE
     class Sender_ExternalCGIPost
     
       include WEACE::Logging
+      include WEACE::Toolbox
       
       # Parameters:
       # * *iUserScriptID* (_String_): The user ID of the script
       # * *iSlaveActions* (<em>map< ToolID, list< ActionID, Parameters > ></em>): The map of actions to send to the Slave Client
-      # * *iURL* (_String_): The URL to post to
       # Return:
       # * _Boolean_: Has sending been performed successfully ?
-      def sendMessage(iUserScriptID, iSlaveActions, iURL)
+      def sendMessage(iUserScriptID, iSlaveActions)
         rResult = true
 
+        checkVar(:ExternalCGIURL, 'The URL of the CGI script where Actions will be posted')
         require 'net/http'
         require 'uri'
-        lParsedURL = URI.parse(iURL)
+        lParsedURL = URI.parse(@ExternalCGIURL)
         lData = Marshal.dump(iSlaveActions)
         lResult = Net::HTTP.post_form(lParsedURL, {'userid' => iUserScriptID, 'actions' => lData} )
         if (lResult.response.is_a?(Net::HTTPOK))
           # Check the last line as it contains the error code
           lLinesResult = lResult.entity.strip.split("\n")
           if (lLinesResult[-1] == 'CGI_EXIT: OK')
-            log "POST successful to #{iURL}."
+            log "POST successful to #{@ExternalCGIURL}."
           else
-            logErr "POST to #{iURL} ended in error."
-            logErr "===== Response (#{iURL}) ====="
+            logErr "POST to #{@ExternalCGIURL} ended in error."
+            logErr "===== Response (#{@ExternalCGIURL}) ====="
             logErr lResult.entity
-            logErr "===== End of Response (#{iURL}) ====="
+            logErr "===== End of Response (#{@ExternalCGIURL}) ====="
             rResult = false
           end
         else
-          logErr "POST to #{iURL} ended in error: #{lResult.message}"
-          logErr "===== Response (#{iURL}) ====="
+          logErr "POST to #{@ExternalCGIURL} ended in error: #{lResult.message}"
+          logErr "===== Response (#{@ExternalCGIURL}) ====="
           logErr lResult.entity
-          logErr "===== End of Response (#{iURL}) ====="
+          logErr "===== End of Response (#{@ExternalCGIURL}) ====="
           rResult = false
         end
         

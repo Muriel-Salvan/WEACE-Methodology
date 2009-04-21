@@ -55,10 +55,8 @@ module WEACE
       # Parameters:
       # * *iType* (_String_): The client type
       # * *iTools* (<em>list<String></em>): The list of tools installed on this client
-      # * *iParams* (_Parameters_): Following parameters:
-      # ** If (iType == ClientType_Local):
-      # *** *iWEACEToolkitDir* (_String_): The installation directory of the WEACE toolkit
-      def addWEACESlaveClient(iType, iTools, *iParams)
+      # * *iParams* (<em>map<Symbol,Object></em>): Additional parameters (refer to the documentation of Senders to know parameters)
+      def addWEACESlaveClient(iType, iTools, iParams)
         @RegisteredClients << [ iType, iTools, iParams ]
       end
       
@@ -167,7 +165,8 @@ module WEACE
             # Send them, calling the correct sender, depending on the Slave Client type
             lSender = eval("Sender_#{iClientType}.new")
             log "Send update to client #{iClientType}: #{iClientParameters.inspect} ..."
-            lSuccess = lSender.sendMessage(iUserScriptID, lSlaveActionsForClient, *iClientParameters)
+            instantiateVars(lSender, iClientParameters)
+            lSuccess = lSender.sendMessage(iUserScriptID, lSlaveActionsForClient)
             if (!lSuccess)
               lErrors << "Unable to send the update to client #{iClientType}: #{iClientParameters.inspect}"
               log "... Failure to send update to client #{iClientType}: #{iClientParameters.inspect}"

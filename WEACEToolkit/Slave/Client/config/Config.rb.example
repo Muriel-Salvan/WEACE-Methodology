@@ -15,16 +15,16 @@ module WEACE
       ioConfig.addWEACESlaveAdapter(
         Product_Mediawiki,
         Tools_Wiki,
-        '/home/groups/m/my/myproject/htdocs/wiki'
+        :MediaWikiDir => '/home/groups/m/my/myproject/htdocs/wiki'
       )
       ioConfig.addWEACESlaveAdapter(
         Product_Redmine,
         Tools_TicketTracker,
-        '/home/groups/m/my/myproject/redmine',
-        'mysql-r',
-        'redminedb',
-        'dbuser',
-        'dbpassword'
+        :RedmineDir => '/home/groups/m/my/myproject/redmine',
+        :DBHost => 'mysql-r',
+        :DBName => 'redminedb',
+        :DBUser => 'dbuser',
+        :DBPassword => 'dbpassword'
       )
       ioConfig.LogFile = '/home/groups/m/my/myproject/persistent/tmp/WEACESlaveClient.log'
     end

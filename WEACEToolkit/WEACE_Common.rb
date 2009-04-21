@@ -81,7 +81,39 @@ module WEACE
     
   end
 
+  # Various methods used broadly
   module Toolbox
+
+    # Check that an instance variable has been correctly instantiated, and give a good looking exception otherwise.
+    #
+    # Parameters:
+    # * *iVariable* (_Symbol_): The variable we are looking for.
+    # * *iDescription* (_String_): The description of this variable. This will appear in the eventual error message.
+    def checkVar(iVariable, iDescription)
+      if (!self.instance_variable_defined?(iVariable))
+        logExc "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
+      end
+    end
+
+    # Store a map of variable names and their corresponding values as instance variables of a given class
+    #
+    # Parameters:
+    # * *iObject* (_Object_): Object where we want to instantiate those variables
+    # * *iVars* (<em>map<Symbol,Object></em>): The map of variables and their values
+    def instantiateVars(iObject, iVars)
+      iVars.each do |iVariable, iValue|
+        # Define the setter if needed
+        if (!iObject.class.method_defined?("setInstanceVar_#{iVariable}"))
+          iObject.class.module_eval("
+def setInstanceVar_#{iVariable}(iValue)
+  @#{iVariable} = iValue
+end
+")
+        end
+        # Set the value
+        eval("iObject.setInstanceVar_#{iVariable}(iValue)")
+      end
+    end
   
     # Dump HTML header
     #
