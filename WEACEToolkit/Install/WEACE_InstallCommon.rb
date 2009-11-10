@@ -14,8 +14,6 @@ module WEACEInstall
   # Class encapsulating a Component's description
   class ComponentDescription
   
-    include WEACE::Logging
-  
     # The options
     #   OptionParser
     attr_accessor :Options
@@ -95,7 +93,8 @@ end
         end
       end
       if (lFailure)
-        logExc RuntimeError, 'Some mandatory options were missing.'
+        logErr 'Some mandatory options were missing.'
+        raise RuntimeError, 'Some mandatory options were missing.'
       end
     end
     
@@ -174,7 +173,8 @@ end
       # First, get the installer
       rInstaller = getInstallerFromFile(iFileName, iClassName)
       if (rInstaller == nil)
-        logExc RuntimeError, "Could not get an installer from file #{iFileName}. Check that class #{iClassName} is correctly defined in it."
+        logErr "Could not get an installer from file #{iFileName}. Check that class #{iClassName} is correctly defined in it."
+        raise RuntimeError, "Could not get an installer from file #{iFileName}. Check that class #{iClassName} is correctly defined in it."
       end
       # Get the options
       lDescription = WEACEInstall::ComponentDescription.new(rInstaller)
@@ -185,9 +185,7 @@ end
       begin
         lOptions.parse(lInstallerArgs)
       rescue
-        logErr "Error while parsing arguments of the #{iClassName} installer: #{$!}"
-        logErr $!.backtrace.join("\n")
-        logErr lOptions.summarize
+        logExc $!, "Error while parsing arguments of the #{iClassName} installer.\n#{lOptions.summarize}."
         raise
       end
       # check mandatory variables

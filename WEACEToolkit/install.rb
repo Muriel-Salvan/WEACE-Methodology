@@ -8,8 +8,6 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-$WEACEToolkitVersion = '0.0.1.20090414'
-
 require 'optparse'
 
 # Get WEACE base directory (in absolute form), and add it to the LOAD_PATH
@@ -27,7 +25,6 @@ module WEACEInstall
   # Main Installer class
   class Installer
   
-    include WEACE::Logging
     include WEACE::Toolbox
     include WEACEInstall::Common
       
@@ -261,7 +258,7 @@ module WEACEInstall
     # * *iScriptID* (_String_): The Script ID
     # * *iDescription* (_ComponentDescription_): The description
     def registerNewAdapter(iFileName, iProductID, iToolID, iScriptID, iDescription)
-      log "Register WEACE Adapter #{iProductID}.#{iToolID}.#{iScriptID} in file #{iFileName} ..."
+      logDebug "Register WEACE Adapter #{iProductID}.#{iToolID}.#{iScriptID} in file #{iFileName} ..."
       modifyFile(iFileName,
         /getInstalledAdapters/,
         "
@@ -301,7 +298,7 @@ module WEACEInstall
     # * *iListenerID* (_String_): The Listener ID
     # * *iDescription* (_ComponentDescription_): The description
     def registerNewListener(iFileName, iListenerID, iDescription)
-      log "Register WEACE Slave Listener #{iListenerID} in file #{iFileName} ..."
+      logDebug "Register WEACE Slave Listener #{iListenerID} in file #{iFileName} ..."
       modifyFile(iFileName,
         /getInstalledListeners/,
         "
@@ -330,12 +327,11 @@ module WEACEInstall
     # Return:
     # * _ProviderEnv_: The specific environment
     def getProviderEnv(iProviderEnvFileName, iClassName)
-      log "Read the provider environment generated during the WEACE Master Server's installation (#{iProviderEnvFileName}) ..."
+      logDebug "Read the provider environment generated during the WEACE Master Server's installation (#{iProviderEnvFileName}) ..."
       begin
         require iProviderEnvFileName
       rescue Exception
-        logErr "Unable to load the environment from file \'#{iProviderEnvFileName}\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path."
-        logErr $!.backtrace.join("\n")
+        logExc $!, "Unable to load the environment from file \'#{iProviderEnvFileName}\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path."
         raise
       end
       return eval("#{iClassName}.new")
@@ -350,7 +346,7 @@ module WEACEInstall
     # * *iParameters* (<em>list<String></em>): The list of parameters to give the installer
     # * *iProviderEnv* (_ProviderEnv_): The specific provider environment, or nil if none
     def installComponentFromFile(iComponentName, iFileName, iClassName, iParameters, iProviderEnv)
-      log "Install Component #{iComponentName} with parameters: #{iParameters.inspect}"
+      logDebug "Install Component #{iComponentName} with parameters: #{iParameters.inspect}"
       lInstaller, lAdditionalArgs = getInitializedInstallerFromFile(iFileName, iClassName, iParameters)
       # And now execute the installer code
       if (iProviderEnv != nil)
@@ -366,7 +362,7 @@ module WEACEInstall
     # * *iComponent* (_String_): Component name
     # * *iParameters* (<em>list<String></em>): The list of parameters for this installation
     def installComponent(iComponent, iParameters)
-      log "=== Install Component #{iComponent}(#{iParameters.inspect}) ..."
+      logInfo "=== Install Component #{iComponent}(#{iParameters.inspect}) ..."
       case iComponent
       when 'WEACEMasterServer'
         installComponentFromFile(iComponent, 'Install/Master/Server/Install_WEACEMasterServer.rb', 'WEACEInstall::Master::Server', iParameters, nil)
@@ -389,7 +385,8 @@ module WEACEInstall
             lDescription = getDescriptionFromFile(lFileName, lClassName)
             registerNewAdapter("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb", lProductID, lToolID, lScriptID, lDescription)
           else
-            logExc RuntimeError, 'You must first install WEACE Master Server.'
+            logErr 'You must first install WEACE Master Server.'
+            raise RuntimeError, 'You must first install WEACE Master Server.'
           end
         else
           lSlaveAdapterMatch = iComponent.match(/^WEACESlaveAdapter\.(.*)\.(.*)\.(.*)$/)
@@ -406,7 +403,8 @@ module WEACEInstall
               lDescription = getDescriptionFromFile(lFileName, lClassName)
               registerNewAdapter("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb", lProductID, lToolID, lScriptID, lDescription)
             else
-              logExc RuntimeError, 'You must first install WEACE Slave Client.'
+              logErr 'You must first install WEACE Slave Client.'
+              raise RuntimeError, 'You must first install WEACE Slave Client.'
             end
           else
             lSlaveListenerMatch = iComponent.match(/^WEACESlaveListener\.(.*)$/)
@@ -423,15 +421,17 @@ module WEACEInstall
                 lDescription = getDescriptionFromFile(lFileName, lClassName)
                 registerNewListener("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb", lListenerID, lDescription)
               else
-                logExc RuntimeError, 'You must first install WEACE Slave Client.'
+                logErr 'You must first install WEACE Slave Client.'
+                raise RuntimeError, 'You must first install WEACE Slave Client.'
               end
             else
-              logExc RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
+              logErr "Unknown component named #{iComponent}: check possible components with --list option."
+              raise RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
             end
           end
         end
       end
-      log "=== Component #{iComponent}(#{iParameters.inspect}) installed successfully."
+      logInfo "=== Component #{iComponent}(#{iParameters.inspect}) installed successfully."
     end
     
     # Get options of this installer
@@ -471,11 +471,13 @@ module WEACEInstall
     # Parameters:
     # * *iParameters* (<em>list<String></em>): Parameters given to the installer
     def execute(iParameters)
+      # Initialize logging
+      require 'rUtilAnts/Logging'
+      RUtilAnts::Logging::initializeLogging($WEACEToolkitDir, 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+      activateLogDebug(true)
       # Store a log file in the Install directory
-      $LogFile = "#{$WEACEToolkitDir}/Install/install.log"
-      $LogIO = $stdout
-      log ''
-      log "> install.rb #{iParameters.join(' ')}"
+      setLogFile("#{$WEACEToolkitDir}/Install/install.log")
+      logDebug "> install.rb #{iParameters.join(' ')}"
       @ComponentToInstall = nil
       @OutputComponents = false
       @OutputVersion = false
@@ -496,7 +498,19 @@ module WEACEInstall
         if (lSuccess)
           # Execute what was asked by the options
           if (@OutputVersion)
-            puts $WEACEToolkitVersion
+            # Read version info
+            lReleaseInfo = {
+              :Version => 'Development',
+              :Tags => [],
+              :DevStatus => 'Unofficial'
+            }
+            lReleaseInfoFileName = "#{$WEACEToolkitDir}/ReleaseInfo"
+            if (File.exists?(lReleaseInfoFileName))
+              File.open(lReleaseInfoFileName, 'r') do |iFile|
+                lReleaseInfo = eval(iFile.read)
+              end
+            end
+            puts lReleaseInfo[:Version]
           end
           if (@OutputComponents)
             outputComponents

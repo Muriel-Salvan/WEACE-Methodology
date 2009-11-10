@@ -57,8 +57,6 @@ module WEACE
     
     class Client
     
-      include WEACE::Logging
-      
       # Execute the server with the configuration given serialized
       #
       # Parameters:
@@ -95,28 +93,27 @@ module WEACE
         end
         lConfig = WEACE::Slave::Config.new
         WEACE::Slave::getWEACESlaveClientConfig(lConfig)
-        $LogFile = lConfig.LogFile
-        $LogIO = $stdout
-        log '== WEACE Slave Client called =='
-        log "* User: #{iUserScriptID}"
-        log "* #{iActions.size} tools to update:"
+        setLogFile(lConfig.LogFile)
+        logInfo '== WEACE Slave Client called =='
+        logDebug "* User: #{iUserScriptID}"
+        logDebug "* #{iActions.size} tools to update:"
         iActions.each do |iToolID, iActionsList|
-          log "** For #{iToolID}: #{iActionsList.size} actions:"
+          logDebug "** For #{iToolID}: #{iActionsList.size} actions:"
           iActionsList.each do |iActionInfo|
             iActionID, iActionParameters = iActionInfo
-            log "*** #{iActionID} (#{iActionParameters.inspect})"
+            logDebug "*** #{iActionID} (#{iActionParameters.inspect})"
           end
         end
-        log "#{lConfig.RegisteredAdapters.size} adapters configuration:"
+        logDebug "#{lConfig.RegisteredAdapters.size} adapters configuration:"
         # map< ToolID, list< [ ProductID, Parameters ] > >
         lAdapterPerTool = {}
         lIdx = 0
         lConfig.RegisteredAdapters.each do |iAdapterInfo|
           iProductID, iToolID, iParameters = iAdapterInfo
-          log "* Adapter n.#{lIdx}:"
-          log "** Product: #{iProductID}"
-          log "** Tool: #{iToolID}"
-          log "** Parameters: #{iParameters.inspect}"
+          logDebug "* Adapter n.#{lIdx}:"
+          logDebug "** Product: #{iProductID}"
+          logDebug "** Tool: #{iToolID}"
+          logDebug "** Parameters: #{iParameters.inspect}"
           lIdx += 1
           # Profit from this loop to index adapters per ToolID
           if (lAdapterPerTool[iToolID] == nil)
@@ -149,14 +146,14 @@ module WEACE
                 end
               end
               if (lAdapterFound)
-                log 'Executing action on a product using an adapter:'
-                log "* Action: #{iActionID}"
-                log "* Action parameters: #{iActionParameters.inspect}"
-                log "* Product: #{iProductID}"
-                log "* Product config: #{iProductParameters.inspect}"
-                log "* Tool: #{iToolID}"
-                log "* Adapter: #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
-                log "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
+                logDebug 'Executing action on a product using an adapter:'
+                logDebug "* Action: #{iActionID}"
+                logDebug "* Action parameters: #{iActionParameters.inspect}"
+                logDebug "* Product: #{iProductID}"
+                logDebug "* Product config: #{iProductParameters.inspect}"
+                logDebug "* Tool: #{iToolID}"
+                logDebug "* Adapter: #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb"
+                logDebug "* Adapter method: #{iProductID}::#{iToolID}::#{iActionID}::execute"
                 # Require the correct adapter file for the given action
                 begin
                   require "Slave/Adapters/#{iProductID}/#{iToolID}/#{iActionID}.rb"
@@ -164,7 +161,7 @@ module WEACE
                     lAdapter = eval("#{iProductID}::#{iToolID}::#{iActionID}.new")
                     instantiateVars(lAdapter, iProductParameters)
                     lAdapter.execute(iUserScriptID, *iActionParameters)
-                    log 'Adapter completed action without error.'
+                    logDebug 'Adapter completed action without error.'
                   rescue RuntimeError
                     logErr "Error while executing Adapter #{iProductID}/#{iToolID}/#{iProductID}_#{iToolID}_#{iActionID}.rb: #{$!}."
                     logErr $!.backtrace.join("\n")
@@ -186,7 +183,7 @@ module WEACE
           logErr lErrors.join("\n")
           return false
         end
-        log '== WEACE Slave Client completed successfully =='
+        logInfo '== WEACE Slave Client completed successfully =='
         return true
       end
       

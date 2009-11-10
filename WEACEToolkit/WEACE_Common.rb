@@ -125,7 +125,8 @@ module WEACE
     # * *iDescription* (_String_): The description of this variable. This will appear in the eventual error message.
     def checkVar(iVariable, iDescription)
       if (!self.instance_variable_defined?(iVariable))
-        logExc "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
+        logErr "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
+        raise RuntimeError, "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
       end
     end
 
@@ -224,7 +225,7 @@ end
     def execCmdOtherSession(iShellCmd, iObject, iFunctionName, *iParameters)
       # Create an object that we will serialize, containing all needded information for the session
       lInfo = MethodCallInfo.new
-      lInfo.LogFile = $LogFile
+      lInfo.LogFile = getLogFile
       lInfo.RequireFiles = $".clone
       lInfo.LoadPath = $LOAD_PATH.clone
       lMethodDetails = MethodCallInfo::MethodDetails.new
@@ -253,7 +254,8 @@ end
       lOutput = `#{iCmd}`
       lErrorCode = $?
       if (lErrorCode != 0)
-        logExc RuntimeError, "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
+        logErr "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
+        raise RuntimeError, "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
       end
     end
     
@@ -270,7 +272,7 @@ end
     # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ?
     # ** *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed.
     def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions = {})
-      log "Modify file #{iFileName} ..."
+      logDebug "Modify file #{iFileName} ..."
       if (iOptions[:NoBackup] == nil)
         # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
         lBackupName = "#{iFileName}.WEACEBackup"
@@ -313,9 +315,11 @@ end
       end
       # If we didn't find both of them, stop it
       if (lIdxBegin == nil)
-        logExc "Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification."
+        logErr "Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification."
+        raise RuntimeError, "Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification."
       elsif (lIdxEnd == nil)
-        logExc "Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification."
+        logErr "Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification."
+        raise RuntimeError, "Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification."
       else
         # Ensure that new lines separate the content of iNewLines, and each line terminates with a \n
         lNewLines = nil
@@ -378,67 +382,15 @@ end
           rescue Exception
             # Revert the file content
             FileUtils.cp("#{iFileName}.WEACEBackup", iFileName)
-            logExc RuntimeError, "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
+            logErr "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
+            raise RuntimeError, "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
           end
-          log "File #{iFileName} modified successfully."
+          logDebug "File #{iFileName} modified successfully."
         end
       end
       
     end
     
-  end
-
-  module Logging
-  
-    # Log something
-    #
-    # Parameters:
-    # * *iMessage* (_String_): The message to log
-    def log(iMessage)
-      logInternal("[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - #{iMessage}")
-    end
-
-    # Log something as an error
-    #
-    # Parameters:
-    # * *iMessage* (_String_): The message to log
-    def logErr(iMessage)
-      logInternal("[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - !!! ERROR !!! - #{iMessage}")
-    end
-    
-    # Log something as an exception
-    #
-    # Parameters:
-    # * *iError* (_Exception_): The exception to raise
-    # * *iMessage* (_String_): The message to log
-    def logExc(iError, iMessage)
-      logErr iMessage
-      raise iError, iMessage
-    end
-    
-    # Log something as a warning
-    #
-    # Parameters:
-    # * *iMessage* (_String_): The message to log
-    def logWarn(iMessage)
-      logInternal("[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - ! WARNING ! - #{iMessage}")
-    end
-    
-    # Log something (internal use only)
-    #
-    # Parameters:
-    # * *iMessage* (_String_): The message to log
-    def logInternal(iMessage)
-      if ($LogIO != nil)
-        $LogIO.puts iMessage
-      end
-      if ($LogFile != nil)
-        File.open($LogFile, 'a') do |iFile|
-          iFile << "#{iMessage}\n"
-        end
-      end
-    end
-
   end
 
 end

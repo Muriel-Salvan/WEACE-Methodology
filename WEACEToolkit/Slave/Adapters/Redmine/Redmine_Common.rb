@@ -53,7 +53,8 @@ module WEACE
                   (iUserName == 'Scripts_Developer'))
                 rUserID = createUser(iSQL, iUserName)
               else
-                logExc RuntimeError, "User #{iUserName} is not allowed to perform operations."
+                logErr "User #{iUserName} is not allowed to perform operations."
+                raise RuntimeError, "User #{iUserName} is not allowed to perform operations."
               end
             end
             

@@ -33,9 +33,8 @@ module WEACE
     end
     # Remove the file
     FileUtils.rm_f(iFileName)
-    # 1. Set the $LogFile
-    $LogIO = $stdout
-    $LogFile = lInfo.LogFile
+    # 1. Set the log file
+    setLogFile(lInfo.LogFile)
     # 2. Set the load path
     lInfo.LoadPath.each do |iDir|
       if (!$LOAD_PATH.include?(iDir))

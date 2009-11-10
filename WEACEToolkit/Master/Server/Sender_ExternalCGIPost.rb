@@ -17,7 +17,6 @@ module WEACE
     # Class that sends messages to an URL in a CGI script via POST HTTP method
     class Sender_ExternalCGIPost
     
-      include WEACE::Logging
       include WEACE::Toolbox
       
       # Parameters:
@@ -38,7 +37,7 @@ module WEACE
           # Check the last line as it contains the error code
           lLinesResult = lResult.entity.strip.split("\n")
           if (lLinesResult[-1] == 'CGI_EXIT: OK')
-            log "POST successful to #{@ExternalCGIURL}."
+            logDebug "POST successful to #{@ExternalCGIURL}."
           else
             logErr "POST to #{@ExternalCGIURL} ended in error."
             logErr "===== Response (#{@ExternalCGIURL}) ====="

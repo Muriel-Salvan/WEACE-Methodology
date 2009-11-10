@@ -16,7 +16,6 @@ module Redmine
   
     class Ticket_RejectDuplicate
     
-      include WEACE::Logging
       include WEACE::Toolbox
       include WEACE::Slave::Adapters::Redmine::Common
       

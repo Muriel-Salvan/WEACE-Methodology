@@ -18,7 +18,6 @@ module WEACE
   # This class creates other classes for test cases
   class TestCreator
 
-    include WEACE::Logging
     include WEACE::Toolbox
 
     # Create classes for given adapters
@@ -39,16 +38,15 @@ module WEACE
       eachAdapter(iDirectory, iInstallDir) do |iProductID, iToolID, iScriptID|
         # Test that a test suite exists for this Adapter
         lTestFileName = "#{lRootDir}/#{iDirectory}/Adapters/#{iProductID}/#{iToolID}/test/Test_#{lScriptPrefix}#{iScriptID}.rb"
-        p lTestFileName
         if (File.exists?(lTestFileName))
           # Require the test file
+          logDebug "Require test suite in #{lTestFileName}"
           begin
-            log "Require test suite in #{lTestFileName}"
             require lTestFileName
           rescue Exception
             logErr "WEACE #{iDirectory} Adapter #{iProductID}.#{iToolID}.#{iScriptID} #{lAddedMessage}test suite (#{lTestFileName}) could not be required: #{$!}"
             logErr $!.backtrace.join("\n")
-            logErr 'Ignoring this #{lAddedMessage}test suite.'
+            logErr "Ignoring this #{lAddedMessage}test suite."
           end
         else
           logWarn "WEACE #{iDirectory} Adapter #{iProductID}.#{iToolID}.#{iScriptID} does not have any #{lAddedMessage}test suite."
@@ -67,11 +65,4 @@ module WEACE
 
 end
 
-$LogFile = nil
-if ((ARGV.include?('--verbose')) or
-    (ARGV.include?('-v')))
-  $LogIO = $stdout
-else
-  $LogIO = nil
-end
 WEACE::TestCreator.new.createClasses

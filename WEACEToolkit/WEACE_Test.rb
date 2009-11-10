@@ -19,7 +19,6 @@ module WEACE
     module Adapters
 
       include WEACE::Toolbox
-      include WEACE::Logging
 
       class DummyProviderEnv
 
@@ -240,7 +239,8 @@ module WEACE
         if (lMatchData == nil)
           lMatchData = self.class.name.match(/^WEACE::(.*)::Adapters::(.*)::(.*)::Test_(.*)$/)
           if (lMatchData == nil)
-            logExc "Testing class (#{self.class.name}) is not of the form WEACE[Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
+            logErr "Testing class (#{self.class.name}) is not of the form WEACE[Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
+            raise RuntimeError, "Testing class (#{self.class.name}) is not of the form WEACE[Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::Test_<ScriptID>"
           else
             rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
             rInstallTest = false
@@ -267,9 +267,9 @@ module WEACE
         @ComponentName = "WEACE#{@Type}Adapter.#{@ProductID}.#{@ToolID}.#{@ScriptID}"
         @TestSuccess = true
         if (@InstallTest)
-          log "Running test for installation of #{@ComponentName}: Test #{@TestName}"
+          logDebug "Running test for installation of #{@ComponentName}: Test #{@TestName}"
         else
-          log "Running test for #{@ComponentName}: Test #{@TestName}"
+          logDebug "Running test for #{@ComponentName}: Test #{@TestName}"
         end
       end
       
@@ -288,7 +288,8 @@ module WEACE
       def setupRepository(iRepositoryName)
         if ((defined?(@RepositoryDir)) and
             (@RepositoryDir != nil))
-          logExc "A repository has already been setup in this test case: #{@RepositoryDir}. You can not cascade repository setups."
+          logErr "A repository has already been setup in this test case: #{@RepositoryDir}. You can not cascade repository setups."
+          raise RuntimeError, "A repository has already been setup in this test case: #{@RepositoryDir}. You can not cascade repository setups."
         end
         if (@InstallTest)
           @RepositoriesDir = "#{$WEACEToolkitDir}/Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/test/#{@ScriptID}"
@@ -299,14 +300,14 @@ module WEACE
         end
         @ContextVars['Repository'] = @RepositoryDir
         # Copy the repository in a temporary folder to execute the test on
-        log "Create temporary repository in #{@RepositoryDir}"
+        logDebug "Create temporary repository in #{@RepositoryDir}"
         # Copy files without SVN contents
         copyDir("#{@RepositoriesDir}/#{iRepositoryName}", @RepositoryDir)
         # Call the code block
         yield(@RepositoryDir)
         # Clean up if everything went ok
         if (@TestSuccess)
-          log "Delete temporary repository #{@RepositoryDir}"
+          logDebug "Delete temporary repository #{@RepositoryDir}"
           FileUtils.rm_rf(@RepositoryDir)
         else
           logWarn "Temporary repository #{@RepositoryDir} is not deleted for investigation purposes."
@@ -321,10 +322,11 @@ module WEACE
       def compareWithRepository(iRepositoryName)
         if ((!defined?(@RepositoryDir)) or
             (@RepositoryDir == nil))
-          logExc "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
+          logErr "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
+          raise RuntimeError, "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
         end
         if (@TestSuccess)
-          log "Compare repositories for component #{@ComponentName} with reference #{iRepositoryName}"
+          logDebug "Compare repositories for component #{@ComponentName} with reference #{iRepositoryName}"
           @TestSuccess = compareDirs(@RepositoryDir, "#{@RepositoriesDir}/#{iRepositoryName}")
         end
       end
@@ -335,7 +337,7 @@ module WEACE
       # Parameters:
       # * *iCmdLine* (_String_): The command line to give the installer to test.
       def executeAdapterInstallTest(iCmdLine)
-        log "Execute installation of component #{@ComponentName}"
+        logDebug "Execute installation of component #{@ComponentName}"
         require 'install.rb'
         lProviderEnv = DummyProviderEnv.new
         lProviderEnv.ProviderType = 'Test'
@@ -359,7 +361,7 @@ module WEACE
       # * *iProductParameters* (<em>map<Symbol,Object></em>): The map of product parameters to give the Adapter
       # * *Parameters*: List of additional Action parameters
       def executeSlaveAdapterTest(iProductParameters, *iActionParameters)
-        log "Execute component #{@ComponentName}"
+        logDebug "Execute component #{@ComponentName}"
         # Require the correct adapter file for the given action
         begin
           require "Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb"

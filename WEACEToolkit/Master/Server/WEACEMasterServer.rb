@@ -90,8 +90,6 @@ module WEACE
 
     class Server
     
-      include WEACE::Logging
-    
       # Execute the server for a given configuration
       #
       # Parameters:
@@ -110,22 +108,21 @@ module WEACE
         end
         lConfig = WEACE::Master::Config.new
         WEACE::Master::getWEACEMasterServerConfig(lConfig)
-        $LogFile = lConfig.LogFile
-        $LogIO = $stdout
-        log '== WEACE Master Server called =='
-        log "* User: #{iUserScriptID}"
-        log "* Script: #{iScriptID}"
-        log "* Parameters: #{iScriptParameters.inspect}"
-        log "#{lConfig.RegisteredClients.size} clients configuration:"
+        setLogFile(lConfig.LogFile)
+        logInfo '== WEACE Master Server called =='
+        logDebug "* User: #{iUserScriptID}"
+        logDebug "* Script: #{iScriptID}"
+        logDebug "* Parameters: #{iScriptParameters.inspect}"
+        logDebug "#{lConfig.RegisteredClients.size} clients configuration:"
         lIdx = 0
         lConfig.RegisteredClients.each do |iSlaveClientInfo|
           iClientType, iClientTools, iClientParameters = iSlaveClientInfo
-          log "* Client n.#{lIdx}:"
-          log "** Type: #{iClientType}"
-          log "** Parameters: #{iClientParameters.inspect}"
-          log "** #{iClientTools.size} tools are installed on this client:"
+          logDebug "* Client n.#{lIdx}:"
+          logDebug "** Type: #{iClientType}"
+          logDebug "** Parameters: #{iClientParameters.inspect}"
+          logDebug "** #{iClientTools.size} tools are installed on this client:"
           iClientTools.each do |iToolID|
-            log "*** #{iToolID}"
+            logDebug "*** #{iToolID}"
           end
           lIdx += 1
         end
@@ -164,14 +161,14 @@ module WEACE
           if (!lSlaveActionsForClient.empty?)
             # Send them, calling the correct sender, depending on the Slave Client type
             lSender = eval("Sender_#{iClientType}.new")
-            log "Send update to client #{iClientType}: #{iClientParameters.inspect} ..."
+            logDebug "Send update to client #{iClientType}: #{iClientParameters.inspect} ..."
             instantiateVars(lSender, iClientParameters)
             lSuccess = lSender.sendMessage(iUserScriptID, lSlaveActionsForClient)
             if (!lSuccess)
               lErrors << "Unable to send the update to client #{iClientType}: #{iClientParameters.inspect}"
-              log "... Failure to send update to client #{iClientType}: #{iClientParameters.inspect}"
+              logDebug "... Failure to send update to client #{iClientType}: #{iClientParameters.inspect}"
             else
-              log "... Update sent successfully to client #{iClientType}: #{iClientParameters.inspect}"
+              logDebug "... Update sent successfully to client #{iClientType}: #{iClientParameters.inspect}"
             end
           end
         end
@@ -180,7 +177,7 @@ module WEACE
           logErr lErrors.join("\n")
           return false
         end
-        log '== WEACE Master Server completed successfully =='
+        logInfo '== WEACE Master Server completed successfully =='
         return true
       end
       

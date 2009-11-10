@@ -21,7 +21,6 @@ module WEACEInstall
         
           class Ticket_CloseDuplicate
           
-            include WEACE::Logging
             include WEACE::Toolbox
             include WEACEInstall::Common
             include WEACEInstall::Master::Adapters::Redmine::CommonInstall
