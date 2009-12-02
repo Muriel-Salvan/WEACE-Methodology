@@ -17,6 +17,11 @@ $WEACEToolkitDir = Dir.getwd
 Dir.chdir(lOldDir)
 $LOAD_PATH << $WEACEToolkitDir
 
+require 'rUtilAnts/Misc'
+RUtilAnts::Misc::initializeMisc
+require 'rUtilAnts/Platform'
+RUtilAnts::Platform::initializePlatform
+
 require 'WEACE_Common.rb'
 require 'Install/WEACE_InstallCommon.rb'
 
@@ -27,459 +32,53 @@ module WEACEInstall
   
     include WEACE::Toolbox
     include WEACEInstall::Common
-      
-    # Get the list of Adapters from a directory
-    #
-    # Parameters:
-    # * *iDirectory* (_String_): The directory to parse for Adapters (Master/Slave)
-    # 
-    # Return:
-    # * <em>map< ProductID, map< ToolID, map< ScriptID, ComponentDescription > > ></em>: The list of Adapters and their description
-    def getAdaptersComponents(iDirectory)
-      rComponents = {}
 
-      eachAdapter(iDirectory, true) do |iProductID, iToolID, iScriptID|
-        # Load description from this file
-        lDescription = getDescriptionFromFile("Install/#{iDirectory}/Adapters/#{iProductID}/#{iToolID}/Install_#{iScriptID}.rb", "WEACEInstall::#{iDirectory}::Adapters::#{iProductID}::#{iToolID}::#{iScriptID}")
-        if (lDescription != nil)
-          if (rComponents[lProductID] == nil)
-            rComponents[lProductID] = {}
-          end
-          if (rComponents[lProductID][lToolID] == nil)
-            rComponents[lProductID][lToolID] = {}
-          end
-          rComponents[lProductID][lToolID][lScriptID] = lDescription
-        end
-      end
-      
-      return rComponents
-    end
-    
-    # Get the list of Listeners from a directory
-    #
-    # Parameters:
-    # * *iDirectory* (_String_): The directory to parse for Listeners
-    # 
-    # Return:
-    # * <em>map< ListenerID, ComponentDescription ></em>: The list of Listeners and their description
-    def getListenersComponents(iDirectory)
-      rComponents = {}
-      
-      Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectory}/Listeners/*") do |iFileName|
-        lListenerID = File.basename(iFileName).match(/Install_(.*)\.rb/)[1]
-        # Load description from this file
-        lDescription = getDescriptionFromFile("Install/#{iDirectory}/Listeners/Install_#{lListenerID}.rb", "WEACEInstall::#{iDirectory}::Listeners::#{lListenerID}")
-        if (lDescription != nil)
-          rComponents[lListenerID] = lDescription
-        end
-      end
-      
-      return rComponents
-    end
-    
-    # Get the list of components
-    #
-    # Return:
-    # * _ComponentDescription_: WEACE Master Server description (or nil if no component)
-    # * <em>map< ProductID, map< ToolID, map< ScriptID, ComponentDescription > > ></em>: The list of WEACE Master Adapters and their description
-    # * _ComponentDescription_: WEACE Slave Client description (or nil if no component)
-    # * <em>map< ProductID, map< ToolID, map< ScriptID, ComponentDescription > > ></em>: The list of WEACE Slave Adapters and their description
-    def getComponents
-      # WEACE Master Server
-      rWEACEMasterServerDesc = nil
-      lRequireName = 'Install/Master/Server/Install_WEACEMasterServer.rb'
-      if (File.exists?("#{$WEACEToolkitDir}/#{lRequireName}"))
-        rWEACEMasterServerDesc = getDescriptionFromFile(lRequireName, 'WEACEInstall::Master::Server')
-      end
-      # WEACE Master Adapters
-      rWEACEMasterAdaptersList = getAdaptersComponents('Master')
-      # WEACE Slave Client
-      rWEACESlaveClientDesc = nil
-      lRequireName = 'Install/Slave/Client/Install_WEACESlaveClient.rb'
-      if (File.exists?("#{$WEACEToolkitDir}/#{lRequireName}"))
-        rWEACESlaveClientDesc = getDescriptionFromFile(lRequireName, 'WEACEInstall::Slave::Client')
-      end
-      # WEACE Slave Adapters
-      rWEACESlaveAdaptersList = getAdaptersComponents('Slave')
-      # WEACE Slave Adapters
-      rWEACESlaveListenersList = getListenersComponents('Slave')
-      
-      return rWEACEMasterServerDesc, rWEACEMasterAdaptersList, rWEACESlaveClientDesc, rWEACESlaveAdaptersList, rWEACESlaveListenersList
-    end
-    
-    # Get the list of installed components
-    #
-    # Return:
-    # * _InstalledComponentDescription_: WEACE Master Server installed description (nil if not installed)
-    # * <em>map< ProductID, map< ToolID, map< ScriptID, InstalledComponentDescription > > ></em>: The list of installed WEACE Master Adapters
-    # * _InstalledComponentDescription_: WEACE Slave Client installed description (nil if not installed)
-    # * <em>map< ProductID, map< ToolID, map< ScriptID, InstalledComponentDescription > > ></em>: The list of installed WEACE Slave Adapters
-    # * <em>map< ListenerID, InstalledComponentDescription ></em>: The list of installed WEACE Slave Listeners
-    def getInstalledComponents
-      rWEACEMasterServerInstalled = nil
-      rWEACEMasterAdaptersInstalled = {}
-      rWEACESlaveClientInstalled = nil
-      rWEACESlaveAdaptersInstalled = {}
-      rWEACESlaveListenersInstalled = {}
-      
-      if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb"))
-        # Require the file registering WEACE Master info
-        begin
-          require 'Master/Server/InstalledWEACEMasterComponents.rb'
-          begin
-            # Get the list
-            rWEACEMasterServerInstalled = WEACE::Master::getInstallationDescription
-            rWEACEMasterAdaptersInstalled = WEACE::Master::getInstalledAdapters
-          rescue Exception
-            logErr "Error while getting installed WEACE Master Adapters from file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb: #{$!}"
-            logErr $!.backtrace.join("\n")
-            logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Master Server and Adapters.'
-          end
-        rescue Exception
-          logErr "Error while loading file #{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb: #{$!}"
-          logErr $!.backtrace.join("\n")
-          logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Master Server and Adapters.'
-        end
-      end
-      if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb"))
-        # Require the file registering WEACE Slave info
-        begin
-          require 'Slave/Client/InstalledWEACESlaveComponents.rb'
-          begin
-            # Get the list
-            rWEACESlaveClientInstalled = WEACE::Slave::getInstallationDescription
-            rWEACESlaveAdaptersInstalled = WEACE::Slave::getInstalledAdapters
-            rWEACESlaveListenersInstalled = WEACE::Slave::getInstalledListeners
-          rescue Exception
-            logErr "Error while getting installed WEACE Slave Adapters and Listeners from file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb: #{$!}"
-            logErr $!.backtrace.join("\n")
-            logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
-          end
-        rescue Exception
-          logErr "Error while loading file #{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb: #{$!}"
-          logErr $!.backtrace.join("\n")
-          logErr 'This file should have been generated and kept unmodified afterwards. You can regenerate it by reinstalling WEACE Slave Client and Adapters.'
-        end
-      end
-      
-      return rWEACEMasterServerInstalled, rWEACEMasterAdaptersInstalled, rWEACESlaveClientInstalled, rWEACESlaveAdaptersInstalled, rWEACESlaveListenersInstalled
-    end
-    
-    # Output information of a component
-    #
-    # Parameters:
-    # * *iComponentName* (_String_): Component name
-    # * *iComponentDescription* (_ComponentDescription_): The description
-    # * *iInstalledComponentDescription* (_InstalledComponentDescription_): The installation description (can be nil if not installed)
-    # * *iNotInstalledMessage* (_String_): Message to add if not installed.
-    def outputComponent(iComponentName, iComponentDescription, iInstalledComponentDescription, iNotInstalledMessage)
-        puts "* Component: #{iComponentName}"
-        puts "  * Version: #{iComponentDescription.Version}"
-        puts "  * Description: #{iComponentDescription.Description}"
-        puts "  * Author: #{iComponentDescription.Author}"
-        if (iInstalledComponentDescription != nil)
-          puts "  * Installed v#{iInstalledComponentDescription.Version} on #{iInstalledComponentDescription.Date}"
-        else
-          puts "  * Not installed#{iNotInstalledMessage}"
-        end
-        puts '  * Options:'
-        puts iComponentDescription.Options.summarize
-        puts ''
+    # Constructor
+    def initialize
+      # Registered installable master and slave adapters
+      # map< String,    map< String, nil > >
+      # map< ProductID, map< ToolID, nil > >
+      @MasterAdapters = {}
+      @SlaveAdapters = {}
+      # The set of installable components, as written by the user on the command line, and the corresponding plugin
+      # map< String, [ String, String ] >
+      # map< ComponentFullName, [ iCategoryName, iPluginName ] >
+      @InstallableComponents = {}
+      # Initialize logging
+      require 'rUtilAnts/Logging'
+      RUtilAnts::Logging::initializeLogging($WEACEToolkitDir, 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+      # Store a log file in the Install directory
+      setLogFile("#{$WEACEToolkitDir}/Install/install.log")
+      # Read plugins
+      require 'rUtilAnts/Plugins'
+      @PluginsManager = RUtilAnts::Plugins::PluginsManager.new
+      # Master Server
+      parseWEACEPluginsFromDir('Master/Server', "#{$WEACEToolkitDir}/Install/Master/Server", 'WEACEInstall::Master')
+      # Master Providers
+      parseWEACEPluginsFromDir('Master/Providers', "#{$WEACEToolkitDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+      # Master Adapters
+      parseAdapters('Master', @MasterAdapters)
+      # Slave Client
+      parseWEACEPluginsFromDir('Slave/Client', "#{$WEACEToolkitDir}/Install/Slave/Client", 'WEACEInstall::Slave')
+      # Slave Providers
+      parseWEACEPluginsFromDir('Slave/Providers', "#{$WEACEToolkitDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+      # Slave Adapters
+      parseAdapters('Slave', @SlaveAdapters)
+      # Slave Listeners
+      parseWEACEPluginsFromDir('Slave/Listeners', "#{$WEACEToolkitDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
     end
 
-    # Outputs the list of components
-    def outputComponents
-      lWEACEMasterServerDesc, lWEACEMasterAdaptersList, lWEACESlaveClientDesc, lWEACESlaveAdaptersList, lWEACESlaveListenersList = getComponents
-      lWEACEMasterServerInstalled, lWEACEMasterAdaptersInstalledList, lWEACESlaveClientInstalled, lWEACESlaveAdaptersInstalledList, lWEACESlaveListenersInstalledList = getInstalledComponents
-      puts ''
-      puts 'Installable components:'
-      # WEACE Master Server
-      if (lWEACEMasterServerDesc != nil)
-        outputComponent('WEACEMasterServer', lWEACEMasterServerDesc, lWEACEMasterServerInstalled, '')
-      end
-      # WEACE Master Adapters
-      if (!lWEACEMasterServerInstalled)
-        lInstallFirstWEACEMasterServerMessage = ' (Install WEACEMasterServer first)'
-      else
-        lInstallFirstWEACEMasterServerMessage = ''
-      end
-      lWEACEMasterAdaptersList.each do |iProductID, iProductAdapters|
-        iProductAdapters.each do |iToolID, iToolAdapters|
-          iToolAdapters.each do |iScriptID, iDescription|
-            lInstalledDescription = nil
-            if ((lWEACEMasterAdaptersInstalledList[iProductID] != nil) and
-                (lWEACEMasterAdaptersInstalledList[iProductID][iToolID] != nil) and
-                (lWEACEMasterAdaptersInstalledList[iProductID][iToolID][iScriptID] != nil))
-              lInstalledDescription = lWEACEMasterAdaptersInstalledList[iProductID][iToolID][iScriptID]
-            end
-            outputComponent("WEACEMasterAdapter.#{iProductID}.#{iToolID}.#{iScriptID}", iDescription, lInstalledDescription, lInstallFirstWEACEMasterServerMessage)
-          end
-        end
-      end
-      # WEACE Slave Client
-      if (lWEACESlaveClientDesc != nil)
-        outputComponent('WEACESlaveClient', lWEACESlaveClientDesc, lWEACESlaveClientInstalled, '')
-      end
-      # WEACE Slave Adapters
-      if (!lWEACESlaveClientInstalled)
-        lInstallFirstWEACESlaveClientMessage = ' (Install WEACESlaveClient first)'
-      else
-        lInstallFirstWEACESlaveClientMessage = ''
-      end
-      lWEACESlaveAdaptersList.each do |iProductID, iProductAdapters|
-        iProductAdapters.each do |iToolID, iToolAdapters|
-          iToolAdapters.each do |iScriptID, iDescription|
-            lInstalledDescription = nil
-            if ((lWEACESlaveAdaptersInstalledList[iProductID] != nil) and
-                (lWEACESlaveAdaptersInstalledList[iProductID][iToolID] != nil) and
-                (lWEACESlaveAdaptersInstalledList[iProductID][iToolID][iScriptID] != nil))
-              lInstalledDescription = lWEACESlaveAdaptersInstalledList[iProductID][iToolID][iScriptID]
-            end
-            outputComponent("WEACESlaveAdapter.#{iProductID}.#{iToolID}.#{iScriptID}", iDescription, lInstalledDescription, lInstallFirstWEACESlaveClientMessage)
-          end
-        end
-      end
-      # WEACE Slave Listeners
-      lWEACESlaveListenersList.each do |iListenerID, iDescription|
-        lInstalledDescription = nil
-        if (lWEACESlaveListenersInstalledList[iListenerID] != nil)
-          lInstalledDescription = lWEACESlaveListenersInstalledList[iListenerID]
-        end
-        outputComponent("WEACESlaveListener.#{iListenerID}", iDescription, lInstalledDescription, lInstallFirstWEACESlaveClientMessage)
-      end
-    end
-  
-    # Register a new WEACE Adapter
-    #
-    # Parameters:
-    # * *iFileName* (_String_): File where Adapters are registered
-    # * *iProductID* (_String_): The Product ID
-    # * *iToolID* (_String_): The Tool ID
-    # * *iScriptID* (_String_): The Script ID
-    # * *iDescription* (_ComponentDescription_): The description
-    def registerNewAdapter(iFileName, iProductID, iToolID, iScriptID, iDescription)
-      logDebug "Register WEACE Adapter #{iProductID}.#{iToolID}.#{iScriptID} in file #{iFileName} ..."
-      modifyFile(iFileName,
-        /getInstalledAdapters/,
-        "
-      lDesc = InstalledComponentDescription.new
-      lDesc.Date = '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
-      lDesc.Version = '#{iDescription.Version}'
-      lDesc.Description = '#{iDescription.Description}'
-      lDesc.Author = '#{iDescription.Author}'
-      if (rInstalledComponents['#{iProductID}'] == nil)
-        rInstalledComponents['#{iProductID}'] = {}
-      end
-      if (rInstalledComponents['#{iProductID}']['#{iToolID}'] == nil)
-        rInstalledComponents['#{iProductID}']['#{iToolID}'] = {}
-      end
-      rInstalledComponents['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc
-",
-        /# === INSERT ===/,
-        :CheckMatch => [
-"      lDesc = InstalledComponentDescription.new\n",
-/      lDesc.Date = /,
-"      lDesc.Version = '#{iDescription.Version}'\n",
-"      lDesc.Description = '#{iDescription.Description}'\n",
-"      lDesc.Author = '#{iDescription.Author}'\n",
-"      if (rInstalledComponents['#{iProductID}'] == nil)\n",
-"        rInstalledComponents['#{iProductID}'] = {}\n",
-"      end\n",
-"      if (rInstalledComponents['#{iProductID}']['#{iToolID}'] == nil)\n",
-"        rInstalledComponents['#{iProductID}']['#{iToolID}'] = {}\n",
-"      end\n",
-"      rInstalledComponents['#{iProductID}']['#{iToolID}']['#{iScriptID}'] = lDesc\n"])
-    end
-
-    # Register a new WEACE Listener
-    #
-    # Parameters:
-    # * *iFileName* (_String_): File where Listeners are registered
-    # * *iListenerID* (_String_): The Listener ID
-    # * *iDescription* (_ComponentDescription_): The description
-    def registerNewListener(iFileName, iListenerID, iDescription)
-      logDebug "Register WEACE Slave Listener #{iListenerID} in file #{iFileName} ..."
-      modifyFile(iFileName,
-        /getInstalledListeners/,
-        "
-      lDesc = InstalledComponentDescription.new
-      lDesc.Date = '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
-      lDesc.Version = '#{iDescription.Version}'
-      lDesc.Description = '#{iDescription.Description}'
-      lDesc.Author = '#{iDescription.Author}'
-      rInstalledComponents['#{iListenerID}'] = lDesc
-",
-        /# === INSERT ===/,
-        :CheckMatch => [
-"      lDesc = InstalledComponentDescription.new\n",
-/      lDesc.Date = /,
-"      lDesc.Version = '#{iDescription.Version}'\n",
-"      lDesc.Description = '#{iDescription.Description}'\n",
-"      lDesc.Author = '#{iDescription.Author}'\n",
-"      rInstalledComponents['#{iListenerID}'] = lDesc\n"])
-    end
-
-    # Get the provider specific environment, generated by the installation of WEACE Master Server or WEACE Slave Client
-    #
-    # Parameters:
-    # * *iProviderEnvFileName* (_String_): Name of the file containing the provider specific environment
-    # * *iClassName* (_String_): ProviderEnv class name
-    # Return:
-    # * _ProviderEnv_: The specific environment
-    def getProviderEnv(iProviderEnvFileName, iClassName)
-      logDebug "Read the provider environment generated during the WEACE Master Server's installation (#{iProviderEnvFileName}) ..."
-      begin
-        require iProviderEnvFileName
-      rescue Exception
-        logExc $!, "Unable to load the environment from file \'#{iProviderEnvFileName}\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path."
-        raise
-      end
-      return eval("#{iClassName}.new")
-    end
-    
-    # Install a given component from a file
-    #
-    # Parameters:
-    # * *iComponentName* (_String_): The component name
-    # * *iFileName* (_String_): The file name (relative to WEACE Toolkit directory)
-    # * *iClassName* (_String_): The class name of the installer
-    # * *iParameters* (<em>list<String></em>): The list of parameters to give the installer
-    # * *iProviderEnv* (_ProviderEnv_): The specific provider environment, or nil if none
-    def installComponentFromFile(iComponentName, iFileName, iClassName, iParameters, iProviderEnv)
-      logDebug "Install Component #{iComponentName} with parameters: #{iParameters.inspect}"
-      lInstaller, lAdditionalArgs = getInitializedInstallerFromFile(iFileName, iClassName, iParameters)
-      # And now execute the installer code
-      if (iProviderEnv != nil)
-        lInstaller.execute(lAdditionalArgs, iProviderEnv)
-      else
-        lInstaller.execute(lAdditionalArgs)
-      end
-    end
-    
-    # Install a given component
-    #
-    # Parameters:
-    # * *iComponent* (_String_): Component name
-    # * *iParameters* (<em>list<String></em>): The list of parameters for this installation
-    def installComponent(iComponent, iParameters)
-      logInfo "=== Install Component #{iComponent}(#{iParameters.inspect}) ..."
-      case iComponent
-      when 'WEACEMasterServer'
-        installComponentFromFile(iComponent, 'Install/Master/Server/Install_WEACEMasterServer.rb', 'WEACEInstall::Master::Server', iParameters, nil)
-      when 'WEACESlaveClient'
-        installComponentFromFile(iComponent, 'Install/Slave/Client/Install_WEACESlaveClient.rb', 'WEACEInstall::Slave::Client', iParameters, nil)
-      else
-        # Format of type WEACE{Master|Slave}Adapter.<ProductID>.<ToolID>.<ScriptID>
-        lMasterMatch = iComponent.match(/^WEACEMasterAdapter\.(.*)\.(.*)\.(.*)$/)
-        if (lMasterMatch != nil)
-          lProductID, lToolID, lScriptID = lMasterMatch[1..3]
-          # Got a WEACE Master Adapter installation
-          # First, check that WEACE Master Server is installed
-          if (File.exists?("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb"))
-            # Get the Provider specific environment
-            lProviderEnv = getProviderEnv('Install/Master/ProviderEnv.rb', 'WEACEInstall::Master::ProviderEnv')
-            lFileName = "Install/Master/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
-            lClassName = "WEACEInstall::Master::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
-            installComponentFromFile(iComponent, lFileName, lClassName, iParameters, lProviderEnv)
-            # Register this Adapter
-            lDescription = getDescriptionFromFile(lFileName, lClassName)
-            registerNewAdapter("#{$WEACEToolkitDir}/Master/Server/InstalledWEACEMasterComponents.rb", lProductID, lToolID, lScriptID, lDescription)
-          else
-            logErr 'You must first install WEACE Master Server.'
-            raise RuntimeError, 'You must first install WEACE Master Server.'
-          end
-        else
-          lSlaveAdapterMatch = iComponent.match(/^WEACESlaveAdapter\.(.*)\.(.*)\.(.*)$/)
-          if (lSlaveAdapterMatch != nil)
-            lProductID, lToolID, lScriptID = lSlaveAdapterMatch[1..3]
-            # Got a WEACE Slave Adapter installation
-            if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb"))
-              # Get the Provider specific environment 
-              lProviderEnv = getProviderEnv('Install/Slave/ProviderEnv.rb', 'WEACEInstall::Slave::ProviderEnv')
-              lFileName = "Install/Slave/Adapters/#{lProductID}/#{lToolID}/Install_#{lScriptID}.rb"
-              lClassName = "WEACEInstall::Slave::Adapters::#{lProductID}::#{lToolID}::#{lScriptID}"
-              installComponentFromFile(iComponent, lFileName, lClassName, iParameters, lProviderEnv)
-              # Register this Adapter
-              lDescription = getDescriptionFromFile(lFileName, lClassName)
-              registerNewAdapter("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb", lProductID, lToolID, lScriptID, lDescription)
-            else
-              logErr 'You must first install WEACE Slave Client.'
-              raise RuntimeError, 'You must first install WEACE Slave Client.'
-            end
-          else
-            lSlaveListenerMatch = iComponent.match(/^WEACESlaveListener\.(.*)$/)
-            if (lSlaveListenerMatch != nil)
-              lListenerID = lSlaveListenerMatch[1]
-              # Got a WEACE Slave Listener installation
-              if (File.exists?("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb"))
-                # Get the Provider specific environment 
-                lProviderEnv = getProviderEnv('Install/Slave/ProviderEnv.rb', 'WEACEInstall::Slave::ProviderEnv')
-                lFileName = "Install/Slave/Listeners/Install_#{lListenerID}.rb"
-                lClassName = "WEACEInstall::Slave::Listeners::#{lListenerID}"
-                installComponentFromFile(iComponent, lFileName, lClassName, iParameters, lProviderEnv)
-                # Register this Listener
-                lDescription = getDescriptionFromFile(lFileName, lClassName)
-                registerNewListener("#{$WEACEToolkitDir}/Slave/Client/InstalledWEACESlaveComponents.rb", lListenerID, lDescription)
-              else
-                logErr 'You must first install WEACE Slave Client.'
-                raise RuntimeError, 'You must first install WEACE Slave Client.'
-              end
-            else
-              logErr "Unknown component named #{iComponent}: check possible components with --list option."
-              raise RuntimeError, "Unknown component named #{iComponent}: check possible components with --list option."
-            end
-          end
-        end
-      end
-      logInfo "=== Component #{iComponent}(#{iParameters.inspect}) installed successfully."
-    end
-    
-    # Get options of this installer
-    #
-    # Return:
-    # * _OptionParser_: The options parser
-    def getOptions
-      rOptions = OptionParser.new
-
-      rOptions.banner = 'install.rb [-h|--help] [-v|--version] [-l|--list] [-i|--install <Component> -- <AdditionalParameters>]'
-      # Options are defined here
-      rOptions.on('-h', '--help',
-        'Display help on this script.') do
-        puts rOptions
-      end
-      rOptions.on('-i', '--install <Component>', String,
-        '<Component>: Any value returned by the --list output.',
-        'Install a given component.') do |iArg|
-        @ComponentToInstall = iArg
-      end
-      rOptions.on('-l', '--list',
-        'Give a list of all components in this distribution.') do
-        @OutputComponents = true
-      end
-      rOptions.on('-v', '--version',
-        'Get version of this WEACE Toolkit distribution.') do
-        @OutputVersion = true
-      end
-      rOptions.on('--',
-        'Following -- are the parameters specific to the installation of a given component (check each component\'s options with --list).')
-      
-      return rOptions
-    end
-    
     # Execute the installer
     #
     # Parameters:
     # * *iParameters* (<em>list<String></em>): Parameters given to the installer
     def execute(iParameters)
-      # Initialize logging
-      require 'rUtilAnts/Logging'
-      RUtilAnts::Logging::initializeLogging($WEACEToolkitDir, 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
-      activateLogDebug(true)
-      # Store a log file in the Install directory
-      setLogFile("#{$WEACEToolkitDir}/Install/install.log")
       logDebug "> install.rb #{iParameters.join(' ')}"
+      @DebugMode = false
+      @ForceMode = false
       @ComponentToInstall = nil
       @OutputComponents = false
+      @OutputDetails = false
       @OutputVersion = false
       lOptions = getOptions
       if (iParameters.size == 0)
@@ -496,6 +95,7 @@ module WEACEInstall
           lSuccess = false
         end
         if (lSuccess)
+          activateLogDebug(@DebugMode)
           # Execute what was asked by the options
           if (@OutputVersion)
             # Read version info
@@ -521,7 +121,374 @@ module WEACEInstall
         end
       end
     end
+
+    private
     
+    # Get the installed description of a component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # Return:
+    # * <em>map<Symbol, Object></em>: The description, or nil if not installed
+    def getInstalledComponentDescription(iComponentName)
+      rDescription = nil
+
+      lRegisteredFileName = nil
+      if (iComponentName.match(/^Master\/.*$/) != nil)
+        lRegisteredFileName = "#{$WEACEToolkitDir}/Master/Repository/#{getValidFileName(iComponentName)}.rb"
+      else
+        lRegisteredFileName = "#{$WEACEToolkitDir}/Slave/Repository/#{getValidFileName(iComponentName)}.rb"
+      end
+      if (File.exists?(lRegisteredFileName))
+        File.open(lRegisteredFileName, 'r') do |iFile|
+          rDescription = eval(iFile.read)
+        end
+      end
+
+      return rDescription
+    end
+
+    # Output information of a component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # * *iComponentDescription* (<em>map<Symbol,Object></em>): The component description
+    def outputComponent(iComponentName, iComponentDescription)
+      if (@OutputDetails)
+        puts "* Component: #{iComponentName}"
+        # TODO: Check if we can use Version
+        #puts "  * Version: #{iComponentDescription[:Version]}"
+        puts "  * Description: #{iComponentDescription[:Description]}"
+        puts "  * Author: #{iComponentDescription[:Author]}"
+        # Display info about its installed version
+        lInstalledComponentDescription = getInstalledComponentDescription(iComponentName)
+        if (lInstalledComponentDescription != nil)
+          # TODO: Maybe also use version here ?
+          puts "  * Installed on #{lInstalledComponentDescription[:InstallationDate]}"
+        else
+          puts "  * Not installed"
+        end
+        if (iComponentDescription[:Options] != nil)
+          puts '  * Options:'
+          puts iComponentDescription[:Options].summarize
+        end
+        puts ''
+      else
+        puts "* #{iComponentName}"
+      end
+    end
+
+    # Output information of a Provider
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # * *iComponentDescription* (<em>map<Symbol,Object></em>): The component description
+    def outputProvider(iComponentName, iComponentDescription)
+      if (@OutputDetails)
+        puts "* Provider type: #{iComponentName}"
+        # TODO: Check if we can use Version
+        #puts "  * Version: #{iComponentDescription[:Version]}"
+        puts "  * Description: #{iComponentDescription[:Description]}"
+        puts "  * Author: #{iComponentDescription[:Author]}"
+        if (iComponentDescription[:Options] != nil)
+          puts '  * Options:'
+          puts iComponentDescription[:Options].summarize
+        end
+        puts ''
+      else
+        puts "* #{iComponentName}"
+      end
+    end
+
+    # Iterate over the components whose name match a given reg exp
+    #
+    # Parameters:
+    # * *iRegExp* (_RegExp_): The filter
+    # * *CodeBlock*: The code called for each iteration:
+    # ** *iComponentName* (_String_): The component name
+    # ** *iCategoryName* (_String_): The corresponding plugin category name
+    # ** *iPluginName* (_String_): The corresponding plugin name
+    def forEachFilteredComponent(iRegExp)
+      @InstallableComponents.each do |iComponentName, iComponentInfo|
+        if (iComponentName.match(iRegExp) != nil)
+          iCategoryName, iPluginName = iComponentInfo
+          yield(iComponentName, iCategoryName, iPluginName)
+        end
+      end
+    end
+
+    # Outputs the list of components
+    def outputComponents
+      puts ''
+      puts '== Installable WEACE Master Server:'
+      puts '' if (@OutputDetails)
+      forEachFilteredComponent(/^Master\/Server/) do |iComponentName, iCategoryName, iPluginName|
+        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      end
+      puts ''
+      puts '== Installable WEACE Master Adapters (please install Server first):'
+      puts '' if (@OutputDetails)
+      forEachFilteredComponent(/^Master\/Adapters/) do |iComponentName, iCategoryName, iPluginName|
+        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      end
+      puts ''
+      puts '== Possible WEACE Master Providers:'
+      puts '' if (@OutputDetails)
+      @PluginsManager.getPluginsDescriptions('Master/Providers').each do |iPluginName, iPluginDescription|
+        outputProvider(iPluginName, iPluginDescription)
+      end
+      puts ''
+      puts '== Installable WEACE Slave Client:'
+      puts '' if (@OutputDetails)
+      forEachFilteredComponent(/^Slave\/Client/) do |iComponentName, iCategoryName, iPluginName|
+        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      end
+      puts ''
+      puts '== Installable WEACE Slave Adapters (please install Client first):'
+      puts '' if (@OutputDetails)
+      forEachFilteredComponent(/^Slave\/Adapters/) do |iComponentName, iCategoryName, iPluginName|
+        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      end
+      puts ''
+      puts '== Installable WEACE Slave Listeners:'
+      puts '' if (@OutputDetails)
+      forEachFilteredComponent(/^Slave\/Listeners/) do |iComponentName, iCategoryName, iPluginName|
+        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      end
+      puts ''
+      puts '== Possible WEACE Slave Providers:'
+      puts '' if (@OutputDetails)
+      @PluginsManager.getPluginsDescriptions('Slave/Providers').each do |iPluginName, iPluginDescription|
+        outputProvider(iPluginName, iPluginDescription)
+      end
+    end
+
+    # Register a new WEACE Adapter
+    #
+    # Parameters:
+    # * *iRepositoryDir* (_String_): Repository directory
+    # * *iComponentName* (_String_): Name of the component to register
+    # * *iDescription* (<em>map<Symbol,Object></em>): The plugin description
+    # * *iParameters* (<em>list<String></em>): Parameters used when installing this component
+    def registerInstalledComponent(iRepositoryDir, iComponentName, iDescription, iParameters)
+      lFileName = "#{iRepositoryDir}/#{getValidFileName(iComponentName)}.rb"
+      logDebug "Register #{iComponentName} in file #{lFileName} ..."
+      # Create the repository if needed
+      if (!File.exists?(iRepositoryDir))
+        require 'fileutils'
+        FileUtils::mkdir_p(iRepositoryDir)
+      end
+      File.open(lFileName, 'w') do |oFile|
+        # TODO: Check if Version can be used here
+        oFile << "
+{
+  :InstallationDate => '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}',
+  :Description => '#{iDescription[:Description].gsub(/'/,'\\\\\'')}',
+  :Author => '#{iDescription[:Author].gsub(/'/,'\\\\\'')}',
+  :InstallationParameters => '#{iParameters.join(' ').gsub(/'/,'\\\\\'')}'
+}
+"
+      end
+    end
+
+    # Install a given component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # * *iParameters* (<em>list<String></em>): The list of parameters for this installation
+    def installComponent(iComponentName, iParameters)
+      logInfo "=== Install Component #{iComponentName} (#{iParameters.inspect}) ..."
+      lCategoryName, lPluginName = @InstallableComponents[iComponentName]
+      if (lCategoryName == nil)
+        logErr "Unknown component name #{iComponentName}. Please use --list option to know installable components."
+      else
+        lInstalledDescription = getInstalledComponentDescription(iComponentName)
+        if ((@ForceMode) or
+            (lInstalledDescription == nil))
+          # Get a little information on the component being installed
+          lIsMaster = (iComponentName.match(/^Master\/.*$/) != nil)
+          lIsMasterServer = (iComponentName.match(/^Master\/Server\/.*$/) != nil)
+          lIsSlaveClient = (iComponentName.match(/^Slave\/Client\/.*$/) != nil)
+          # Forbid installing Adapters and Listeners if Server or Client is not installed.
+          lCancel = false
+          if ((!lIsMasterServer) and
+              (!lIsSlaveClient))
+            # We are installing an Adapter or Listener. Check that its Server/Client is installed.
+            if (lIsMaster)
+              if (!File.exists?("#{$WEACEToolkitDir}/Master/Repository/Master_Server_WEACEMasterServer.rb"))
+                logErr "You must first install component Master/Server/WEACEMasterServer before installing #{iComponentName}."
+                lCancel = true
+              end
+            elsif (!File.exists?("#{$WEACEToolkitDir}/Slave/Repository/Slave_Client_WEACESlaveClient.rb"))
+              logErr "You must first install component Slave/Client/WEACESlaveClient before installing #{iComponentName}."
+              lCancel = true
+            end
+          end
+          if (!lCancel)
+            @PluginsManager.accessPlugin(lCategoryName, lPluginName) do |ioPlugin|
+              # Get the description to parse options
+              lAdditionalArgs = initPluginWithParameters(ioPlugin, iParameters)
+              # Always give reference to the plugins manager
+              ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
+              # Execute the installation for real
+              lError = ioPlugin.execute(lAdditionalArgs)
+              if (lError == nil)
+                # Register this component as being installed
+                if (lIsMaster)
+                  registerInstalledComponent("#{$WEACEToolkitDir}/Master/Repository", iComponentName, ioPlugin.pluginDescription, iParameters)
+                else
+                  registerInstalledComponent("#{$WEACEToolkitDir}/Slave/Repository", iComponentName, ioPlugin.pluginDescription, iParameters)
+                end
+                logMsg "Component #{iComponentName} installed successfully."
+              elsif (lError.kind_of?(Exception))
+                logExc lError, "An error occurred while installing component #{iComponentName}."
+              else
+                logBug "Component #{iComponentName} installation returned an error that is not an Exception object: #{lError}"
+              end
+            end
+          end
+        else
+          # Already installed.
+          logErr "Component #{iComponentName} has already been installed on #{lInstalledDescription[:InstallationDate]} with parameters \"#{lInstalledDescription[:InstallationParameters]}\". Use --force option to bypass this check."
+        end
+      end
+    end
+
+    # Loop on all directories containing scripts for a given Adapters directory
+    #
+    # Parameters:
+    # * *iDirectoryType* (_String_): Type of directory to parse (Master/Slave)
+    # * _CodeBlock_: The code to be called for each directory containing scripts:
+    # ** *iProductID* (_String_): Name of the Product
+    # ** *iToolID* (_String_): Name of the Tool
+    def eachAdapterDir(iDirectoryType)
+      Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectoryType}/Adapters/*").each do |iProductDirName|
+        if (File.directory?(iProductDirName))
+          lProductID = File.basename(iProductDirName)
+          Dir.glob("#{iProductDirName}/*").each do |iToolDirName|
+            if (File.directory?(iToolDirName))
+              yield(lProductID, File.basename(iToolDirName))
+            end
+          end
+        end
+      end
+    end
+
+    # Get options of this installer
+    #
+    # Return:
+    # * _OptionParser_: The options parser
+    def getOptions
+      rOptions = OptionParser.new
+
+      rOptions.banner = 'install.rb [-h|--help] [-v|--version] [-d|--debug] [-l|--list] [-e|--detailedlist] [-i|--install <Component> [-f|--force] -- <AdditionalParameters>]'
+      # Options are defined here
+      rOptions.on('-h', '--help',
+        'Display help on this script.') do
+        puts rOptions
+      end
+      rOptions.on('-i', '--install <Component>', String,
+        '<Component>: Any value returned by the --list output.',
+        'Install a given component.') do |iArg|
+        @ComponentToInstall = iArg
+      end
+      rOptions.on('-f', '--force',
+        'Force installation of components even if they were already installed.') do
+        @ForceMode = true
+      end
+      rOptions.on('-d', '--debug',
+        'Execute the installer in debug mode (more verbose).') do
+        @DebugMode = true
+      end
+      rOptions.on('-l', '--list',
+        'Give a list of all components in this distribution.') do
+        @OutputComponents = true
+      end
+      rOptions.on('-e', '--detailedlist',
+        'Give a list with details of all components in this distribution.') do
+        @OutputComponents = true
+        @OutputDetails = true
+      end
+      rOptions.on('-v', '--version',
+        'Get version of this WEACE Toolkit release.') do
+        @OutputVersion = true
+      end
+      rOptions.on('--',
+        'Following -- are the parameters specific to the installation of a given component (check each component\'s options with --list).')
+
+      return rOptions
+    end
+
+    # Initialize a freshly read plugin description
+    # This is used to set additional variables among the description already created by the plugins manager.
+    #
+    # Parameters:
+    # * *ioDescription* (<em>map<Symbol,Object></em>): The description to complete
+    def initializePluginDescription(ioDescription)
+      if (ioDescription[:VarOptions] != nil)
+        ioDescription[:Options] = OptionParser.new
+        # The map of mandatory variables, along with their description and value once affected
+        # map< Symbol,       [ OptionParser, String ] >
+        # map< VariableName, [ Description,  Value  ] >
+        ioDescription[:MandatoryVariables] = {}
+        ioDescription[:VarOptions].each do |iVarOption|
+          iVariable = iVarOption[0]
+          iParameters = iVarOption[1..-1]
+          # Avoid duplicates
+          if (ioDescription[:MandatoryVariables][iVariable] == nil)
+            # Create a little OptionParser to format the parameters correctly
+            lSingleOption = OptionParser.new
+            lSingleOption.on(*iParameters)
+            ioDescription[:MandatoryVariables][iVariable] = [ lSingleOption, nil ]
+          else
+            # Add this option to the variable help: 2 options can define the same variable
+            ioDescription[:MandatoryVariables][iVariable][0].on(*iParameters)
+          end
+          # Set the variable correctly when the option is encountered
+          ioDescription[:Options].on(*iParameters) do |iArg|
+            ioDescription[:MandatoryVariables][iVariable][1] = iArg
+          end
+        end
+      end
+    end
+
+    # Register WEACE plugins read from a directory.
+    # This reads the plugins descriptions the same parsePluginsFromDir does, but it completes the description with WEACE specific attributes.
+    #
+    # Parameters:
+    # * *iCategoryName* (_String_): The category name of the plugins
+    # * *iDir* (_String_): Directory containing plugins
+    # * *iBaseClassName* (_String_): Name of the base class of every plugin in this directory
+    # * *iInstallable* (_Boolean_): Are the parsed plugins installable ? [optional = true]
+    def parseWEACEPluginsFromDir(iCategoryName, iDir, iBaseClassName, iInstallable = true)
+      # Get plugins from there
+      @PluginsManager.parsePluginsFromDir(iCategoryName, iDir, iBaseClassName)
+      # Create the corresponding OptionsParser object, and complete the current description with it
+      @PluginsManager.getPluginsDescriptions(iCategoryName).each do |iScriptID, ioDescription|
+        initializePluginDescription(ioDescription)
+        if (iInstallable)
+          @InstallableComponents["#{iCategoryName}/#{iScriptID}"] = [ iCategoryName, iScriptID ]
+        end
+      end
+    end
+
+    # Fill a map of adapters read from disk
+    #
+    # Parameters:
+    # * *iDirectoryType* (_String_): Type of ditrectory to read (Master/Slave)
+    # * *oAdaptersMap* (<em>map<String,map<String,nil>></em>): The map to fill with the Adapters info
+    def parseAdapters(iDirectoryType, oAdaptersMap)
+      eachAdapterDir(iDirectoryType) do |iProductID, iToolID|
+        lCategoryName = "#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}"
+        parseWEACEPluginsFromDir(lCategoryName, "#{$WEACEToolkitDir}/Install/#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}", "WEACEInstall::#{iDirectoryType}::Adapters::#{iProductID}::#{iToolID}")
+        # Register this product/tool category
+        if (oAdaptersMap[iProductID] == nil)
+          oAdaptersMap[iProductID] = {}
+        end
+        oAdaptersMap[iProductID][iToolID] = nil
+      end
+    end
+
   end
 
 end

@@ -22,32 +22,15 @@ module WEACEInstall
           class Ticket_CloseDuplicate
           
             include WEACE::Toolbox
-            include WEACEInstall::Common
             include WEACEInstall::Master::Adapters::Redmine::CommonInstall
-            
-            # Get options of this installer
-            #
-            # Parameters:
-            # * *ioDescription* (_ComponentDescription_): The component's description to fill
-            def getDescription(ioDescription)
-              ioDescription.Version = '0.0.1.20090414'
-              ioDescription.Description = 'This adapter is triggered when a Ticket is marked as duplicating another one.'
-              ioDescription.Author = 'murielsalvan@users.sourceforge.net'
-              ioDescription.addVarOption(:RedmineDir,
-                '-d', '--redminedir <RedmineDir>', String,
-                '<RedmineDir>: Redmine\'s installation directory.',
-                'Example: /home/groups/m/my/myproject/redmine')
-              ioDescription.addVarOption(:RubyPath,
-                '-r', '--ruby <RubyPath>', String,
-                '<RubyPath>: Ruby\'s path.',
-                'Example: /usr/bin/ruby')
-            end
             
             # Execute the installation
             #
             # Parameters:
             # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
             # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
+            # Return:
+            # * _Exception_: An error, or nil in case of success
             def execute(iParameters, iProviderEnv)
               # First, modify common parts
               executeRedmineCommonInstall(@RedmineDir, iProviderEnv)
@@ -86,6 +69,8 @@ module WEACEInstall
 ",
                 /respond_to do \|format\|/,
                 :Replace => true)
+
+              return nil
             end
             
           end

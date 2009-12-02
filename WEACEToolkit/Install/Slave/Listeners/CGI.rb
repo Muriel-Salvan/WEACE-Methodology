@@ -15,25 +15,13 @@ module WEACEInstall
   
       class CGI
           
-        # Get options of this listener
-        #
-        # Parameters:
-        # * *ioDescription* (_ComponentDescription_): The component's description to fill
-        def getDescription(ioDescription)
-          ioDescription.Version = '0.0.1.20090416'
-          ioDescription.Description = 'This listener creates a CGI script that routes actions to the WEACE Slave Client.'
-          ioDescription.Author = 'murielsalvan@users.sourceforge.net'
-          ioDescription.addVarOption(:CGIDir,
-            '-d', '--cgidir <CGIDir>', String,
-            '<CGIDir>: Directory where cgi scripts can be accessible through external access.',
-            'Example: /home/groups/m/my/myproject/cgi-bin')
-        end
-        
         # Execute the installation
         #
         # Parameters:
         # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
         # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
+        # Return:
+        # * _Exception_: An error, or nil in case of success
         def execute(iParameters, iProviderEnv)
           # Generate the CGI script
           lCGIScriptFileName = "#{@CGIDir}/WEACE/Actions.cgi"
@@ -70,6 +58,8 @@ end
 "
             FileUtils.chmod(0755, lCGIScriptFileName)
           end
+
+          return nil
         end
         
       end

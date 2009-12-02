@@ -8,44 +8,31 @@
 #++
 
 module WEACEInstall
-  
+
   module Master
-  
+
     module Providers
-    
+
       class SourceForge
-    
-        include WEACEInstall::Common
-    
-        # Get options of this installer
+
+        # Get the environment specifics to this provider type.
+        # Please check http://weacemethod.sourceforge.net to know every possible value.
         #
-        # Parameters:
-        # * *ioDescription* (_ComponentDescription_): The component's description to fill
-        def getDescription(ioDescription)
-          ioDescription.Version = '0.0.1.20090414'
-          ioDescription.Description = 'The SourceForge.net environment specifics for WEACE Master Server/Adapters.'
-          ioDescription.Author = 'murielsalvan@users.sourceforge.net'
-          ioDescription.addVarOption(:ProjectUnixName,
-            '-p', '--project <ProjectUnixName>', String,
-            '<ProjectUnixName>: SourceForge.net\'s project name.',
-            'Example: myproject')
+        # Return:
+        # * <em>map<Symbol,Object></em>: The map of options
+        def getRuntimeWEACEMasterServerEnvironment
+          return {
+            :CGI => {
+              :InternalDirectory => "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}/cgi-bin",
+              :URL => "http://#{@ProjectUnixName}.sourceforge.net/cgi-bin"
+            }
+          }
         end
-        
-        # Set the environment specifics to this provider type
-        #
-        # Parameters:
-        # * *ioProviderConfig* (_ProviderConfig_)" The provider configuration object to populate with our specifics
-        def getRuntimeWEACEMasterServerEnvironment(ioProviderConfig)
-          # Check parameters first
-          lProjectDir = "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}"
-          ioProviderConfig.CGIDir = "#{lProjectDir}/cgi-bin"
-          ioProviderConfig.CGIURL = "http://#{@ProjectUnixName}.sourceforge.net/cgi-bin"
-        end
-    
+
       end
-      
+
     end
-    
+
   end
 
 end

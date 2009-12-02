@@ -8,31 +8,26 @@
 #++
 
 module WEACEInstall
-  
-  module Slave
-  
+
+  module Master
+
     module Providers
-    
-      class SourceForge
-    
+
+      class Local
+
         # Get the environment specifics to this provider type.
         # Please check http://weacemethod.sourceforge.net to know every possible value.
         #
         # Return:
         # * <em>map<Symbol,Object></em>: The map of options
-        def getRuntimeWEACESlaveClientEnvironment
-          return {
-            :CGI => {
-              :InternalDirectory => "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}/cgi-bin",
-              :URL => "http://#{@ProjectUnixName}.sourceforge.net/cgi-bin"
-            }
-          }
+        def getRuntimeWEACEMasterServerEnvironment
+          return {}
         end
 
       end
-      
+
     end
-    
+
   end
 
 end

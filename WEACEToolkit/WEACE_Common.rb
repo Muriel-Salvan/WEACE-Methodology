@@ -12,27 +12,6 @@ require 'fileutils'
 
 module WEACE
 
-  # Class encapsulating an installed Component's description
-  class InstalledComponentDescription
-  
-    # The description
-    #   String
-    attr_accessor :Description
-    
-    # The date of install
-    #   Date
-    attr_accessor :Date
-    
-    # The version installed
-    #   String
-    attr_accessor :Version
-    
-    # The author
-    #   String
-    attr_accessor :Author
-    
-  end
-  
   # Actions to be performed by Slave Clients
   # For the Tickets Manager:
   Action_Ticket_AddLinkToTask = 'Ticket_AddLinkToTask'
