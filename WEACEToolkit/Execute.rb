@@ -10,13 +10,6 @@
 
 require 'fileutils'
 
-# Get WEACE base directory (in absolute form), and add it to the LOAD_PATH
-lOldDir = Dir.getwd
-Dir.chdir(File.dirname(__FILE__))
-$WEACEToolkitDir = Dir.getwd
-Dir.chdir(lOldDir)
-$LOAD_PATH << $WEACEToolkitDir
-
 require 'WEACE_Common.rb'
 
 module WEACE
