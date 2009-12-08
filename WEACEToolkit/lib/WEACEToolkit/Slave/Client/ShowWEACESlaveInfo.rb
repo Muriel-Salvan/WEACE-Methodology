@@ -9,7 +9,7 @@ lWEACEToolkitDir = Dir.getwd
 Dir.chdir(lOldDir)
 $LOAD_PATH << lWEACEToolkitDir
 
-require 'WEACE_Common.rb'
+require 'WEACEToolkit/WEACE_Common'
 
 module WEACE
 
@@ -22,7 +22,7 @@ module WEACE
       # Dump Client info
       def dumpSlaveClient_HTML
         # Require the file containing WEACE Slave Info
-        require 'Master/Server/InstalledWEACESlaveComponents.rb'
+        require 'WEACEToolkit/Master/Server/InstalledWEACESlaveComponents'
         # Get the info
         lDescription = WEACE::Master::getInstallationDescription
         puts '<h1>WEACE Slave Client installed:</h1>'
@@ -37,7 +37,7 @@ module WEACE
       # Dump Adapters info
       def dumpInstalledSlaveAdapters_HTML
         # Require the file registering WEACE Slave Components
-        require 'Slave/Client/InstalledWEACESlaveComponents.rb'
+        require 'WEACEToolkit/Slave/Client/InstalledWEACESlaveComponents'
         # Get the Adapters list
         lInstalledAdapters = WEACE::Slave::getInstalledAdapters
         puts "<h1>#{lInstalledAdapters.size} products have installed WEACE Slave Adapters:</h1>"
@@ -81,7 +81,7 @@ module WEACE
       # Dump Listeners info
       def dumpInstalledSlaveListeners_HTML
         # Require the file registering WEACE Slave Components
-        require 'Slave/Client/InstalledWEACESlaveComponents.rb'
+        require 'WEACEToolkit/Slave/Client/InstalledWEACESlaveComponents'
         # Get the Listeners list
         lInstalledListeners = WEACE::Slave::getInstalledListeners
         puts "<h1>#{lInstalledListeners.size} listeners are installed on this WEACE Slave Client:</h1>"

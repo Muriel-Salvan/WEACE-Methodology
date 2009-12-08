@@ -7,7 +7,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'Install/Slave/Adapters/Redmine/Install_Redmine_Common.rb'
+require 'WEACEToolkit/Install/Slave/Adapters/Redmine/Install_Redmine_Common'
 
 module WEACEInstall
 

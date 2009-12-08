@@ -7,7 +7,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACE_Common.rb'
+require 'WEACEToolkit/WEACE_Common'
 
 module WEACEInstall
   

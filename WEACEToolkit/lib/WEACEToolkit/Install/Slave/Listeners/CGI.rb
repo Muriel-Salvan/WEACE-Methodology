@@ -49,7 +49,7 @@ lUserID = lCgi['userid']
 lSerializedActions = lCgi['actions']
 
 # Call WEACE Slave Client
-require '#{$WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb'
+require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
 if (WEACE::Slave::Client.new.executeMarshalled(lUserID, lSerializedActions))
   puts 'CGI_EXIT: OK'
 else

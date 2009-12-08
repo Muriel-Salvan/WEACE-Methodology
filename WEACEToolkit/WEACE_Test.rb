@@ -7,7 +7,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACE_Common.rb'
+require 'WEACEToolkit/WEACE_Common'
 require 'fileutils'
 require 'tmpdir'
 
@@ -27,11 +27,9 @@ module WEACE
 
       end
 
-      # Replace variables that can be used in lines of test files
-      # Current replacements:
-      # '%{WEACEToolkitDir}' => $WEACEToolkitDir
-      # '%{ProviderCGIURL}' => 'http://mytest.com/cgi'
-      # '%%' => '%'
+      # Replace variables that can be used in lines of test files.
+      # Use @ConstextVars to decide which variables to replace.
+      # Replace alse '%%' with '%'
       #
       # Parameters:
       # * *iLine* (_String_): The line containing variables
@@ -260,6 +258,7 @@ module WEACE
         # The map of variables that will be replaced by their values in the test files and command lines
         #   map< Symbol, Object >
         @ContextVars = {
+          # TODO: Remove usage of $WEACEToolkitDir
           'WEACEToolkitDir' => $WEACEToolkitDir,
           'ProviderCGIURL' => 'http://mytest.com/cgi'
         }
@@ -364,7 +363,7 @@ module WEACE
         logDebug "Execute component #{@ComponentName}"
         # Require the correct adapter file for the given action
         begin
-          require "Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb"
+          require "WEACEToolkit/Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}"
           begin
             lAdapter = eval("#{@ProductID}::#{@ToolID}::#{@ActionID}.new")
             instantiateVars(lAdapter, iProductParameters)

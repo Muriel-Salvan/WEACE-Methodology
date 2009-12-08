@@ -22,7 +22,7 @@ module WEACE
        Dump Server info
       def dumpMasterServer_HTML
          Require the file containing WEACE Master Info
-        require 'Master/Server/InstalledWEACEMasterComponents.rb'
+        require 'WEACEToolkit/Master/Server/InstalledWEACEMasterComponents'
          Get the info
         lDescription = WEACE::Master::getInstallationDescription
         puts '<h1>WEACE Master Server installed:</h1>'
@@ -37,7 +37,7 @@ module WEACE
       # Dump Adapters info
       def dumpInstalledMasterAdapters_HTML
         # Require the file registering WEACE Master Adapters
-        require 'Master/Server/InstalledWEACEMasterComponents.rb'
+        require 'WEACEToolkit/Master/Server/InstalledWEACEMasterComponents'
         # Get the list
         lInstalledAdapters = WEACE::Master::getInstalledAdapters
         puts "<h1>#{lInstalledAdapters.size} products have installed WEACE Master Adapters:</h1>"
@@ -82,9 +82,9 @@ module WEACE
       # Dump known clients info
       def dumpKnownSlaveClients_HTML
         # Require the WEACE Master Server
-        require 'Master/Server/WEACEMasterServer.rb'
+        require 'WEACEToolkit/Master/Server/WEACEMasterServer'
         # Require the WEACE Master Server configuration
-        require 'Master/Server/config/Config.rb'
+        require 'WEACEToolkit/Master/Server/config/Config'
         # Get config
         lConfig = WEACE::Master::Config.new
         WEACE::Master::getWEACEMasterServerConfig(lConfig)

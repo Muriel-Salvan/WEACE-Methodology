@@ -15,8 +15,8 @@ RUtilAnts::Misc::initializeMisc
 require 'rUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
 
-require 'WEACE_Common.rb'
-require 'Install/WEACE_InstallCommon.rb'
+require 'WEACEToolkit/WEACE_Common'
+require 'WEACEToolkit/Install/WEACE_InstallCommon'
 
 module WEACEInstall
 
@@ -28,6 +28,13 @@ module WEACEInstall
 
     # Constructor
     def initialize
+      # Read the configuration directory
+      lWEACERepositoryDir = getWEACERepositoryDir
+      @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
+      @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
+      @WEACEInstalledComponentsDir = "#{lWEACERepositoryDir}/InstalledComponents"
+      # Get the libraries directory
+      @WEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/..")
       # Registered installable master and slave adapters
       # map< String,    map< String, nil > >
       # map< ProductID, map< ToolID, nil > >
@@ -39,26 +46,26 @@ module WEACEInstall
       @InstallableComponents = {}
       # Initialize logging
       require 'rUtilAnts/Logging'
-      RUtilAnts::Logging::initializeLogging($WEACEToolkitDir, 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+      RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
       # Store a log file in the Install directory
-      setLogFile("#{$WEACEToolkitDir}/Install/install.log")
+      setLogFile("#{@WEACEInstallDir}/Install.log")
       # Read plugins
       require 'rUtilAnts/Plugins'
       @PluginsManager = RUtilAnts::Plugins::PluginsManager.new
       # Master Server
-      parseWEACEPluginsFromDir('Master/Server', "#{$WEACEToolkitDir}/Install/Master/Server", 'WEACEInstall::Master')
+      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/WEACEToolkit/Install/Master/Server", 'WEACEInstall::Master')
       # Master Providers
-      parseWEACEPluginsFromDir('Master/Providers', "#{$WEACEToolkitDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+      parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/WEACEToolkit/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
       # Master Adapters
       parseAdapters('Master', @MasterAdapters)
       # Slave Client
-      parseWEACEPluginsFromDir('Slave/Client', "#{$WEACEToolkitDir}/Install/Slave/Client", 'WEACEInstall::Slave')
+      parseWEACEPluginsFromDir('Slave/Client', "#{@WEACELibDir}/WEACEToolkit/Install/Slave/Client", 'WEACEInstall::Slave')
       # Slave Providers
-      parseWEACEPluginsFromDir('Slave/Providers', "#{$WEACEToolkitDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+      parseWEACEPluginsFromDir('Slave/Providers', "#{@WEACELibDir}/WEACEToolkit/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
       # Slave Adapters
       parseAdapters('Slave', @SlaveAdapters)
       # Slave Listeners
-      parseWEACEPluginsFromDir('Slave/Listeners', "#{$WEACEToolkitDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+      parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/WEACEToolkit/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
     end
 
     # Execute the installer
@@ -97,7 +104,7 @@ module WEACEInstall
               :Tags => [],
               :DevStatus => 'Unofficial'
             }
-            lReleaseInfoFileName = "#{$WEACEToolkitDir}/ReleaseInfo"
+            lReleaseInfoFileName = "#{@WEACELibDir}/ReleaseInfo"
             if (File.exists?(lReleaseInfoFileName))
               File.open(lReleaseInfoFileName, 'r') do |iFile|
                 lReleaseInfo = eval(iFile.read)
@@ -126,12 +133,7 @@ module WEACEInstall
     def getInstalledComponentDescription(iComponentName)
       rDescription = nil
 
-      lRegisteredFileName = nil
-      if (iComponentName.match(/^Master\/.*$/) != nil)
-        lRegisteredFileName = "#{$WEACEToolkitDir}/Master/Repository/#{getValidFileName(iComponentName)}.rb"
-      else
-        lRegisteredFileName = "#{$WEACEToolkitDir}/Slave/Repository/#{getValidFileName(iComponentName)}.rb"
-      end
+      lRegisteredFileName = "#{@WEACEInstallDir}/InstalledComponents/#{getValidFileName(iComponentName)}.rb"
       if (File.exists?(lRegisteredFileName))
         File.open(lRegisteredFileName, 'r') do |iFile|
           rDescription = eval(iFile.read)
@@ -259,17 +261,17 @@ module WEACEInstall
     # Register a new WEACE Adapter
     #
     # Parameters:
-    # * *iRepositoryDir* (_String_): Repository directory
     # * *iComponentName* (_String_): Name of the component to register
     # * *iDescription* (<em>map<Symbol,Object></em>): The plugin description
     # * *iParameters* (<em>list<String></em>): Parameters used when installing this component
-    def registerInstalledComponent(iRepositoryDir, iComponentName, iDescription, iParameters)
-      lFileName = "#{iRepositoryDir}/#{getValidFileName(iComponentName)}.rb"
+    def registerInstalledComponent(iComponentName, iDescription, iParameters)
+      lRepositoryDir = "#{@WEACEInstallDir}/InstalledComponents"
+      lFileName = "#{lRepositoryDir}/#{getValidFileName(iComponentName)}.rb"
       logDebug "Register #{iComponentName} in file #{lFileName} ..."
       # Create the repository if needed
-      if (!File.exists?(iRepositoryDir))
+      if (!File.exists?(lRepositoryDir))
         require 'fileutils'
-        FileUtils::mkdir_p(iRepositoryDir)
+        FileUtils::mkdir_p(lRepositoryDir)
       end
       File.open(lFileName, 'w') do |oFile|
         # TODO: Check if Version can be used here
@@ -308,11 +310,11 @@ module WEACEInstall
               (!lIsSlaveClient))
             # We are installing an Adapter or Listener. Check that its Server/Client is installed.
             if (lIsMaster)
-              if (!File.exists?("#{$WEACEToolkitDir}/Master/Repository/Master_Server_WEACEMasterServer.rb"))
+              if (!File.exists?("#{@WEACEInstallDir}/InstalledComponents/Master_Server_WEACEMasterServer.rb"))
                 logErr "You must first install component Master/Server/WEACEMasterServer before installing #{iComponentName}."
                 lCancel = true
               end
-            elsif (!File.exists?("#{$WEACEToolkitDir}/Slave/Repository/Slave_Client_WEACESlaveClient.rb"))
+            elsif (!File.exists?("#{@WEACEInstallDir}/InstalledComponents/Slave_Client_WEACESlaveClient.rb"))
               logErr "You must first install component Slave/Client/WEACESlaveClient before installing #{iComponentName}."
               lCancel = true
             end
@@ -327,11 +329,7 @@ module WEACEInstall
               lError = ioPlugin.execute(lAdditionalArgs)
               if (lError == nil)
                 # Register this component as being installed
-                if (lIsMaster)
-                  registerInstalledComponent("#{$WEACEToolkitDir}/Master/Repository", iComponentName, ioPlugin.pluginDescription, iParameters)
-                else
-                  registerInstalledComponent("#{$WEACEToolkitDir}/Slave/Repository", iComponentName, ioPlugin.pluginDescription, iParameters)
-                end
+                registerInstalledComponent(iComponentName, ioPlugin.pluginDescription, iParameters)
                 logMsg "Component #{iComponentName} installed successfully."
               elsif (lError.kind_of?(Exception))
                 logExc lError, "An error occurred while installing component #{iComponentName}."
@@ -355,7 +353,7 @@ module WEACEInstall
     # ** *iProductID* (_String_): Name of the Product
     # ** *iToolID* (_String_): Name of the Tool
     def eachAdapterDir(iDirectoryType)
-      Dir.glob("#{$WEACEToolkitDir}/Install/#{iDirectoryType}/Adapters/*").each do |iProductDirName|
+      Dir.glob("#{@WEACELibDir}/WEACEToolkit/Install/#{iDirectoryType}/Adapters/*").each do |iProductDirName|
         if (File.directory?(iProductDirName))
           lProductID = File.basename(iProductDirName)
           Dir.glob("#{iProductDirName}/*").each do |iToolDirName|
@@ -473,7 +471,7 @@ module WEACEInstall
     def parseAdapters(iDirectoryType, oAdaptersMap)
       eachAdapterDir(iDirectoryType) do |iProductID, iToolID|
         lCategoryName = "#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}"
-        parseWEACEPluginsFromDir(lCategoryName, "#{$WEACEToolkitDir}/Install/#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}", "WEACEInstall::#{iDirectoryType}::Adapters::#{iProductID}::#{iToolID}")
+        parseWEACEPluginsFromDir(lCategoryName, "#{@WEACELibDir}/WEACEToolkit/Install/#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}", "WEACEInstall::#{iDirectoryType}::Adapters::#{iProductID}::#{iToolID}")
         # Register this product/tool category
         if (oAdaptersMap[iProductID] == nil)
           oAdaptersMap[iProductID] = {}

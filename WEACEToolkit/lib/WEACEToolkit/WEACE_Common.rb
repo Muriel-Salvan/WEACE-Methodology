@@ -63,6 +63,20 @@ module WEACE
   # Various methods used broadly
   module Toolbox
 
+    # Get the repository directory.
+    #
+    # Return:
+    # * _String_: The directory where the repository lies
+    def getWEACERepositoryDir
+      rDir = ENV['WEACE_CONFIG_PATH']
+
+      if (rDir == nil)
+        rDir = File.expand_path("#{File.dirname(__FILE__)}/../../config")
+      end
+
+      return rDir
+    end
+
     # Iterate through installed Adapters in the filesystem
     #
     # Parameters:
@@ -73,10 +87,10 @@ module WEACE
     # ** *iToolID* (_String_): The tool ID
     # ** *iScriptID* (_String_): The script ID
     def eachAdapter(iDirectory, iInstallDir)
-      lRootDir = $WEACEToolkitDir
+      lRootDir = File.dirname(__FILE__)
       lScriptPrefix = ''
       if (iInstallDir)
-        lRootDir = "#{$WEACEToolkitDir}/Install"
+        lRootDir += '/Install'
         lScriptPrefix = 'Install_'
       end
       Dir.glob("#{lRootDir}/#{iDirectory}/Adapters/*") do |iFileName1|
@@ -222,7 +236,7 @@ end
       require 'fileutils'
       FileUtils.chmod(0700, lFileName)
       # Call the other session
-      execCmd("#{iShellCmd}; ruby -w #{$WEACEToolkitDir}/Execute.rb #{lFileName} 2>&1")
+      execCmd("#{iShellCmd}; ruby -w WEACEExecute.rb #{lFileName} 2>&1")
     end
   
     # Execute a command

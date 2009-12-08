@@ -26,9 +26,9 @@ module WEACE
         checkVar(:WEACEToolkitDir, 'The installation directory of the WEACE Slave Toolkit')
         # Try requiring directly the Slave Client
         begin
-          require "#{@WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb"
+          require "WEACEToolkit/Slave/Client/WEACESlaveClient"
         rescue RuntimeError
-          logErr "Unable to require file #{@WEACEToolkitDir}/Slave/Client/WEACESlaveClient.rb: #{$!}."
+          logErr "Unable to require file WEACEToolkit/Slave/Client/WEACESlaveClient: #{$!}."
           logErr $!.backtrace.join("\n")
           return false
         end

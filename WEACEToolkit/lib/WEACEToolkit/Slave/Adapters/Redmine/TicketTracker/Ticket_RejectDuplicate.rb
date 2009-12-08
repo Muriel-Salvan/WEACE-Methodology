@@ -7,7 +7,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'Slave/Adapters/Redmine/Redmine_Common.rb'
+require 'WEACEToolkit/Slave/Adapters/Redmine/Redmine_Common'
 require 'date'
 
 module Redmine

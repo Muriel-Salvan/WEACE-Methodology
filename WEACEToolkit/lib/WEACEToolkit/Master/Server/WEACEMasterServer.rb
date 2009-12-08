@@ -1,5 +1,5 @@
-# Usage:
-# ruby -w WEACEMasterServer.rb <UserScriptID> <ScriptID> <ScriptParameters>
+# Called using WEACEExecute.rb using the following parameters:
+# <UserScriptID> <ScriptID> <ScriptParameters>
 #
 # <ScriptParameters> depend on <ScriptID>. Here are the possible <ScriptID> values and their corresponding possible <ScriptParameters>:
 # * Task_LinkTicket <TicketID> <TaskID>
@@ -9,7 +9,7 @@
 # * Dev_Release <BranchID> <Comment>
 # * Dev_NewBranch <BranchID> <Comment>
 #
-# Example: ruby -w WEACEMasterServer.rb Scripts_Validator Ticket_CloseDuplicate 123 456
+# Example: ruby -w WEACEExecute.rb MasterServer Scripts_Validator Ticket_CloseDuplicate 123 456
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
@@ -17,14 +17,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-# Get WEACE base directory, and add it to the LOAD_PATH
-lOldDir = Dir.getwd
-Dir.chdir("#{File.dirname(__FILE__)}/../..")
-$WEACEToolkitDir = Dir.getwd
-Dir.chdir(lOldDir)
-$LOAD_PATH << $WEACEToolkitDir
-
-require 'WEACE_Common.rb'
+require 'WEACEToolkit/WEACE_Common'
 
 module WEACE
 
@@ -93,130 +86,121 @@ module WEACE
       # Execute the server for a given configuration
       #
       # Parameters:
-      # * *iUserScriptID* (_String_): The user name of the script
-      # * *iScriptID* (_String_): The script to execute
-      # * *iScriptParameters* (<em>list<String></em>): Additional parameters to give the script
+      # * *iParameters* (<em>list<String></em>): The list of parameters
       # Return:
       # * _Boolean_: Has the operation completed successfully ?
-      def execute(iUserScriptID, iScriptID, iScriptParameters)
-        # Read the configuration file
-        begin
-          require 'Master/Server/config/Config.rb'
-        rescue Exception
-          puts '!!! Unable to load the configuration from file \'config/Config.rb\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.'
-          return false
-        end
-        lConfig = WEACE::Master::Config.new
-        WEACE::Master::getWEACEMasterServerConfig(lConfig)
-        setLogFile(lConfig.LogFile)
-        logInfo '== WEACE Master Server called =='
-        logDebug "* User: #{iUserScriptID}"
-        logDebug "* Script: #{iScriptID}"
-        logDebug "* Parameters: #{iScriptParameters.inspect}"
-        logDebug "#{lConfig.RegisteredClients.size} clients configuration:"
-        lIdx = 0
-        lConfig.RegisteredClients.each do |iSlaveClientInfo|
-          iClientType, iClientTools, iClientParameters = iSlaveClientInfo
-          logDebug "* Client n.#{lIdx}:"
-          logDebug "** Type: #{iClientType}"
-          logDebug "** Parameters: #{iClientParameters.inspect}"
-          logDebug "** #{iClientTools.size} tools are installed on this client:"
-          iClientTools.each do |iToolID|
-            logDebug "*** #{iToolID}"
-          end
-          lIdx += 1
-        end
-        # First check that our requires are indeed present
-        begin
-          require "Master/Server/Process_#{iScriptID}.rb"
-        rescue RuntimeError
-          logErr "Unable to load the process corresponding to script #{iScriptID}"
-          return false
-        end
-        lConfig.RegisteredClients.each do |iSlaveClientInfo|
-          iClientType, iClientTools, iClientParameters = iSlaveClientInfo
+      def execute(iParameters)
+        rSuccess = true
+
+        # Parse parameters
+        lUserScriptID, lScriptID = iParameters[0..1]
+        lScriptParameters = iParameters[2..-1]
+        if ((lUserScriptID == nil) or
+            (lScriptID == nil) or
+            (lScriptParameters == nil))
+          # Print some usage
+          logErr "Incorrect parameters: \"#{iParameters.join(' ')}\".
+Signature: <UserScriptID> <ScriptID> <ScriptParameters>
+
+<ScriptParameters> depend on <ScriptID>. Here are the possible <ScriptID> values and their corresponding possible <ScriptParameters>:
+* Task_LinkTicket <TicketID> <TaskID>
+* Ticket_CloseDuplicate <MasterTicketID> <SlaveTicketID>
+* Plan_PublishProjects
+* Dev_Commit <Comment> -t [ <TaskID> ]* -f [ <FileName> ]*
+* Dev_Release <BranchID> <Comment>
+* Dev_NewBranch <BranchID> <Comment>
+
+Example: Scripts_Validator Ticket_CloseDuplicate 123 456
+
+Check http://weacemethod.sourceforge.net for details."
+          rSuccess = false
+        else
+          # Read the configuration file
           begin
-            require "Master/Server/Sender_#{iClientType}.rb"
-          rescue RuntimeError
-            logErr "Unable to load the sender library corresponding to client type #{iClientType}"
-            return false
+            require 'WEACEToolkit/Master/Server/config/Config'
+          rescue Exception
+            logExc $!, '!!! Unable to load the configuration from file \'config/Config.rb\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.'
+            rSuccess = false
           end
-        end
-        # Call the corresponding script, and get its summary of actions to propagate to the Slave Clients.
-        lSlaveActions = SlaveActions.new
-        processScript(lSlaveActions, *iScriptParameters)
-        # And now call concerned Slave Clients with the returned Slave Actions to perform
-        lErrors = []
-        lConfig.RegisteredClients.each do |iSlaveClientInfo|
-          iClientType, iClientTools, iClientParameters = iSlaveClientInfo
-          # Gather all the Slave Actions to send to this client
-          # map< ToolID, list< ActionID, Parameters > >
-          lSlaveActionsForClient = {}
-          lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
-            if ((iClientTools.include?(iToolID)) or
-                (iClientTools.include?(Tools_All)))
-              lSlaveActionsForClient[iToolID] = iSlaveActionsList
+          if (rSuccess)
+            lConfig = WEACE::Master::Config.new
+            WEACE::Master::getWEACEMasterServerConfig(lConfig)
+            setLogFile(lConfig.LogFile)
+            logInfo '== WEACE Master Server called =='
+            logDebug "* User: #{lUserScriptID}"
+            logDebug "* Script: #{lScriptID}"
+            logDebug "* Parameters: #{lScriptParameters.inspect}"
+            logDebug "#{lConfig.RegisteredClients.size} clients configuration:"
+            lIdx = 0
+            lConfig.RegisteredClients.each do |iSlaveClientInfo|
+              iClientType, iClientTools, iClientParameters = iSlaveClientInfo
+              logDebug "* Client n.#{lIdx}:"
+              logDebug "** Type: #{iClientType}"
+              logDebug "** Parameters: #{iClientParameters.inspect}"
+              logDebug "** #{iClientTools.size} tools are installed on this client:"
+              iClientTools.each do |iToolID|
+                logDebug "*** #{iToolID}"
+              end
+              lIdx += 1
+            end
+            # First check that our requires are indeed present
+            begin
+              require "WEACEToolkit/Master/Server/Process_#{lScriptID}"
+            rescue RuntimeError
+              logErr "Unable to load the process corresponding to script #{lScriptID}"
+              return false
+            end
+            lConfig.RegisteredClients.each do |iSlaveClientInfo|
+              iClientType, iClientTools, iClientParameters = iSlaveClientInfo
+              begin
+                require "WEACEToolkit/Master/Server/Sender_#{iClientType}"
+              rescue RuntimeError
+                logErr "Unable to load the sender library corresponding to client type #{iClientType}"
+                return false
+              end
+            end
+            # Call the corresponding script, and get its summary of actions to propagate to the Slave Clients.
+            lSlaveActions = SlaveActions.new
+            processScript(lSlaveActions, *lScriptParameters)
+            # And now call concerned Slave Clients with the returned Slave Actions to perform
+            lErrors = []
+            lConfig.RegisteredClients.each do |iSlaveClientInfo|
+              iClientType, iClientTools, iClientParameters = iSlaveClientInfo
+              # Gather all the Slave Actions to send to this client
+              # map< ToolID, list< ActionID, Parameters > >
+              lSlaveActionsForClient = {}
+              lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
+                if ((iClientTools.include?(iToolID)) or
+                    (iClientTools.include?(Tools_All)))
+                  lSlaveActionsForClient[iToolID] = iSlaveActionsList
+                end
+              end
+              if (!lSlaveActionsForClient.empty?)
+                # Send them, calling the correct sender, depending on the Slave Client type
+                lSender = eval("Sender_#{iClientType}.new")
+                logDebug "Send update to client #{iClientType}: #{iClientParameters.inspect} ..."
+                instantiateVars(lSender, iClientParameters)
+                lSuccess = lSender.sendMessage(iUserScriptID, lSlaveActionsForClient)
+                if (!lSuccess)
+                  lErrors << "Unable to send the update to client #{iClientType}: #{iClientParameters.inspect}"
+                  logDebug "... Failure to send update to client #{iClientType}: #{iClientParameters.inspect}"
+                else
+                  logDebug "... Update sent successfully to client #{iClientType}: #{iClientParameters.inspect}"
+                end
+              end
+            end
+            if (!lErrors.empty?)
+              logErr 'Several errors encountered:'
+              logErr lErrors.join("\n")
+              rSuccess = false
             end
           end
-          if (!lSlaveActionsForClient.empty?)
-            # Send them, calling the correct sender, depending on the Slave Client type
-            lSender = eval("Sender_#{iClientType}.new")
-            logDebug "Send update to client #{iClientType}: #{iClientParameters.inspect} ..."
-            instantiateVars(lSender, iClientParameters)
-            lSuccess = lSender.sendMessage(iUserScriptID, lSlaveActionsForClient)
-            if (!lSuccess)
-              lErrors << "Unable to send the update to client #{iClientType}: #{iClientParameters.inspect}"
-              logDebug "... Failure to send update to client #{iClientType}: #{iClientParameters.inspect}"
-            else
-              logDebug "... Update sent successfully to client #{iClientType}: #{iClientParameters.inspect}"
-            end
-          end
         end
-        if (!lErrors.empty?)
-          logErr 'Several errors encountered:'
-          logErr lErrors.join("\n")
-          return false
-        end
-        logInfo '== WEACE Master Server completed successfully =='
-        return true
+        return rSuccess
       end
       
     end
   
   end
 
-end
-
-# If we were invoked directly
-if (__FILE__ == $0)
-  # Parse command line arguments, check them, and call the main function
-  lUserScriptID, lScriptID = ARGV[0..1]
-  lScriptParameters = ARGV[2..-1]
-  if ((lUserScriptID == nil) or
-      (lScriptID == nil) or
-      (lScriptParameters == nil))
-    # Print some usage
-    puts 'Usage:'
-    puts 'ruby -w WEACEMasterServer.rb <UserScriptID> <ScriptID> <ScriptParameters>'
-    puts ''
-    puts '<ScriptParameters> depend on <ScriptID>. Here are the possible <ScriptID> values and their corresponding possible <ScriptParameters>:'
-    puts '* Task_LinkTicket <TicketID> <TaskID>'
-    puts '* Ticket_CloseDuplicate <MasterTicketID> <SlaveTicketID>'
-    puts '* Plan_PublishProjects'
-    puts '* Dev_Commit <Comment> -t [ <TaskID> ]* -f [ <FileName> ]*'
-    puts '* Dev_Release <BranchID> <Comment>'
-    puts '* Dev_NewBranch <BranchID> <Comment>'
-    puts ''
-    puts 'Example: ruby -w WEACEMasterServer.rb Scripts_Validator Ticket_CloseDuplicate 123 456'
-    puts ''
-    puts 'Check http://weacemethod.sourceforge.net for details.'
-    exit 1
-  else
-    # Execute
-    if (WEACE::Master::Server.new.execute(lUserScriptID, lScriptID, lScriptParameters))
-      exit 0
-    else
-      exit 1
-    end
-  end
 end

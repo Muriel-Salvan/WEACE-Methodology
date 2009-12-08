@@ -7,7 +7,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'Install/Master/Adapters/Redmine/Install_Redmine_Common.rb'
+require 'WEACEToolkit/Install/Master/Adapters/Redmine/Install_Redmine_Common'
 
 module WEACEInstall
 
@@ -47,7 +47,7 @@ module WEACEInstall
     if (request.post?)
       if (@relation.relation_type == IssueRelation::TYPE_DUPLICATES)
         # Call WEACE Master Server
-        lCommand = \"cd #{$WEACEToolkitDir}/Master/Server; #{@RubyPath} -w WEACEMasterServer.rb Scripts_Validator Ticket_CloseDuplicate \#{@relation.issue_to_id} \#{@issue.id} 2>&1\"
+        lCommand = \"#{@RubyPath} -w WEACEExecute.rb MasterServer Scripts_Validator Ticket_CloseDuplicate \#{@relation.issue_to_id} \#{@issue.id} 2>&1\"
         lOutput = `\#{lCommand}`
         lErrorCode = $?
         if (lErrorCode != 0)

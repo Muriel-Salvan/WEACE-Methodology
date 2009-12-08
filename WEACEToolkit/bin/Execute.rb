@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!env ruby
 #
 # Provide a way to call a method with its parameters directly from this script.
 # This is intended to be used internally by some WEACE Toolkit scripts.
@@ -10,7 +10,7 @@
 
 require 'fileutils'
 
-require 'WEACE_Common.rb'
+require 'WEACEToolkit/WEACE_Common'
 
 module WEACE
 
