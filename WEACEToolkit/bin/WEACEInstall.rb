@@ -20,26 +20,6 @@ require 'WEACEToolkit/Install/WEACE_InstallCommon'
 
 module WEACEInstall
 
-  # Error while parsing command line arguments
-  class CommandLineError < RuntimeError
-  end
-
-  # Error raised when encountering an unknown component
-  class UnknownComponentError < RuntimeError
-  end
-
-  # Error raised when installing an already installed component
-  class ComponentAlreadyInstalledError < RuntimeError
-  end
-
-  # Error raised when attempting to install components depending on WEACE Master Server
-  class MissingWEACEMasterServerError < RuntimeError
-  end
-
-  # Error raised when attempting to install components depending on WEACE Slave Client
-  class MissingWEACESlaveClientError < RuntimeError
-  end
-
   # Main Installer class
   class Installer
   

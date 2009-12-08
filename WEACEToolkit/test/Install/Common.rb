@@ -74,6 +74,10 @@ module WEACE
         # ** *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
         # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
         # ** *:AddRegressionMasterAdapters (_Boolean_): Do we add the Master Adapters from regression ? [optional = false]
+        # ** *:AddRegressionSlaveAdapters (_Boolean_): Do we add the Slave Adapters from regression ? [optional = false]
+        # ** *:AddRegressionSlaveListeners (_Boolean_): Do we add the Slave Listeners from regression ? [optional = false]
+        # ** *:AddRegressionMasterProviders (_Boolean_): Do we add the Master Providers from regression ? [optional = false]
+        # ** *:AddRegressionSlaveProviders (_Boolean_): Do we add the Slave Providers from regression ? [optional = false]
         # * _CodeBlock_: The code called once the installer was run: [optional = nil]
         # ** *iError* (_Exception_): The error returned by the installer, or nil in case of success
         # Return:
@@ -89,9 +93,29 @@ module WEACE
           if (lAddRegressionMasterAdapters == nil)
             lAddRegressionMasterAdapters = false
           end
+          lAddRegressionSlaveAdapters = iOptions[:AddRegressionSlaveAdapters]
+          if (lAddRegressionSlaveAdapters == nil)
+            lAddRegressionSlaveAdapters = false
+          end
+          lAddRegressionSlaveListeners = iOptions[:AddRegressionSlaveListeners]
+          if (lAddRegressionSlaveListeners == nil)
+            lAddRegressionSlaveListeners = false
+          end
+          lAddRegressionMasterProviders = iOptions[:AddRegressionMasterProviders]
+          if (lAddRegressionMasterProviders == nil)
+            lAddRegressionMasterProviders = false
+          end
+          lAddRegressionSlaveProviders = iOptions[:AddRegressionSlaveProviders]
+          if (lAddRegressionSlaveProviders == nil)
+            lAddRegressionSlaveProviders = false
+          end
 
           # Create the installer
           lInstaller = WEACEInstall::Installer.new
+
+          # Mute any output except for terminal output.
+          setLogErrorsStack([])
+          setLogMessagesStack([])
 
           # Create a new repository by copying the wanted one
           lRepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}")
@@ -102,40 +126,73 @@ module WEACE
           lInstaller.instance_variable_set(:@WEACEConfigDir, "#{lTmpRepositoryDir}/Config")
           lInstaller.instance_variable_set(:@WEACEInstalledComponentsDir, "#{lTmpRepositoryDir}/Install/InstalledComponents")
 
-          # Add additional components for the regression here
-          if (lAddRegressionMasterAdapters)
-            # Change the library directory (save it to restore it after)
-            lOldWEACELibDir = lInstaller.instance_variable_get(:@WEACELibDir)
-            lInstaller.instance_variable_set(:@WEACELibDir, File.expand_path("#{File.dirname(__FILE__)}/../Components"))
+          # Ensure that the directory will be cleaned whatever happens
+          begin
 
-            # Get the current adapters
-            lCurrentAdapters = lInstaller.instance_variable_get(:@MasterAdapters)
-            # Parse for the regression adapters
-            lInstaller.send(:parseAdapters, 'Master', lCurrentAdapters)
-            # Change the adapters with the newly parsed ones
-            lInstaller.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
+            # Add additional components for the regression here
+            if (lAddRegressionMasterAdapters or
+                lAddRegressionSlaveAdapters or
+                lAddRegressionSlaveListeners or
+                lAddRegressionMasterProviders or
+                lAddRegressionSlaveProviders)
+              # Change the library directory (save it to restore it after)
+              lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
+              lOldWEACELibDir = lInstaller.instance_variable_get(:@WEACELibDir)
+              lInstaller.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
 
-            # Restore back the WEACE lib dir
-            lInstaller.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
+              if (lAddRegressionMasterAdapters)
+                # Get the current adapters
+                lCurrentAdapters = lInstaller.instance_variable_get(:@MasterAdapters)
+                # Parse for the regression adapters
+                lInstaller.send(:parseAdapters, 'Master', lCurrentAdapters)
+                # Change the adapters with the newly parsed ones
+                lInstaller.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
+              end
+
+              if (lAddRegressionSlaveAdapters)
+                # Get the current adapters
+                lCurrentAdapters = lInstaller.instance_variable_get(:@SlaveAdapters)
+                # Parse for the regression adapters
+                lInstaller.send(:parseAdapters, 'Slave', lCurrentAdapters)
+                # Change the adapters with the newly parsed ones
+                lInstaller.instance_variable_set(:@SlaveAdapters, lCurrentAdapters)
+              end
+
+              if (lAddRegressionSlaveListeners)
+                lInstaller.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+              end
+
+              if (lAddRegressionMasterProviders)
+                lInstaller.send(:parseWEACEPluginsFromDir, 'Master/Providers', "#{lNewWEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+              end
+
+              if (lAddRegressionSlaveProviders)
+                lInstaller.send(:parseWEACEPluginsFromDir, 'Slave/Providers', "#{lNewWEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+              end
+
+              # Restore back the WEACE lib dir
+              lInstaller.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
+            end
+
+            # Install effectively
+            lError = lInstaller.execute(iParameters)
+            #lError = lInstaller.execute(['-d']+iParameters)
+            #p lError
+            if (lExpectedErrorClass == nil)
+              assert_equal(nil, lError)
+            else
+              assert(lError.kind_of?(lExpectedErrorClass))
+            end
+
+            # Call additional checks from the test case itself
+            if (iCheckCode != nil)
+              iCheckCode.call(lError)
+            end
+
+          ensure
+            # Clean the mess of this test
+            FileUtils::rm_rf(lTmpRepositoryDir)
           end
-
-          # Install effectively
-          lError = lInstaller.execute(iParameters)
-          #lError = lInstaller.execute(['-d']+iParameters)
-          #p lError
-          if (lExpectedErrorClass == nil)
-            assert_equal(nil, lError)
-          else
-            assert(lError.kind_of?(lExpectedErrorClass))
-          end
-
-          # Call additional checks from the test case itself
-          if (iCheckCode != nil)
-            iCheckCode.call(lError)
-          end
-
-          # Clean the mess of this test
-          FileUtils::rm_rf(lTmpRepositoryDir)
         end
 
       end
