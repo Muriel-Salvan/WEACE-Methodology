@@ -15,7 +15,7 @@
       :ProviderID,
       '-t', '--providertype <ProvType>', String,
       '<ProvType>: Type of provider where we install components.',
-      'Use -- after to add options that are specific to each Provider. See below to get the list of possible Providers and their respective options.'
+      'Use -- after to add options that are specific to each Provider. Please use --list option to know available Slave Providers.'
     ]
   ]
 }

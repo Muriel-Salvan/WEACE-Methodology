@@ -63,18 +63,21 @@ module WEACE
   # Various methods used broadly
   module Toolbox
 
-    # Get the repository directory.
+    # Get WEACE directories.
     #
     # Return:
     # * _String_: The directory where the repository lies
-    def getWEACERepositoryDir
-      rDir = ENV['WEACE_CONFIG_PATH']
+    # * _String_: The directory where the WEACE Toolkit library lies
+    def getWEACERepositoryDirs
+      rRepDir = ENV['WEACE_CONFIG_PATH']
+      rLibDir = File.expand_path(File.dirname(__FILE__))
 
-      if (rDir == nil)
-        rDir = File.expand_path("#{File.dirname(__FILE__)}/../../config")
+      if (rRepDir == nil)
+        rRepDir = "#{File.dirname(__FILE__)}/../../config"
       end
+      rRepDir = File.expand_path(rRepDir)
 
-      return rDir
+      return rRepDir, rLibDir
     end
 
     # Iterate through installed Adapters in the filesystem

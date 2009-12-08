@@ -46,20 +46,23 @@ module WEACEInstall
     #
     # Parameters:
     # * *iVariablesSet* (<em>map<Symbol,[OptionsParser,String]></em>): The set of variables, along with their options
+    # Return:
+    # * _Exception_: An error, or nil in case of success
     def checkMandatoryVariables(iVariablesSet)
-      lFailure = false
+      rError = nil
+
+      lMissingOptions = []
       iVariablesSet.each do |iVariable, iVariableInfo|
         iOption, iValue = iVariableInfo
         if (iValue == nil)
-          logErr 'The following option is missing:'
-          puts iOption.summarize
-          lFailure = true
+          lMissingOptions << iOption.summarize
         end
       end
-      if (lFailure)
-        logErr 'Some mandatory options were missing.'
-        raise RuntimeError, 'Some mandatory options were missing.'
+      if (!lMissingOptions.empty?)
+        rError = CommandLineError.new("The following options are missing:\n#{lMissingOptions.join("\n")}")
       end
+
+      return rError
     end
 
     # Initialize a plugin instance with parameters taken from the command line if options were defined in the description.
@@ -69,8 +72,10 @@ module WEACEInstall
     # * *ioPlugin* (_Object_): Plugin to initialize
     # * *iParameters* (<em>list<String></em>): Parameters to give to this plugin
     # Return:
+    # * _Exception_: An error, or nil in case of success
     # * <em>list<String></em>: Remaining arguments
     def initPluginWithParameters(ioPlugin, iParameters)
+      rError = nil
       rAdditionalArgs = []
 
       lOptions = ioPlugin.pluginDescription[:Options]
@@ -80,22 +85,25 @@ module WEACEInstall
         begin
           lRemainingArgs = lOptions.parse(lInstallerArgs)
           if (!lRemainingArgs.empty?)
-            raise RuntimeError, "Remaining unknown arguments: #{lRemainingArgs.join(', ')}"
+            rError = CommandLineError.new("Remaining unknown arguments: #{lRemainingArgs.join(', ')}")
           end
         rescue
-          logErr "Error while parsing arguments of the #{ioPlugin.pluginDescription[:PluginCategoryName]}/#{ioPlugin.pluginDescription[:PluginName]} installer: #{$!}.\n#{lOptions.summarize}."
-          raise
+          rError = CommandLineError.new("Error while parsing arguments of the #{ioPlugin.pluginDescription[:PluginCategoryName]}/#{ioPlugin.pluginDescription[:PluginName]} installer: #{$!}.\n#{lOptions.summarize}.")
         end
-        # Check mandatory variables
-        checkMandatoryVariables(ioPlugin.pluginDescription[:MandatoryVariables])
-        # Set instance variables for each of the variables to be read
-        ioPlugin.pluginDescription[:MandatoryVariables].each do |iName, iInfo|
-          iOption, iValue = iInfo
-          eval("ioPlugin.instance_variable_set(:@#{iName}, iValue)")
+        if (rError == nil)
+          # Check mandatory variables
+          rError = checkMandatoryVariables(ioPlugin.pluginDescription[:MandatoryVariables])
+          if (rError == nil)
+            # Set instance variables for each of the variables to be read
+            ioPlugin.pluginDescription[:MandatoryVariables].each do |iName, iInfo|
+              iOption, iValue = iInfo
+              eval("ioPlugin.instance_variable_set(:@#{iName}, iValue)")
+            end
+          end
         end
       end
 
-      return rAdditionalArgs
+      return rError, rAdditionalArgs
     end
 
   end

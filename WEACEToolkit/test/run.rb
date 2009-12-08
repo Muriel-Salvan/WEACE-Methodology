@@ -1,17 +1,22 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-require 'test/unit' 
+require 'test/unit'
 
-require 'WEACE_Common.rb'
-require 'WEACE_Test.rb'
+$LOAD_PATH << File.dirname(__FILE__)
+require 'Install/Common'
+require 'Install/Global/CommandLine'
+require 'Install/Global/Install'
+
+#require 'WEACE_Common.rb'
+#require 'WEACE_Test.rb'
 
 module WEACE
 
   # This class creates other classes for test cases
   class TestCreator
 
-    include WEACE::Toolbox
+#    include WEACE::Toolbox
 
     # Create classes for given adapters
     #
@@ -58,4 +63,4 @@ module WEACE
 
 end
 
-WEACE::TestCreator.new.createClasses
+#WEACE::TestCreator.new.createClasses

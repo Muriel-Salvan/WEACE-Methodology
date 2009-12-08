@@ -17,6 +17,9 @@ module WEACE
   # Parameters:
   # * *iParameters* (<em>list<String></em>): The command line parameters
   def self.execute(iParameters)
+    # Initialize logging
+    require 'rUtilAnts/Logging'
+    RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
     lComponent = nil
     if (iParameters.size > 1)
       case iParameters[0]
@@ -47,4 +50,7 @@ WEACE Toolkit scripts to access WEACE Master Server and Slave Client.'
 
 end
 
-WEACE::execute(ARGV)
+# It is possible that we are required by the test framework
+if (__FILE__ == $0)
+  WEACE::execute(ARGV)
+end

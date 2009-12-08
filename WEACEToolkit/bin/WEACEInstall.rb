@@ -20,6 +20,26 @@ require 'WEACEToolkit/Install/WEACE_InstallCommon'
 
 module WEACEInstall
 
+  # Error while parsing command line arguments
+  class CommandLineError < RuntimeError
+  end
+
+  # Error raised when encountering an unknown component
+  class UnknownComponentError < RuntimeError
+  end
+
+  # Error raised when installing an already installed component
+  class ComponentAlreadyInstalledError < RuntimeError
+  end
+
+  # Error raised when attempting to install components depending on WEACE Master Server
+  class MissingWEACEMasterServerError < RuntimeError
+  end
+
+  # Error raised when attempting to install components depending on WEACE Slave Client
+  class MissingWEACESlaveClientError < RuntimeError
+  end
+
   # Main Installer class
   class Installer
   
@@ -28,13 +48,16 @@ module WEACEInstall
 
     # Constructor
     def initialize
+      # Initialize logging
+      require 'rUtilAnts/Logging'
+      RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+
       # Read the configuration directory
-      lWEACERepositoryDir = getWEACERepositoryDir
+      lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
       @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
       @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
-      @WEACEInstalledComponentsDir = "#{lWEACERepositoryDir}/InstalledComponents"
-      # Get the libraries directory
-      @WEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/..")
+      @WEACEInstalledComponentsDir = "#{@WEACEInstallDir}/InstalledComponents"
+
       # Registered installable master and slave adapters
       # map< String,    map< String, nil > >
       # map< ProductID, map< ToolID, nil > >
@@ -44,36 +67,34 @@ module WEACEInstall
       # map< String, [ String, String ] >
       # map< ComponentFullName, [ iCategoryName, iPluginName ] >
       @InstallableComponents = {}
-      # Initialize logging
-      require 'rUtilAnts/Logging'
-      RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
-      # Store a log file in the Install directory
-      setLogFile("#{@WEACEInstallDir}/Install.log")
       # Read plugins
       require 'rUtilAnts/Plugins'
       @PluginsManager = RUtilAnts::Plugins::PluginsManager.new
       # Master Server
-      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/WEACEToolkit/Install/Master/Server", 'WEACEInstall::Master')
+      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/Install/Master/Server", 'WEACEInstall::Master')
       # Master Providers
-      parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/WEACEToolkit/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+      parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
       # Master Adapters
       parseAdapters('Master', @MasterAdapters)
       # Slave Client
-      parseWEACEPluginsFromDir('Slave/Client', "#{@WEACELibDir}/WEACEToolkit/Install/Slave/Client", 'WEACEInstall::Slave')
+      parseWEACEPluginsFromDir('Slave/Client', "#{@WEACELibDir}/Install/Slave/Client", 'WEACEInstall::Slave')
       # Slave Providers
-      parseWEACEPluginsFromDir('Slave/Providers', "#{@WEACELibDir}/WEACEToolkit/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+      parseWEACEPluginsFromDir('Slave/Providers', "#{@WEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
       # Slave Adapters
       parseAdapters('Slave', @SlaveAdapters)
       # Slave Listeners
-      parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/WEACEToolkit/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+      parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
     end
 
     # Execute the installer
     #
     # Parameters:
     # * *iParameters* (<em>list<String></em>): Parameters given to the installer
+    # Return:
+    # * _Exception_: An error, or nil in case of success
     def execute(iParameters)
-      logDebug "> install.rb #{iParameters.join(' ')}"
+      rError = nil
+
       @DebugMode = false
       @ForceMode = false
       @ComponentToInstall = nil
@@ -83,19 +104,27 @@ module WEACEInstall
       lOptions = getOptions
       if (iParameters.size == 0)
         puts lOptions
+        rError = CommandLineError.new('No parameter specified.')
       else
         # Parse options
         lInstallerArgs, lAdditionalArgs = splitParameters(iParameters)
-        lSuccess = true
         begin
           lOptions.parse(lInstallerArgs)
         rescue Exception
-          puts "Error while parsing arguments: #{$!}"
           puts lOptions
-          lSuccess = false
+          rError = $!
         end
-        if (lSuccess)
+        if (rError == nil)
+          # Store a log file in the Install directory
+          require 'fileutils'
+          FileUtils::mkdir_p(@WEACEInstallDir)
+          setLogFile("#{@WEACEInstallDir}/Install.log")
           activateLogDebug(@DebugMode)
+          logDebug "> WEACEInstall.rb #{iParameters.join(' ')}"
+          logDebug "Install repository: #{@WEACEInstallDir}"
+          logDebug "Config repository: #{@WEACEConfigDir}"
+          logDebug "Library directory: #{@WEACELibDir}"
+
           # Execute what was asked by the options
           if (@OutputVersion)
             # Read version info
@@ -116,10 +145,12 @@ module WEACEInstall
             outputComponents
           end
           if (@ComponentToInstall != nil)
-            installComponent(@ComponentToInstall, lAdditionalArgs)
+            rError = installComponent(@ComponentToInstall, lAdditionalArgs)
           end
         end
       end
+
+      return rError
     end
 
     private
@@ -291,11 +322,15 @@ module WEACEInstall
     # Parameters:
     # * *iComponentName* (_String_): Component name
     # * *iParameters* (<em>list<String></em>): The list of parameters for this installation
+    # Return:
+    # * _Exception_: An error, or nil in case of success
     def installComponent(iComponentName, iParameters)
+      rError = nil
+
       logInfo "=== Install Component #{iComponentName} (#{iParameters.inspect}) ..."
       lCategoryName, lPluginName = @InstallableComponents[iComponentName]
       if (lCategoryName == nil)
-        logErr "Unknown component name #{iComponentName}. Please use --list option to know installable components."
+        rError = UnknownComponentError.new("Unknown component name #{iComponentName}. Please use --list option to know installable components.")
       else
         lInstalledDescription = getInstalledComponentDescription(iComponentName)
         if ((@ForceMode) or
@@ -305,44 +340,43 @@ module WEACEInstall
           lIsMasterServer = (iComponentName.match(/^Master\/Server\/.*$/) != nil)
           lIsSlaveClient = (iComponentName.match(/^Slave\/Client\/.*$/) != nil)
           # Forbid installing Adapters and Listeners if Server or Client is not installed.
-          lCancel = false
           if ((!lIsMasterServer) and
               (!lIsSlaveClient))
             # We are installing an Adapter or Listener. Check that its Server/Client is installed.
             if (lIsMaster)
               if (!File.exists?("#{@WEACEInstallDir}/InstalledComponents/Master_Server_WEACEMasterServer.rb"))
-                logErr "You must first install component Master/Server/WEACEMasterServer before installing #{iComponentName}."
-                lCancel = true
+                rError = MissingWEACEMasterServerError.new("You must first install component Master/Server/WEACEMasterServer before installing #{iComponentName}.")
               end
             elsif (!File.exists?("#{@WEACEInstallDir}/InstalledComponents/Slave_Client_WEACESlaveClient.rb"))
-              logErr "You must first install component Slave/Client/WEACESlaveClient before installing #{iComponentName}."
-              lCancel = true
+              rError = MissingWEACESlaveClientError.new("You must first install component Slave/Client/WEACESlaveClient before installing #{iComponentName}.")
             end
           end
-          if (!lCancel)
+          if (rError == nil)
             @PluginsManager.accessPlugin(lCategoryName, lPluginName) do |ioPlugin|
               # Get the description to parse options
-              lAdditionalArgs = initPluginWithParameters(ioPlugin, iParameters)
-              # Always give reference to the plugins manager
-              ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
-              # Execute the installation for real
-              lError = ioPlugin.execute(lAdditionalArgs)
-              if (lError == nil)
-                # Register this component as being installed
-                registerInstalledComponent(iComponentName, ioPlugin.pluginDescription, iParameters)
-                logMsg "Component #{iComponentName} installed successfully."
-              elsif (lError.kind_of?(Exception))
-                logExc lError, "An error occurred while installing component #{iComponentName}."
-              else
-                logBug "Component #{iComponentName} installation returned an error that is not an Exception object: #{lError}"
+              rError, lAdditionalArgs = initPluginWithParameters(ioPlugin, iParameters)
+              if (rError == nil)
+                # Always give reference to the plugins manager
+                ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
+                # Execute the installation for real
+                rError = ioPlugin.execute(lAdditionalArgs)
+                if (rError == nil)
+                  # Register this component as being installed
+                  registerInstalledComponent(iComponentName, ioPlugin.pluginDescription, iParameters)
+                  logMsg "Component #{iComponentName} installed successfully."
+                elsif (!rError.kind_of?(Exception))
+                  logBug "Component #{iComponentName} installation returned an error that is not an Exception object: #{rError}"
+                end
               end
             end
           end
         else
           # Already installed.
-          logErr "Component #{iComponentName} has already been installed on #{lInstalledDescription[:InstallationDate]} with parameters \"#{lInstalledDescription[:InstallationParameters]}\". Use --force option to bypass this check."
+          rError = ComponentAlreadyInstalledError.new("Component #{iComponentName} has already been installed on #{lInstalledDescription[:InstallationDate]} with parameters \"#{lInstalledDescription[:InstallationParameters]}\". Use --force option to bypass this check.")
         end
       end
+
+      return rError
     end
 
     # Loop on all directories containing scripts for a given Adapters directory
@@ -353,7 +387,7 @@ module WEACEInstall
     # ** *iProductID* (_String_): Name of the Product
     # ** *iToolID* (_String_): Name of the Tool
     def eachAdapterDir(iDirectoryType)
-      Dir.glob("#{@WEACELibDir}/WEACEToolkit/Install/#{iDirectoryType}/Adapters/*").each do |iProductDirName|
+      Dir.glob("#{@WEACELibDir}/Install/#{iDirectoryType}/Adapters/*").each do |iProductDirName|
         if (File.directory?(iProductDirName))
           lProductID = File.basename(iProductDirName)
           Dir.glob("#{iProductDirName}/*").each do |iToolDirName|
@@ -471,7 +505,7 @@ module WEACEInstall
     def parseAdapters(iDirectoryType, oAdaptersMap)
       eachAdapterDir(iDirectoryType) do |iProductID, iToolID|
         lCategoryName = "#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}"
-        parseWEACEPluginsFromDir(lCategoryName, "#{@WEACELibDir}/WEACEToolkit/Install/#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}", "WEACEInstall::#{iDirectoryType}::Adapters::#{iProductID}::#{iToolID}")
+        parseWEACEPluginsFromDir(lCategoryName, "#{@WEACELibDir}/Install/#{iDirectoryType}/Adapters/#{iProductID}/#{iToolID}", "WEACEInstall::#{iDirectoryType}::Adapters::#{iProductID}::#{iToolID}")
         # Register this product/tool category
         if (oAdaptersMap[iProductID] == nil)
           oAdaptersMap[iProductID] = {}
@@ -487,5 +521,11 @@ end
 # It is possible that we are required by the test framework
 if (__FILE__ == $0)
   # Create the installer, and execute it
-  WEACEInstall::Installer.new.execute(ARGV)
+  lError = WEACEInstall::Installer.new.execute(ARGV)
+  if (lError == nil)
+    exit 0
+  else
+    logErr "An error occurred: #{lError}."
+    exit 1
+  end
 end

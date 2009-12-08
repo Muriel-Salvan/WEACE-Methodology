@@ -27,25 +27,6 @@ module WEACE
 
       end
 
-      # Replace variables that can be used in lines of test files.
-      # Use @ConstextVars to decide which variables to replace.
-      # Replace alse '%%' with '%'
-      #
-      # Parameters:
-      # * *iLine* (_String_): The line containing variables
-      # Return:
-      # * _String_: The line with variables replaced
-      def replaceVars(iLine)
-        rResult = iLine.clone
-
-        @ContextVars.each do |iVariable, iValue|
-          rResult.gsub!("%{#{iVariable}}", iValue)
-        end
-        rResult.gsub!('%%', '%')
-
-        return rResult
-      end
-
       # Compare 2 files contents.
       # This is used for testing purposes. It compares each file (replacing variables and matching regexps if needed).
       # The second file is considered the reference, and is the only one who can contain regexps.
@@ -186,35 +167,6 @@ module WEACE
         return rResult
       end
 
-      # Copy a directory content into another, ignoring SVN files
-      #
-      # Parameters:
-      # * *iSrcDir* (_String_): Source directory
-      # * *iDstDir* (_String_): Destination directory
-      def copyDir(iSrcDir, iDstDir)
-        FileUtils.mkdir_p(iDstDir)
-        Dir.glob("#{iSrcDir}/*").each do |iFileName|
-          lBaseName = File.basename(iFileName)
-          if (File.directory?(iFileName))
-            # Ignore .svn directory
-            if (lBaseName != '.svn')
-              copyDir(iFileName, "#{iDstDir}/#{lBaseName}")
-            end
-          else
-            # Copy a file, eventually replacing variables in it
-            lContent = nil
-            File.open(iFileName, 'r') do |iFile|
-              lContent = iFile.readlines
-            end
-            File.open("#{iDstDir}/#{lBaseName}", 'w') do |iFile|
-              lContent.each do |iLine|
-                iFile << replaceVars(iLine)
-              end
-            end
-          end
-        end
-      end
-      
       # Get details about the test case currently running (based on the class name)
       #
       # Return:
