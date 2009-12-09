@@ -55,14 +55,25 @@ module WEACE
 
           # Test installing the Master Server with specifying an unknown provider
           def testMasterServerWithUnknownProvider
-            executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::MasterProviderError)
+            executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::ProviderError)
           end
 
           # Test installing the Master Server
           def testMasterServer
             executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProvider'],
               :AddRegressionMasterProviders => true
-            )
+            ) do |iError|
+              # Check that the environment has been created correctly
+              lEnvFileName = "#{@RepositoryDir}/Config/Master_Env.rb"
+              assert(File.exists?(lEnvFileName))
+              lEnv = nil
+              File.open(lEnvFileName, 'r') do |iFile|
+                lEnv = eval(iFile.read)
+              end
+              assert_equal('Master', lEnv[:ProviderType])
+              assert_equal('DummyMasterProvider', lEnv[:ProviderID])
+              assert_equal([], lEnv[:Parameters])
+            end
           end
 
 
@@ -80,14 +91,25 @@ module WEACE
 
           # Test installing the Slave Client with specifying an unknown provider
           def testSlaveClientWithUnknownProvider
-            executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::SlaveProviderError)
+            executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::ProviderError)
           end
 
           # Test installing the Slave Client
           def testSlaveClient
             executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProvider'],
               :AddRegressionSlaveProviders => true
-            )
+            ) do |iError|
+              # Check that the environment has been created correctly
+              lEnvFileName = "#{@RepositoryDir}/Config/Slave_Env.rb"
+              assert(File.exists?(lEnvFileName))
+              lEnv = nil
+              File.open(lEnvFileName, 'r') do |iFile|
+                lEnv = eval(iFile.read)
+              end
+              assert_equal('Slave', lEnv[:ProviderType])
+              assert_equal('DummySlaveProvider', lEnv[:ProviderID])
+              assert_equal([], lEnv[:Parameters])
+            end
           end
 
 
@@ -117,11 +139,29 @@ module WEACE
             )
           end
 
-          # Test installing a Master Adapter with the Master Server
+          # Test installing a Master Adapter
+          def testMasterAdapter
+            executeInstall(['--install', 'Master/Adapters/DummyProduct/DummyTool/DummyAdapter'],
+              :Repository => 'MasterServerInstalled',
+              :AddRegressionMasterAdapters => true
+            )
+          end
 
-          # Test installing a Slave Adapter with the Slave Client
+          # Test installing a Slave Adapter
+          def testSlaveAdapter
+            executeInstall(['--install', 'Slave/Adapters/DummyProduct/DummyTool/DummyAdapter'],
+              :Repository => 'SlaveClientInstalled',
+              :AddRegressionSlaveAdapters => true
+            )
+          end
 
-          # Test installing a Slave Listener with the Slave Client
+          # Test installing a Slave Listener
+          def testSlaveListener
+            executeInstall(['--install', 'Slave/Listeners/DummyListener'],
+              :Repository => 'SlaveClientInstalled',
+              :AddRegressionSlaveListeners => true
+            )
+          end
 
         end
 

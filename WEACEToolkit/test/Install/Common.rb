@@ -118,13 +118,13 @@ module WEACE
           setLogMessagesStack([])
 
           # Create a new repository by copying the wanted one
-          lRepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}")
-          lTmpRepositoryDir = "#{Dir.tmpdir}/WEACETestRepository"
-          copyDir(lRepositoryDir, lTmpRepositoryDir)
+          lSourceRepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}")
+          @RepositoryDir = "#{Dir.tmpdir}/WEACETestRepository"
+          copyDir(lSourceRepositoryDir, @RepositoryDir)
           # Change the installer repository location internally
-          lInstaller.instance_variable_set(:@WEACEInstallDir, "#{lTmpRepositoryDir}/Install")
-          lInstaller.instance_variable_set(:@WEACEConfigDir, "#{lTmpRepositoryDir}/Config")
-          lInstaller.instance_variable_set(:@WEACEInstalledComponentsDir, "#{lTmpRepositoryDir}/Install/InstalledComponents")
+          lInstaller.instance_variable_set(:@WEACEInstallDir, "#{@RepositoryDir}/Install")
+          lInstaller.instance_variable_set(:@WEACEConfigDir, "#{@RepositoryDir}/Config")
+          lInstaller.instance_variable_set(:@WEACEInstalledComponentsDir, "#{@RepositoryDir}/Install/InstalledComponents")
 
           # Ensure that the directory will be cleaned whatever happens
           begin
@@ -191,7 +191,7 @@ module WEACE
 
           ensure
             # Clean the mess of this test
-            FileUtils::rm_rf(lTmpRepositoryDir)
+            FileUtils::rm_rf(@RepositoryDir)
           end
         end
 

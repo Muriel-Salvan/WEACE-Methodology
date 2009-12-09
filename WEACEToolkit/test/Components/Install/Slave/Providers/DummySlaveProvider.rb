@@ -20,7 +20,7 @@ module WEACEInstall
         #
         # Return:
         # * <em>map<Symbol,Object></em>: The map of options
-        def getRuntimeWEACESlaveClientEnvironment
+        def getProviderEnvironment
           return {}
         end
 

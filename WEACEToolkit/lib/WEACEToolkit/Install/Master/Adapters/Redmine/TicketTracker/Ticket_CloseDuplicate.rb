@@ -28,12 +28,11 @@ module WEACEInstall
             #
             # Parameters:
             # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
-            # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
             # Return:
             # * _Exception_: An error, or nil in case of success
-            def execute(iParameters, iProviderEnv)
+            def execute(iParameters)
               # First, modify common parts
-              executeRedmineCommonInstall(@RedmineDir, iProviderEnv)
+              executeRedmineCommonInstall(@RedmineDir, @ProviderConfig)
               # Modify the issue_relations view to add the WEACE icon
               modifyFile("#{@RedmineDir}/app/views/issue_relations/_form.rhtml",
                 /<%= toggle_link l\(:button_cancel\), 'new-relation-form'%>/,

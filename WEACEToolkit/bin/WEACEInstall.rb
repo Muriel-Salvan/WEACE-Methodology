@@ -98,6 +98,7 @@ module WEACEInstall
           # Store a log file in the Install directory
           require 'fileutils'
           FileUtils::mkdir_p(@WEACEInstallDir)
+          FileUtils::mkdir_p(@WEACEConfigDir)
           setLogFile("#{@WEACEInstallDir}/Install.log")
           activateLogDebug(@DebugMode)
           logDebug "> WEACEInstall.rb #{iParameters.join(' ')}"
@@ -319,15 +320,23 @@ module WEACEInstall
           lIsMaster = (iComponentName.match(/^Master\/.*$/) != nil)
           lIsMasterServer = (iComponentName.match(/^Master\/Server\/.*$/) != nil)
           lIsSlaveClient = (iComponentName.match(/^Slave\/Client\/.*$/) != nil)
-          # Forbid installing Adapters and Listeners if Server or Client is not installed.
+          # Forbid installing Adapters and Listeners if Server or Client is not installed,
+          # and read Provider configurations.
+          lProviderConfig = nil
           if ((!lIsMasterServer) and
               (!lIsSlaveClient))
             # We are installing an Adapter or Listener. Check that its Server/Client is installed.
             if (lIsMaster)
-              if (!File.exists?("#{@WEACEInstallDir}/InstalledComponents/Master_Server_WEACEMasterServer.rb"))
+              if (File.exists?("#{@WEACEInstallDir}/InstalledComponents/Master_Server_WEACEMasterServer.rb"))
+                # Read the Master Provider config
+                rError, lProviderConfig = getAlreadyCreatedProviderConfig('Master')
+              else
                 rError = MissingWEACEMasterServerError.new("You must first install component Master/Server/WEACEMasterServer before installing #{iComponentName}.")
               end
-            elsif (!File.exists?("#{@WEACEInstallDir}/InstalledComponents/Slave_Client_WEACESlaveClient.rb"))
+            elsif (File.exists?("#{@WEACEInstallDir}/InstalledComponents/Slave_Client_WEACESlaveClient.rb"))
+              # Read the Slave Provider config
+              rError, lProviderConfig = getAlreadyCreatedProviderConfig('Slave')
+            else
               rError = MissingWEACESlaveClientError.new("You must first install component Slave/Client/WEACESlaveClient before installing #{iComponentName}.")
             end
           end
@@ -336,8 +345,12 @@ module WEACEInstall
               # Get the description to parse options
               rError, lAdditionalArgs = initPluginWithParameters(ioPlugin, iParameters)
               if (rError == nil)
-                # Always give reference to the plugins manager
+                # Give some references for the plugins to use
                 ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
+                ioPlugin.instance_variable_set(:@WEACEConfigDir, @WEACEConfigDir)
+                if (lProviderConfig != nil)
+                  ioPlugin.instance_variable_set(:@ProviderConfig, lProviderConfig)
+                end
                 # Execute the installation for real
                 rError = ioPlugin.execute(lAdditionalArgs)
                 if (rError == nil)

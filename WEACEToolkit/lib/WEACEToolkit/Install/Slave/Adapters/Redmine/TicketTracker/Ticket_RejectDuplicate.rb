@@ -28,12 +28,11 @@ module WEACEInstall
             #
             # Parameters:
             # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
-            # * *iProviderEnv* (_ProviderEnv_): The Provider specific environment
             # Return:
             # * _Exception_: An error, or nil in case of success
-            def execute(iParameters, iProviderEnv)
+            def execute(iParameters)
               # Modify common parts
-              installRedmineWEACESlaveLink(iProviderEnv)
+              installRedmineWEACESlaveLink(@ProviderConfig)
               generateDBEnv
 
               return nil
