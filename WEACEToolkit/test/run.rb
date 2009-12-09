@@ -4,9 +4,10 @@
 require 'test/unit'
 
 $LOAD_PATH << File.dirname(__FILE__)
-require 'Install/Common'
-require 'Install/Global/CommandLine'
-require 'Install/Global/Install'
+
+Dir.glob("#{File.dirname(__FILE__)}/Install/**/*.rb").each do |iFileName|
+  require iFileName
+end
 
 #require 'WEACE_Common.rb'
 #require 'WEACE_Test.rb'
