@@ -117,6 +117,9 @@ module WEACE
           setLogErrorsStack([])
           setLogMessagesStack([])
 
+          # Clear variables set in tests
+          $Variables = {}
+
           # Create a new repository by copying the wanted one
           lSourceRepositoryDir = File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}")
           @RepositoryDir = "#{Dir.tmpdir}/WEACETestRepository"

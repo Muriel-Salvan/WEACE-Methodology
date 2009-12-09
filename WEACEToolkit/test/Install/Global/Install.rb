@@ -112,6 +112,82 @@ module WEACE
             end
           end
 
+          # Test installing the Slave Client with a Provider missing some parameters
+          def testSlaveClientWithProviderMissingParameters
+            executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParams'],
+              :Error => WEACEInstall::CommandLineError,
+              :AddRegressionSlaveProviders => true
+            ) do |iError|
+              assert_equal(nil, $Variables[:SlaveProviderDummyFlag])
+            end
+          end
+
+          # Test installing the Slave Client with a Provider missing some parameters values
+          def testSlaveClientWithProviderMissingParametersValues
+            executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParamsValues', '--', '--dummyvar'],
+              :Error => WEACEInstall::CommandLineError,
+              :AddRegressionSlaveProviders => true
+            ) do |iError|
+              assert_equal(nil, $Variables[:SlaveProviderDummyVar])
+            end
+          end
+
+          # Test installing the Master Server with a Provider missing some parameters
+          def testMasterServerWithProviderMissingParameters
+            executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParams'],
+              :Error => WEACEInstall::CommandLineError,
+              :AddRegressionMasterProviders => true
+            ) do |iError|
+              assert_equal(nil, $Variables[:MasterProviderDummyFlag])
+            end
+          end
+
+          # Test installing the Master Server with a Provider missing some parameters values
+          def testMasterServerWithProviderMissingParametersValues
+            executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParamsValues', '--', '--dummyvar'],
+              :Error => WEACEInstall::CommandLineError,
+              :AddRegressionMasterProviders => true
+            ) do |iError|
+              assert_equal(nil, $Variables[:MasterProviderDummyVar])
+            end
+          end
+
+          # Test installing the Slave Client with a Provider having some parameters
+          def testSlaveClientWithProviderHavingParameters
+            executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParams', '--', '--flag'],
+              :AddRegressionSlaveProviders => true
+            ) do |iError|
+              assert_equal(true, $Variables[:SlaveProviderDummyFlag])
+            end
+          end
+
+          # Test installing the Slave Client with a Provider having some parameters values
+          def testSlaveClientWithProviderHavingParametersValues
+            executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParamsValues', '--', '--dummyvar', 'testvalue'],
+              :AddRegressionSlaveProviders => true
+            ) do |iError|
+              assert_equal('testvalue', $Variables[:SlaveProviderDummyVar])
+            end
+          end
+
+          # Test installing the Master Server with a Provider having some parameters
+          def testMasterServerWithProviderHavingParameters
+            executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParams', '--', '--flag'],
+              :AddRegressionMasterProviders => true
+            ) do |iError|
+              assert_equal(true, $Variables[:MasterProviderDummyFlag])
+            end
+          end
+
+          # Test installing the Master Server with a Provider having some parameters values
+          def testMasterServerWithProviderHavingParametersValues
+            executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParamsValues', '--', '--dummyvar', 'testvalue'],
+              :AddRegressionMasterProviders => true
+            ) do |iError|
+              assert_equal('testvalue', $Variables[:MasterProviderDummyVar])
+            end
+          end
+
 
 
 
@@ -161,6 +237,51 @@ module WEACE
               :Repository => 'SlaveClientInstalled',
               :AddRegressionSlaveListeners => true
             )
+          end
+
+
+
+
+          # Test installing a Component missing some parameters
+          def testComponentWithMissingParameters
+            executeInstall(['--install', 'Master/Adapters/DummyProduct/DummyTool/DummyAdapterWithParameters'],
+              :Repository => 'MasterServerInstalled',
+              :Error => WEACEInstall::CommandLineError,
+              :AddRegressionMasterAdapters => true
+            ) do |iError|
+              assert_equal(nil, $Variables[:MasterAdapterDummyFlag])
+            end
+          end
+
+          # Test installing a Component missing some parameters values
+          def testComponentWithMissingParametersValues
+            executeInstall(['--install', 'Master/Adapters/DummyProduct/DummyTool/DummyAdapterWithParametersValues', '--', '--dummyvar'],
+              :Repository => 'MasterServerInstalled',
+              :Error => WEACEInstall::CommandLineError,
+              :AddRegressionMasterAdapters => true
+            ) do |iError|
+              assert_equal(nil, $Variables[:MasterAdapterDummyVar])
+            end
+          end
+
+          # Test installing a Component having some parameters
+          def testComponentHavingParameters
+            executeInstall(['--install', 'Master/Adapters/DummyProduct/DummyTool/DummyAdapterWithParameters', '--', '--dummyflag'],
+              :Repository => 'MasterServerInstalled',
+              :AddRegressionMasterAdapters => true
+            ) do |iError|
+              assert_equal(true, $Variables[:MasterAdapterDummyFlag])
+            end
+          end
+
+          # Test installing a Component having some parameters values
+          def testComponentHavingParametersValues
+            executeInstall(['--install', 'Master/Adapters/DummyProduct/DummyTool/DummyAdapterWithParametersValues', '--', '--dummyvar', 'testvalue'],
+              :Repository => 'MasterServerInstalled',
+              :AddRegressionMasterAdapters => true
+            ) do |iError|
+              assert_equal('testvalue', $Variables[:MasterAdapterDummyVar])
+            end
           end
 
         end
