@@ -13,7 +13,7 @@ module WEACE
 
     module Install
 
-      module Master
+      module Slave
 
         module Adapters
 
@@ -21,7 +21,7 @@ module WEACE
 
             module TicketTracker
 
-              class Ticket_CloseDuplicate < ::Test::Unit::TestCase
+              class Ticket_RejectDuplicate < ::Test::Unit::TestCase
 
                 include WEACE::Test::Install::Adapters
 
@@ -30,7 +30,9 @@ module WEACE
                   executeInstallAdapter(
                     [
                       '--redminedir', '%{Repository}/redmine-0.8.2',
-                      '--ruby', '/usr/bin/ruby'
+                      '--rubygemslib', '%{Repository}/rubygems/lib',
+                      '--gems', '%{Repository}/rubygems/gems',
+                      '--mysql', '%{Repository}/mysql/lib'
                     ],
                     :ProductRepository => 'Virgin'
                   ) do |iError|
@@ -43,7 +45,9 @@ module WEACE
                   executeInstallAdapter(
                     [
                       '--redminedir', '%{Repository}/redmine-0.8.2',
-                      '--ruby', '/usr/bin/ruby'
+                      '--rubygemslib', '%{Repository}/rubygems/lib',
+                      '--gems', '%{Repository}/rubygems/gems',
+                      '--mysql', '%{Repository}/mysql/lib'
                     ],
                     :ProductRepository => 'Normal'
                   ) do |iError|

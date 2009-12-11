@@ -231,6 +231,8 @@ module WEACE
 
             # Clean installer
             @Installer = nil
+            
+            setLogFile(nil)
 
           end
         end
