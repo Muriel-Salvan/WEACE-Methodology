@@ -26,7 +26,7 @@ module WEACEInstall
             # Modify the layouts/base view to add WEACE Master icon if not already present
             modifyFile("#{iRedmineInstallationDir}/app/views/layouts/base.rhtml",
               /Powered by <%= link_to Redmine/,
-              "    <a title=\"Some actions on this website can trigger some WEACE processes. Click for explanations.\" href=\"#{iProviderEnv.CGIURL}/WEACE/ShowWEACEMasterInfo.cgi#Redmine\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png\" alt=\"Some actions on this website can trigger some WEACE processes. Click for explanations.\"/></a>\n",
+              "    <a title=\"Some actions on this website can trigger some WEACE processes. Click for explanations.\" href=\"#{iProviderEnv[:WEACEMasterInfoURL]}#Redmine\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/f/f0/WEACEMaster.png\" alt=\"Some actions on this website can trigger some WEACE processes. Click for explanations.\"/></a>\n",
               /<\/div>/)
           end
           

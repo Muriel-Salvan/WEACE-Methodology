@@ -39,7 +39,7 @@ module WEACE
                 :AddRegressionMasterProviders => true
               ) do |iError|
                 # Check that the environment has been created correctly
-                lEnvFileName = "#{@RepositoryDir}/Config/Master_Env.rb"
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
                 assert(File.exists?(lEnvFileName))
                 lEnv = nil
                 File.open(lEnvFileName, 'r') do |iFile|

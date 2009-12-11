@@ -3,9 +3,31 @@
 
 require 'test/unit'
 
+# This path is then used to access repositories
+$WEACETestBaseDir = File.expand_path(File.dirname(__FILE__))
+
+require 'rUtilAnts/Logging'
+RUtilAnts::Logging::initializeLogging(File.expand_path("#{$WEACETestBaseDir}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+activateLogDebug(true)
+
 $LOAD_PATH << File.dirname(__FILE__)
 
-Dir.glob("#{File.dirname(__FILE__)}/Install/**/*.rb").each do |iFileName|
+require 'Install/Common'
+require 'Install/Adapters'
+(
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/*/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/*/*/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb")
+).each do |iFileName|
   require iFileName
 end
 

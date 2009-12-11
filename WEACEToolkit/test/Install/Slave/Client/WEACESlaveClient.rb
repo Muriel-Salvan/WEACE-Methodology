@@ -39,7 +39,7 @@ module WEACE
                 :AddRegressionSlaveProviders => true
               ) do |iError|
                 # Check that the environment has been created correctly
-                lEnvFileName = "#{@RepositoryDir}/Config/Slave_Env.rb"
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
                 assert(File.exists?(lEnvFileName))
                 lEnv = nil
                 File.open(lEnvFileName, 'r') do |iFile|

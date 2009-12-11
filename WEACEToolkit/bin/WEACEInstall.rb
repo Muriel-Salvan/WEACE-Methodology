@@ -28,9 +28,6 @@ module WEACEInstall
 
     # Constructor
     def initialize
-      # Initialize logging
-      require 'rUtilAnts/Logging'
-      RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
 
       # Read the configuration directory
       lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
@@ -513,6 +510,9 @@ end
 
 # It is possible that we are required by the test framework
 if (__FILE__ == $0)
+  # Initialize logging
+  require 'rUtilAnts/Logging'
+  RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
   # Create the installer, and execute it
   lError = WEACEInstall::Installer.new.execute(ARGV)
   if (lError == nil)

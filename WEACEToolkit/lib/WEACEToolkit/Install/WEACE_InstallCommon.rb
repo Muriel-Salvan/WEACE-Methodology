@@ -59,6 +59,32 @@ module WEACEInstall
         if (rError == nil)
           # Get the environment from the provider
           rProviderConfig = lProviderPlugin.getProviderEnvironment
+          # Complete the provider config with properties we can make use of.
+          if (iProviderType == 'Master')
+            if (rProviderConfig[:WEACEMasterInfoURL] == nil)
+              # Set the URL for WEACEMasterInfo
+              if ((rProviderConfig[:CGI] != nil) and
+                  (rProviderConfig[:CGI][:URL] != nil))
+                # If the Provider is able to give a CGI URL, use it to give explanations to the user.
+                rProviderConfig[:WEACEMasterInfoURL] = rProviderConfig[:CGI][:URL]
+              else
+                # Otherwise, use a default WEACE URL
+                rProviderConfig[:WEACEMasterInfoURL] = 'http://weacemethod.sourceforge.net'
+              end
+            end
+          else
+            if (rProviderConfig[:WEACESlaveInfoURL] == nil)
+              # Set the URL for WEACESlaveInfo
+              if ((rProviderConfig[:CGI] != nil) and
+                  (rProviderConfig[:CGI][:URL] != nil))
+                # If the Provider is able to give a CGI URL, use it to give explanations to the user.
+                rProviderConfig[:WEACESlaveInfoURL] = rProviderConfig[:CGI][:URL]
+              else
+                # Otherwise, use a default WEACE URL
+                rProviderConfig[:WEACESlaveInfoURL] = 'http://weacemethod.sourceforge.net'
+              end
+            end
+          end
         end
       end
 
@@ -104,12 +130,21 @@ module WEACEInstall
       rError = nil
       rProviderConfig = nil
 
+      # First, read how the provider was initialized
+      lProviderParams = nil
       begin
         File.open("#{@WEACEConfigDir}/#{iProviderType}_Env.rb", 'r') do |iFile|
-          rProviderConfig = eval(iFile.read)
+          lProviderParams = eval(iFile.read)
         end
       rescue Exception
         rError = $!
+      end
+      if (rError == nil)
+        if (lProviderParams == nil)
+          rError = RuntimeError.new("Unable to get the #{iProviderType} Provider parameters.")
+        else
+          rError, rProviderConfig = getProviderConfig(lProviderParams[:ProviderType], lProviderParams[:ProviderID], lProviderParams[:Parameters])
+        end
       end
 
       return rError, rProviderConfig

@@ -36,7 +36,7 @@ module WEACEInstall
               # Modify the issue_relations view to add the WEACE icon
               modifyFile("#{@RedmineDir}/app/views/issue_relations/_form.rhtml",
                 /<%= toggle_link l\(:button_cancel\), 'new-relation-form'%>/,
-                "    <a title=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\" href=\"#{iProviderEnv.CGIURL}/WEACE/ShowWEACEMasterInfo.cgi#Redmine.TicketTracker.Ticket_CloseDuplicate\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/1/1e/MasterIcon.png\" alt=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\"/></a>\n",
+                "<a title=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\" href=\"#{@ProviderConfig[:WEACEMasterInfoURL]}#Redmine.TicketTracker.Ticket_CloseDuplicate\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/1/1e/MasterIcon.png\" alt=\"In case of duplicates, this will trigger the WEACE process named Ticket_CloseDuplicate. Click for explanations.\"/></a>\n",
                 /<\/p>/)
               # Modify the issue_relations controller
               modifyFile("#{@RedmineDir}/app/controllers/issue_relations_controller.rb",
