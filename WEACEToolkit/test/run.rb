@@ -14,6 +14,7 @@ $LOAD_PATH << File.dirname(__FILE__)
 
 require 'Install/Common'
 require 'Install/Adapters'
+require 'Master/Common'
 (
   Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +

@@ -13,16 +13,46 @@ module WEACE
 
         class WEACEMasterServer < ::Test::Unit::TestCase
 
+          include WEACE::Test::Master::Common
+
           # Test command line option listing Processes
           def testCommandLineList
-            require 'bin/WEACEExecute'
-            lError = WEACE::execute(
-              [
-                'MasterServer',
-                '--list'
-              ]
-            )
-            assert_equal(nil, lError)
+            executeMaster( [ '--list' ] )
+          end
+
+          # Test command line option listing Processes (short version)
+          def testCommandLineListShort
+            executeMaster( [ '-l' ] )
+          end
+
+          # Test command line option listing Processes in detail
+          def testCommandLineDetailedList
+            executeMaster( [ '--detailedlist' ] )
+          end
+
+          # Test command line option listing Processes in detail (short version)
+          def testCommandLineDetailedListShort
+            executeMaster( [ '-e' ] )
+          end
+
+          # Test command line option giving help
+          def testCommandLineHelp
+            executeMaster( [ '--help' ] )
+          end
+
+          # Test command line option giving help (short version)
+          def testCommandLineHelpShort
+            executeMaster( [ '-h' ] )
+          end
+
+          # Test command line option giving version
+          def testCommandLineVersion
+            executeMaster( [ '--version' ] )
+          end
+
+          # Test command line option giving version (short version)
+          def testCommandLineVersionShort
+            executeMaster( [ '-v' ] )
           end
 
         end
