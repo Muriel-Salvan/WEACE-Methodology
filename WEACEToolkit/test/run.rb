@@ -12,6 +12,7 @@ activateLogDebug(true)
 
 $LOAD_PATH << File.dirname(__FILE__)
 
+require 'Common'
 require 'Install/Common'
 require 'Install/Adapters'
 require 'Master/Common'
@@ -28,7 +29,8 @@ require 'Master/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb")
+  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb")
 ).each do |iFileName|
   require iFileName
 end
