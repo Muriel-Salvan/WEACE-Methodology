@@ -55,6 +55,48 @@ module WEACE
             executeMaster( [ '-v' ] )
           end
 
+          # Test command line option enabling debug
+          def testCommandLineDebug
+            executeMaster( [ '--debug' ] )
+          end
+
+          # Test command line option enabling debug (short version)
+          def testCommandLineDebugShort
+            executeMaster( [ '-d' ] )
+          end
+
+          # Test command line option setting a Process ID and a User ID
+          def testCommandLineProcess
+            executeMaster( [ '--process', 'DummyProcess', '--user', 'DummyUser' ], :AddRegressionProcesses => true )
+          end
+
+          # Test command line option setting a Process ID and a User ID (short version)
+          def testCommandLineProcessShort
+            executeMaster( [ '-p', 'DummyProcess', '-u', 'DummyUser' ], :AddRegressionProcesses => true )
+          end
+
+          # Test command line option setting a Process ID without a User ID
+          def testCommandLineProcessWithoutUser
+            executeMaster( [ '--process', 'DummyProcess' ],
+              :AddRegressionProcesses => true,
+              :Error => WEACE::Master::Server::CommandLineError
+            )
+          end
+
+          # Test that Processes are called correctly
+          def testProcess
+            executeMaster( [ '-p', 'DummyProcess', '-u', 'DummyUser' ], :AddRegressionProcesses => true ) do |iError|
+              assert_equal([], $Variables[:ProcessParameters])
+            end
+          end
+
+          # Test that Processes are called correctly with parameters
+          def testProcessWithParameters
+            executeMaster( [ '-p', 'DummyProcess', '-u', 'DummyUser', '--', 'Param1', 'Param2' ], :AddRegressionProcesses => true ) do |iError|
+              assert_equal([ 'Param1', 'Param2' ], $Variables[:ProcessParameters])
+            end
+          end
+
         end
 
       end

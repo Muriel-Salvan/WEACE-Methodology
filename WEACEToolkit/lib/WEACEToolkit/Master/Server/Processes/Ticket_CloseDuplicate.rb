@@ -39,9 +39,9 @@ module WEACE
           # Get the command line options for this Process
           #
           # Return:
-          # * _OptionsParser_: The corresponding options
+          # * _OptionParser_: The corresponding options
           def getOptions
-            rOptions = OptionsParser.new
+            rOptions = OptionParser.new
 
             rOptions.banner = '-m|--masterticket <TicketID> -s|--slaveticket <TicketID>'
             rOptions.on('-m', '--masterticket <TicketID>', String,

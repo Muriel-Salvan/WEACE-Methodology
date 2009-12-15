@@ -16,7 +16,7 @@ module WEACE
 
       module Processes
 
-        class Task_LinkTicket
+        class DummyProcess
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
@@ -26,18 +26,9 @@ module WEACE
           # Return:
           # * _Exception_: An error, or nil in case of success
           def processScript(ioSlaveActions, iAdditionalParameters)
-            rError = nil
+            $Variables[:ProcessParameters] = iAdditionalParameters
 
-            ioSlaveActions.addSlaveAction(
-              Tools_TicketTracker, Action_Ticket_AddLinkToTask,
-              @TicketID, @TaskID
-            )
-            ioSlaveActions.addSlaveAction(
-              Tools_ProjectManager, Action_Task_AddLinkToTicket,
-              @TaskID, @TicketID
-            )
-
-            return rError
+            return nil
           end
 
           # Get the command line options for this Process
@@ -45,19 +36,7 @@ module WEACE
           # Return:
           # * _OptionParser_: The corresponding options
           def getOptions
-            rOptions = OptionParser.new
-
-            rOptions.banner = '-t|--ticket <TicketID> -a|--task <TaskID>'
-            rOptions.on('-t', '--ticket <TicketID>', String,
-              '<TicketID>: ID of the Ticket to link to a Task.') do |iArg|
-              @TicketID = iArg
-            end
-            rOptions.on('-a', '--task <TaskID>', String,
-              '<TaskID>: ID of the Task to be linked to the Ticket.') do |iArg|
-              @TaskID = iArg
-            end
-
-            return rOptions
+            return OptionParser.new
           end
 
         end
