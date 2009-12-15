@@ -14,6 +14,7 @@ module WEACEInstall
     class WEACEMasterServer
     
       include WEACEInstall::Common
+      include WEACE::Toolbox
       
       # Execute the installation
       #

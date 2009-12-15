@@ -150,34 +150,6 @@ module WEACEInstall
       return rError, rProviderConfig
     end
 
-    # Split parameters, before and after the first -- encountered
-    #
-    # Parameters:
-    # * *iParameters* (<em>list<String></em>): The parameters
-    # Return:
-    # * <em>list<String></em>: The first part
-    # * <em>list<String></em>: The second part
-    def splitParameters(iParameters)
-      rFirstPart = iParameters
-      rSecondPart = []
-      
-      lIdxSeparator = iParameters.index('--')
-      if (lIdxSeparator != nil)
-        if (lIdxSeparator == 0)
-          rFirstPart = []
-        else
-          rFirstPart = iParameters[0..lIdxSeparator-1]
-        end
-        if (lIdxSeparator == iParameters.size-1)
-          rSecondPart = []
-        else
-          rSecondPart = iParameters[lIdxSeparator+1..-1]
-        end
-      end
-
-      return rFirstPart, rSecondPart
-    end
-    
     # Check that mandatory variables are affected.
     # Raise an exception if they are not all affected.
     #

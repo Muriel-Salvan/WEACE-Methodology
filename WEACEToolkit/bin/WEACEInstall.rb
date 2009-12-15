@@ -29,7 +29,7 @@ module WEACEInstall
     # Constructor
     def initialize
 
-      # Read the configuration directory
+        # Read the directories locations
       lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
       @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
       @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
@@ -429,7 +429,7 @@ module WEACEInstall
         @OutputVersion = true
       end
       rOptions.on('--',
-        'Following -- are the parameters specific to the installation of a given component (check each component\'s options with --list).')
+        'Following -- are the parameters specific to the installation of a given component (check each component\'s options with --detailedlist).')
 
       return rOptions
     end

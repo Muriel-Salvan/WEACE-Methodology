@@ -26,7 +26,8 @@ require 'Install/Adapters'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb")
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb")
 ).each do |iFileName|
   require iFileName
 end

@@ -129,23 +129,42 @@ module WEACE
     # Store a map of variable names and their corresponding values as instance variables of a given class
     #
     # Parameters:
-    # * *iObject* (_Object_): Object where we want to instantiate those variables
+    # * *ioObject* (_Object_): Object where we want to instantiate those variables
     # * *iVars* (<em>map<Symbol,Object></em>): The map of variables and their values
-    def instantiateVars(iObject, iVars)
+    def instantiateVars(ioObject, iVars)
       iVars.each do |iVariable, iValue|
-        # Define the setter if needed
-        if (!iObject.class.method_defined?("setInstanceVar_#{iVariable}"))
-          iObject.class.module_eval("
-def setInstanceVar_#{iVariable}(iValue)
-  @#{iVariable} = iValue
-end
-")
-        end
-        # Set the value
-        eval("iObject.setInstanceVar_#{iVariable}(iValue)")
+        ioObject.instance_variable_set("@#{iVariable}".to_sym, iValue)
       end
     end
   
+    # Split parameters, before and after the first -- encountered
+    #
+    # Parameters:
+    # * *iParameters* (<em>list<String></em>): The parameters
+    # Return:
+    # * <em>list<String></em>: The first part
+    # * <em>list<String></em>: The second part
+    def splitParameters(iParameters)
+      rFirstPart = iParameters
+      rSecondPart = []
+
+      lIdxSeparator = iParameters.index('--')
+      if (lIdxSeparator != nil)
+        if (lIdxSeparator == 0)
+          rFirstPart = []
+        else
+          rFirstPart = iParameters[0..lIdxSeparator-1]
+        end
+        if (lIdxSeparator == iParameters.size-1)
+          rSecondPart = []
+        else
+          rSecondPart = iParameters[lIdxSeparator+1..-1]
+        end
+      end
+
+      return rFirstPart, rSecondPart
+    end
+
     # Dump HTML header
     #
     # Parameters:

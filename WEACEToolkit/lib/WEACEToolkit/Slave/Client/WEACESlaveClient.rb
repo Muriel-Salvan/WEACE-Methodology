@@ -74,9 +74,9 @@ module WEACE
       # Parameters:
       # * *iParameters* (<em>list<String></em>): The parameters
       # Return:
-      # * _Boolean_: Has the operation completed successfully ?
+      # * _Exception_: An error, or nil in case of success
       def execute(iParameters)
-        rSuccess = true
+        rError = nil
 
         # Parse command line arguments, check them, and call the main function
         lUserScriptID = iParameters[0..0]
@@ -131,7 +131,7 @@ module WEACE
         if ((lUserScriptID == nil) or
             (lInvalid))
           # Print some usage
-          logErr "Incorrect parameters: \"#{iParameters.join(' ')}\".
+          rError = RuntimeError.new("Incorrect parameters: \"#{iParameters.join(' ')}\".
 Signature: <UserScriptID> [ -t <ToolID> [ -a <ActionID> <ActionParameters> ]* ]*
 
 <ActionParameters> depend on <ActionID>. Here are the possible <ActionID> values and their corresponding possible <ActionParameters>:
@@ -140,17 +140,15 @@ Signature: <UserScriptID> [ -t <ToolID> [ -a <ActionID> <ActionParameters> ]* ]*
 
 Example: Scripts_Validator -t TicketTracker -a Ticket_RejectDuplicate 123 456 -a Ticket_AddLinkToTask 789 234
 
-Check http://weacemethod.sourceforge.net for details."
-          rSuccess = false
+Check http://weacemethod.sourceforge.net for details.")
         else
           # Read the configuration file
           begin
             require 'WEACEToolkit/Slave/Client/config/Config'
           rescue Exception
-            logExc $!, '!!! Unable to load the configuration from file \'config/Config.rb\'. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.'
-            rSuccess = false
+            rError = RuntimeError.new("Unable to load the configuration from file 'config/Config.rb': #{$!}. Make sure the file is present and is set in one of the $RUBYLIB paths, or the current path.")
           end
-          if (rSuccess)
+          if (rError == nil)
             lConfig = WEACE::Slave::Config.new
             WEACE::Slave::getWEACESlaveClientConfig(lConfig)
             setLogFile(lConfig.LogFile)
@@ -237,14 +235,12 @@ Check http://weacemethod.sourceforge.net for details."
               end
             end
             if (!lErrors.empty?)
-              logErr 'Several errors encountered:'
-              logErr lErrors.join("\n")
-              rSuccess = false
+              rError = RuntimeError.new("Several errors encountered:\n#{lErrors.join("\n")}")
             end
           end
         end
 
-        return rSuccess
+        return rError
       end
       
     end

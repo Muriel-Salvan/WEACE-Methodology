@@ -16,10 +16,11 @@ module WEACE
   #
   # Parameters:
   # * *iParameters* (<em>list<String></em>): The command line parameters
+  # Return:
+  # * _Exception_: An error, or nil in case of success
   def self.execute(iParameters)
-    # Initialize logging
-    require 'rUtilAnts/Logging'
-    RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+    rError = nil
+
     lComponent = nil
     if (iParameters.size > 1)
       case iParameters[0]
@@ -27,30 +28,38 @@ module WEACE
         require 'WEACEToolkit/Master/Server/WEACEMasterServer'
         lComponent = WEACE::Master::Server.new
       when 'SlaveClient'
-        require 'WEACEToolkit/Slave/Client'
+        require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
         lComponent = WEACE::Slave::Client.new
       end
     end
     if (lComponent == nil)
-      logErr '
+      rError = RuntimeError.new('
 Usage: WEACEExecute.rb <Component> <Arguments>
   <Component>: Either MasterServer or SlaveClient
   <Arguments>: Depend on the component on execute. Check http://weacemethod.sourceforge.net for details.
 
 !!! This script is not intended to be run by the user directly. It is just here to provide an easy way for other
-WEACE Toolkit scripts to access WEACE Master Server and Slave Client.'
+WEACE Toolkit scripts to access WEACE Master Server and Slave Client.')
     else
-      if (lComponent.execute(iParameters[1..-1]))
-        logInfo "== Execution of #{iParameters[1..-1]} ended successfully."
-      else
-        logInfo "!!! Execution of #{iParameters[1..-1]} ended in error."
-      end
+      logInfo "Execution of #{iParameters[1..-1].join(' ')}"
+      rError = lComponent.execute(iParameters[1..-1])
     end
+
+    return rError
   end
 
 end
 
 # It is possible that we are required by the test framework
 if (__FILE__ == $0)
-  WEACE::execute(ARGV)
+  # Initialize logging
+  require 'rUtilAnts/Logging'
+  RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+  lError = WEACE::execute(ARGV)
+  if (lError == nil)
+    exit 0
+  else
+    logErr "An error occurred: #{lError}."
+    exit 1
+  end
 end
