@@ -3,6 +3,9 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
+# Require the file defining exceptions
+require 'WEACEToolkit/Master/Server/WEACEMasterServer'
+
 module WEACE
 
   module Test
@@ -108,6 +111,8 @@ module WEACE
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
 
+          initTestCase
+
           accessProcessPlugin do |iProcessPlugin|
             lProcessOptions = iProcessPlugin.getOptions
             begin
@@ -117,7 +122,11 @@ module WEACE
             end
             require 'WEACEToolkit/Master/Server/WEACEMasterServer'
             lSlaveActions = WEACE::Master::SlaveActions.new
-            lError = iProcessPlugin.processScript(lSlaveActions, lAdditionalArgs)
+            begin
+              lError = iProcessPlugin.processScript(lSlaveActions, lAdditionalArgs)
+            rescue Exception
+              lError = $!
+            end
             # Check
             if (lExpectedErrorClass == nil)
               assert_equal(nil, lError)

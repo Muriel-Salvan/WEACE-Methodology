@@ -51,6 +51,26 @@ module WEACE
             end
           end
 
+          # Test when the task ID is missing
+          def testMissingTask
+            executeProcess(
+              [
+                '--ticket', '123'
+              ],
+              :Error => WEACE::MissingVariableError
+            )
+          end
+
+          # Test when the ticket ID is missing
+          def testMissingTicket
+            executeProcess(
+              [
+                '--task', '123'
+              ],
+              :Error => WEACE::MissingVariableError
+            )
+          end
+
         end
 
       end

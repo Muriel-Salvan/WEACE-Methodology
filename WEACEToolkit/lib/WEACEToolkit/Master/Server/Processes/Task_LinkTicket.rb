@@ -18,6 +18,8 @@ module WEACE
 
         class Task_LinkTicket
 
+          include WEACE::Toolbox
+
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
           # Parameters:
@@ -28,6 +30,8 @@ module WEACE
           def processScript(ioSlaveActions, iAdditionalParameters)
             rError = nil
 
+            checkVar(:@TicketID, 'Ticket ID to link to the Task')
+            checkVar(:@TaskID, 'Task ID to be linked to the Ticket')
             ioSlaveActions.addSlaveAction(
               Tools_TicketTracker, Action_Ticket_AddLinkToTask,
               @TicketID, @TaskID

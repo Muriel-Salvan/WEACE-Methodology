@@ -28,6 +28,10 @@ module WEACE
   Tools_TicketTracker = 'TicketTracker'
   # Project Manager
   Tools_ProjectManager = 'ProjectManager'
+
+  # Exception raised when a variable is missing
+  class MissingVariableError < RuntimeError
+  end
   
   # Class containing info for serialized method calls
   class MethodCallInfo
@@ -120,9 +124,9 @@ module WEACE
     # * *iVariable* (_Symbol_): The variable we are looking for.
     # * *iDescription* (_String_): The description of this variable. This will appear in the eventual error message.
     def checkVar(iVariable, iDescription)
-      if (!self.instance_variable_defined?(iVariable))
+      if (!self.instance_variables.include?(iVariable.to_s))
         logErr "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
-        raise RuntimeError, "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
+        raise MissingVariableError, "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
       end
     end
 
