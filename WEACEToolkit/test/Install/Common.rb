@@ -55,90 +55,92 @@ module WEACE
             lAddRegressionSlaveProviders = false
           end
           
-          initTestCase
+          initTestCase do
 
-          # Create the installer
-          @Installer = WEACEInstall::Installer.new
+            # Create the installer
+            @Installer = WEACEInstall::Installer.new
 
-          # Create a new WEACE repository by copying the wanted one
-          setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
-            @WEACERepositoryDir = iTmpDir
+            # Create a new WEACE repository by copying the wanted one
+            setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
+              @WEACERepositoryDir = iTmpDir
 
-            # Change the installer repository location internally
-            @Installer.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
-            @Installer.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
-            @Installer.instance_variable_set(:@WEACEInstalledComponentsDir, "#{@WEACERepositoryDir}/Install/InstalledComponents")
+              # Change the installer repository location internally
+              @Installer.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
+              @Installer.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
+              @Installer.instance_variable_set(:@WEACEInstalledComponentsDir, "#{@WEACERepositoryDir}/Install/InstalledComponents")
 
-            # Add additional components for the regression here
-            if (lAddRegressionMasterAdapters or
-                lAddRegressionSlaveAdapters or
-                lAddRegressionSlaveListeners or
-                lAddRegressionMasterProviders or
-                lAddRegressionSlaveProviders)
-              # Change the library directory (save it to restore it after)
-              lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
-              lOldWEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
-              @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
-
-              if (lAddRegressionMasterAdapters)
-                # Get the current adapters
-                lCurrentAdapters = @Installer.instance_variable_get(:@MasterAdapters)
-                # Parse for the regression adapters
-                @Installer.send(:parseAdapters, 'Master', lCurrentAdapters)
-                # Change the adapters with the newly parsed ones
-                @Installer.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
-              end
-
-              if (lAddRegressionSlaveAdapters)
-                # Get the current adapters
-                lCurrentAdapters = @Installer.instance_variable_get(:@SlaveAdapters)
-                # Parse for the regression adapters
-                @Installer.send(:parseAdapters, 'Slave', lCurrentAdapters)
-                # Change the adapters with the newly parsed ones
-                @Installer.instance_variable_set(:@SlaveAdapters, lCurrentAdapters)
-              end
-
-              if (lAddRegressionSlaveListeners)
-                @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
-              end
-
-              if (lAddRegressionMasterProviders or
-                  lAddRegressionMasterAdapters)
-                @Installer.send(:parseWEACEPluginsFromDir, 'Master/Providers', "#{lNewWEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
-              end
-
-              if (lAddRegressionSlaveProviders or
+              # Add additional components for the regression here
+              if (lAddRegressionMasterAdapters or
                   lAddRegressionSlaveAdapters or
-                  lAddRegressionSlaveListeners)
-                @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Providers', "#{lNewWEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+                  lAddRegressionSlaveListeners or
+                  lAddRegressionMasterProviders or
+                  lAddRegressionSlaveProviders)
+                # Change the library directory (save it to restore it after)
+                lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
+                lOldWEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
+                @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
+
+                if (lAddRegressionMasterAdapters)
+                  # Get the current adapters
+                  lCurrentAdapters = @Installer.instance_variable_get(:@MasterAdapters)
+                  # Parse for the regression adapters
+                  @Installer.send(:parseAdapters, 'Master', lCurrentAdapters)
+                  # Change the adapters with the newly parsed ones
+                  @Installer.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
+                end
+
+                if (lAddRegressionSlaveAdapters)
+                  # Get the current adapters
+                  lCurrentAdapters = @Installer.instance_variable_get(:@SlaveAdapters)
+                  # Parse for the regression adapters
+                  @Installer.send(:parseAdapters, 'Slave', lCurrentAdapters)
+                  # Change the adapters with the newly parsed ones
+                  @Installer.instance_variable_set(:@SlaveAdapters, lCurrentAdapters)
+                end
+
+                if (lAddRegressionSlaveListeners)
+                  @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+                end
+
+                if (lAddRegressionMasterProviders or
+                    lAddRegressionMasterAdapters)
+                  @Installer.send(:parseWEACEPluginsFromDir, 'Master/Providers', "#{lNewWEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+                end
+
+                if (lAddRegressionSlaveProviders or
+                    lAddRegressionSlaveAdapters or
+                    lAddRegressionSlaveListeners)
+                  @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Providers', "#{lNewWEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+                end
+
+                # Restore back the WEACE lib dir
+                @Installer.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
               end
 
-              # Restore back the WEACE lib dir
-              @Installer.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
-            end
-
-            # Set the ContextVars that can be needed from the Provider Environments
-            lMinorError, lMasterConf = @Installer.getAlreadyCreatedProviderConfig('Master')
-            if (lMasterConf != nil)
-              if (lMasterConf[:WEACEMasterInfoURL] != nil)
-                @ContextVars['WEACEMasterInfoURL'] = lMasterConf[:WEACEMasterInfoURL]
+              # Set the ContextVars that can be needed from the Provider Environments
+              lMinorError, lMasterConf = @Installer.getAlreadyCreatedProviderConfig('Master')
+              if (lMasterConf != nil)
+                if (lMasterConf[:WEACEMasterInfoURL] != nil)
+                  @ContextVars['WEACEMasterInfoURL'] = lMasterConf[:WEACEMasterInfoURL]
+                end
               end
-            end
-            lMinorError, lSlaveConf = @Installer.getAlreadyCreatedProviderConfig('Slave')
-            if (lSlaveConf != nil)
-              if (lSlaveConf[:WEACESlaveInfoURL] != nil)
-                @ContextVars['WEACESlaveInfoURL'] = lSlaveConf[:WEACESlaveInfoURL]
+              lMinorError, lSlaveConf = @Installer.getAlreadyCreatedProviderConfig('Slave')
+              if (lSlaveConf != nil)
+                if (lSlaveConf[:WEACESlaveInfoURL] != nil)
+                  @ContextVars['WEACESlaveInfoURL'] = lSlaveConf[:WEACESlaveInfoURL]
+                end
               end
+
+              # Call client code
+              yield
+
+              # Clean installer
+              @Installer = nil
+
+              setLogFile(nil)
+
             end
-
-            # Call client code
-            yield
-
-            # Clean installer
-            @Installer = nil
             
-            setLogFile(nil)
-
           end
         end
 
@@ -156,9 +158,14 @@ module WEACE
           lExpectedErrorClass = iOptions[:Error]
 
           # Execute
-          rError = @Installer.execute(iParameters)
-          #rError = @Installer.execute(['-d']+iParameters)
-          #p rError
+          begin
+            rError = @Installer.execute(iParameters)
+            #rError = @Installer.execute(['-d']+iParameters)
+            #p rError
+          rescue Exception
+            # This way exception is shown on screen for better understanding
+            assert_equal(nil, $!)
+          end
 
           # Check
           if (lExpectedErrorClass == nil)

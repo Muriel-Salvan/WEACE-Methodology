@@ -30,6 +30,8 @@ module Redmine
       # * *iReleaseVersion* (_String_): The Release version
       # * *iReleaseUser* (_String_): The Release user
       # * *iReleaseComment* (_String_): The Release comment
+      # Return:
+      # * _Exception_: An error, or nil in case of success
       def self.execute(iUserID, iMySQLHost, iDBName, iDBUser, iDBPassword, iTicketID, iBranchName, iReleaseVersion, iReleaseUser, iReleaseComment)
         require 'rubygems'
         require 'mysql'
@@ -53,6 +55,7 @@ module Redmine
                '[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - Release #{iReleaseVersion} (released by #{iReleaseUser}) is shipping modifications made for this Ticket:\n#{iReleaseComment.gsub(/'/,'\\\\\'')}',
                '#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}'
              )")
+        return nil
       end
       
     end

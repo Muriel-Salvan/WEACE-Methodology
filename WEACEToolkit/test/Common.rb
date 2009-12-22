@@ -15,6 +15,10 @@ module WEACE
 
       # Initialization of every test case.
       # This method can then be used in setup or in single execution methods.
+      # It ensures that logging mechanism will be correctly initialized and finalized
+      #
+      # Parameters:
+      # * _CodeBlock_: Code executed once the test case has been initialized
       def initTestCase
         # The possible variables replaced in regression test files (command lines, repositories...)
         #   map< Symbol, Object >
@@ -24,6 +28,14 @@ module WEACE
         setLogMessagesStack([])
         # Clear variables set in tests
         $Variables = {}
+
+        begin
+          yield
+        rescue Exception
+          setLogFile(nil)
+          raise
+        end
+        setLogFile(nil)
       end
 
       # Replace variables that can be used in lines of test files.

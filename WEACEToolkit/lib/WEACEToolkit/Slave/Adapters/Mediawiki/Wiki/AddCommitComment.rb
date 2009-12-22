@@ -25,7 +25,9 @@ module Mediawiki
       # * *iCommitID* (_String_): The commit ID
       # * *iCommitUser* (_String_): The commit user
       # * *iCommitComment* (_String_): The commit comment
-      def self.execute(iUserID, iMediaWikiInstallationDir, iBranchName, iCommitID, iCommitUser, iCommitComment)
+      # Return:
+      # * _Exception_: An error, or nil in case of success
+      def execute(iUserID, iMediaWikiInstallationDir, iBranchName, iCommitID, iCommitUser, iCommitComment)
         # Get the existing text
         lContent = `php ../Mediawiki_getContent.php #{iMediaWikiInstallationDir} Changelog_#{iBranchName}`.split("\n")
         # Parse the Changelog to get to the end of the section named "=== Current ==="
@@ -45,6 +47,7 @@ module Mediawiki
         lContent.insert(lIdxLine, "* <code><small>[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}]</small></code> - Commit #{iCommitID} by #{iCommitUser}: #{iCommitComment}")
         # Set the new text
         `echo '#{lContent.join("\n").gsub(/'/,'\\\\\'')}' | php #{iMediaWikiInstallationDir}/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon commit #{iCommitID} by #{iCommitUser}' Changelog_#{iBranchName}`
+        return nil
       end
       
     end

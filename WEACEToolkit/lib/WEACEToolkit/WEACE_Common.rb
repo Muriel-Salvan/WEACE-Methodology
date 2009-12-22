@@ -67,6 +67,35 @@ module WEACE
   # Various methods used broadly
   module Toolbox
 
+    # Get the name of the file used to register an installed component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # Return:
+    # * _String_: The file name
+    def getInstalledDescFileName(iComponentName)
+      return "#{@WEACEInstallDir}/InstalledComponents/#{getValidFileName(iComponentName)}.rb"
+    end
+
+    # Get the installed description of a component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # Return:
+    # * <em>map<Symbol, Object></em>: The description, or nil if not installed
+    def getInstalledComponentDescription(iComponentName)
+      rDescription = nil
+
+      lRegisteredFileName = getInstalledDescFileName(iComponentName)
+      if (File.exists?(lRegisteredFileName))
+        File.open(lRegisteredFileName, 'r') do |iFile|
+          rDescription = eval(iFile.read)
+        end
+      end
+
+      return rDescription
+    end
+
     # Get WEACE directories.
     #
     # Return:

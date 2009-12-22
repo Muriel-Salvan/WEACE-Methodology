@@ -16,6 +16,7 @@ require 'Common'
 require 'Install/Common'
 require 'Install/Adapters'
 require 'Master/Common'
+require 'Slave/Common'
 (
   Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +
@@ -30,7 +31,8 @@ require 'Master/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb")
+  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Slave/Client/*.rb")
 ).each do |iFileName|
   require iFileName
 end

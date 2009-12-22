@@ -43,39 +43,40 @@ module WEACE
             lAddRegressionSenders = false
           end
 
-          initTestCase
+          initTestCase do
 
-          # Create a new WEACE repository by copying the wanted one
-          setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
-            @WEACERepositoryDir = iTmpDir
+            # Create a new WEACE repository by copying the wanted one
+            setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
+              @WEACERepositoryDir = iTmpDir
 
-            require 'WEACEToolkit/Master/Server/WEACEMasterServer'
-            lMasterServer = WEACE::Master::Server.new
+              require 'WEACEToolkit/Master/Server/WEACEMasterServer'
+              lMasterServer = WEACE::Master::Server.new
 
-            # Add regression Processes if needed
-            if ((lAddRegressionProcesses) or
-                (lAddRegressionSenders))
-              lInternalPluginsManager = lMasterServer.instance_variable_get(:@PluginsManager)
-              lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
-              if (lAddRegressionProcesses)
-                lInternalPluginsManager.parsePluginsFromDir('Processes', "#{lNewWEACELibDir}/Master/Server/Processes", 'WEACE::Master::Server::Processes')
+              # Add regression Processes if needed
+              if ((lAddRegressionProcesses) or
+                  (lAddRegressionSenders))
+                lInternalPluginsManager = lMasterServer.instance_variable_get(:@PluginsManager)
+                lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
+                if (lAddRegressionProcesses)
+                  lInternalPluginsManager.parsePluginsFromDir('Processes', "#{lNewWEACELibDir}/Master/Server/Processes", 'WEACE::Master::Server::Processes')
+                end
+                if (lAddRegressionSenders)
+                  lInternalPluginsManager.parsePluginsFromDir('Senders', "#{lNewWEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
+                end
               end
-              if (lAddRegressionSenders)
-                lInternalPluginsManager.parsePluginsFromDir('Senders', "#{lNewWEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
-              end
-            end
 
-            # Execute for real
-            lError = lMasterServer.execute(iParameters)
-            # Check
-            if (lExpectedErrorClass == nil)
-              assert_equal(nil, lError)
-            else
-              assert(lError.kind_of?(lExpectedErrorClass))
-            end
-            # Call additional checks from the test case itself
-            if (iCheckCode != nil)
-              iCheckCode.call(lError)
+              # Execute for real
+              lError = lMasterServer.execute(iParameters)
+              # Check
+              if (lExpectedErrorClass == nil)
+                assert_equal(nil, lError)
+              else
+                assert(lError.kind_of?(lExpectedErrorClass))
+              end
+              # Call additional checks from the test case itself
+              if (iCheckCode != nil)
+                iCheckCode.call(lError)
+              end
             end
           end
         end
@@ -111,32 +112,34 @@ module WEACE
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
 
-          initTestCase
+          initTestCase do
 
-          accessProcessPlugin do |iProcessPlugin|
-            lProcessOptions = iProcessPlugin.getOptions
-            begin
-              lAdditionalArgs = lProcessOptions.parse(iParameters)
-            rescue Exception
-              assert(false)
+            accessProcessPlugin do |iProcessPlugin|
+              lProcessOptions = iProcessPlugin.getOptions
+              begin
+                lAdditionalArgs = lProcessOptions.parse(iParameters)
+              rescue Exception
+                assert(false)
+              end
+              require 'WEACEToolkit/Master/Server/WEACEMasterServer'
+              lSlaveActions = WEACE::Master::SlaveActions.new
+              begin
+                lError = iProcessPlugin.processScript(lSlaveActions, lAdditionalArgs)
+              rescue Exception
+                lError = $!
+              end
+              # Check
+              if (lExpectedErrorClass == nil)
+                assert_equal(nil, lError)
+              else
+                assert(lError.kind_of?(lExpectedErrorClass))
+              end
+              # Additional checks if needed
+              if (iCheckCode != nil)
+                iCheckCode.call(lError, lSlaveActions.SlaveActions)
+              end
             end
-            require 'WEACEToolkit/Master/Server/WEACEMasterServer'
-            lSlaveActions = WEACE::Master::SlaveActions.new
-            begin
-              lError = iProcessPlugin.processScript(lSlaveActions, lAdditionalArgs)
-            rescue Exception
-              lError = $!
-            end
-            # Check
-            if (lExpectedErrorClass == nil)
-              assert_equal(nil, lError)
-            else
-              assert(lError.kind_of?(lExpectedErrorClass))
-            end
-            # Additional checks if needed
-            if (iCheckCode != nil)
-              iCheckCode.call(lError, lSlaveActions.SlaveActions)
-            end
+
           end
 
         end

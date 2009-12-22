@@ -133,25 +133,6 @@ module WEACEInstall
 
     private
     
-    # Get the installed description of a component
-    #
-    # Parameters:
-    # * *iComponentName* (_String_): Component name
-    # Return:
-    # * <em>map<Symbol, Object></em>: The description, or nil if not installed
-    def getInstalledComponentDescription(iComponentName)
-      rDescription = nil
-
-      lRegisteredFileName = "#{@WEACEInstallDir}/InstalledComponents/#{getValidFileName(iComponentName)}.rb"
-      if (File.exists?(lRegisteredFileName))
-        File.open(lRegisteredFileName, 'r') do |iFile|
-          rDescription = eval(iFile.read)
-        end
-      end
-
-      return rDescription
-    end
-
     # Output information of a component
     #
     # Parameters:
@@ -267,20 +248,20 @@ module WEACEInstall
       end
     end
 
-    # Register a new WEACE Adapter
+    # Register a new WEACE component
     #
     # Parameters:
     # * *iComponentName* (_String_): Name of the component to register
     # * *iDescription* (<em>map<Symbol,Object></em>): The plugin description
     # * *iParameters* (<em>list<String></em>): Parameters used when installing this component
     def registerInstalledComponent(iComponentName, iDescription, iParameters)
-      lRepositoryDir = "#{@WEACEInstallDir}/InstalledComponents"
-      lFileName = "#{lRepositoryDir}/#{getValidFileName(iComponentName)}.rb"
+      lFileName = getInstalledDescFileName(iComponentName)
       logDebug "Register #{iComponentName} in file #{lFileName} ..."
+      lDirName = File.dirname(lFileName)
       # Create the repository if needed
-      if (!File.exists?(lRepositoryDir))
+      if (!File.exists?(lDirName))
         require 'fileutils'
-        FileUtils::mkdir_p(lRepositoryDir)
+        FileUtils::mkdir_p(lDirName)
       end
       File.open(lFileName, 'w') do |oFile|
         # TODO: Check if Version can be used here
@@ -324,13 +305,14 @@ module WEACEInstall
               (!lIsSlaveClient))
             # We are installing an Adapter or Listener. Check that its Server/Client is installed.
             if (lIsMaster)
-              if (File.exists?("#{@WEACEInstallDir}/InstalledComponents/Master_Server_WEACEMasterServer.rb"))
+
+              if (getInstalledComponentDescription('Master/Server/WEACEMasterServer') != nil)
                 # Read the Master Provider config
                 rError, lProviderConfig = getAlreadyCreatedProviderConfig('Master')
               else
                 rError = MissingWEACEMasterServerError.new("You must first install component Master/Server/WEACEMasterServer before installing #{iComponentName}.")
               end
-            elsif (File.exists?("#{@WEACEInstallDir}/InstalledComponents/Slave_Client_WEACESlaveClient.rb"))
+            elsif (getInstalledComponentDescription('Slave/Client/WEACESlaveClient') != nil)
               # Read the Slave Provider config
               rError, lProviderConfig = getAlreadyCreatedProviderConfig('Slave')
             else

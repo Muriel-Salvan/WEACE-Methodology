@@ -113,6 +113,8 @@ module Redmine
       # * *iUserID* (_String_): User ID of the script adding this info
       # * *iMasterTicketID* (_String_): The Master Ticket ID
       # * *iSlaveTicketID* (_String_): The Slave Ticket ID
+      # Return:
+      # * _Exception_: An error, or nil in case of success
       def execute(iUserID, iMasterTicketID, iSlaveTicketID)
         checkVar(:RedmineDir, 'The directory where Redmine is installed')
         checkVar(:DBHost, 'The name of the MySQL host')
@@ -120,6 +122,7 @@ module Redmine
         checkVar(:DBUser, 'The name of the database user')
         checkVar(:DBPassword, 'The password of the database user')
         execMySQLOtherSession(@RedmineDir, @DBHost, @DBName, @DBUser, @DBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
+        return nil
       end
       
     end

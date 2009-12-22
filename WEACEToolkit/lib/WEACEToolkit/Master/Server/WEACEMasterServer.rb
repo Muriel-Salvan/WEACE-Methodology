@@ -64,7 +64,7 @@ module WEACE
         @PluginsManager.parsePluginsFromDir('Senders', "#{@WEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
       end
 
-      # Get options of this installer
+      # Get options of the WEACE Master Server
       #
       # Return:
       # * _OptionParser_: The options parser
