@@ -52,7 +52,11 @@ module WEACE
               require 'WEACEToolkit/Master/Server/WEACEMasterServer'
               lMasterServer = WEACE::Master::Server.new
 
-              # Add regression Processes if needed
+              # Change the repository location internally in WEACE Slave Client
+              lMasterServer.instance_variable_set(:@DefaultLogDir, "#{@WEACERepositoryDir}/Log")
+              lMasterServer.instance_variable_set(:@ConfigFile, "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb")
+
+              # Add regression Components if needed
               if ((lAddRegressionProcesses) or
                   (lAddRegressionSenders))
                 lInternalPluginsManager = lMasterServer.instance_variable_get(:@PluginsManager)

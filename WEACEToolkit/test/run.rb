@@ -8,7 +8,7 @@ $WEACETestBaseDir = File.expand_path(File.dirname(__FILE__))
 
 require 'rUtilAnts/Logging'
 RUtilAnts::Logging::initializeLogging(File.expand_path("#{$WEACETestBaseDir}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
-activateLogDebug(true)
+activateLogDebug(false)
 
 $LOAD_PATH << File.dirname(__FILE__)
 
@@ -32,7 +32,8 @@ require 'Slave/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Slave/Client/*.rb")
+  Dir.glob("#{File.dirname(__FILE__)}/Slave/Client/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Slave/Adapters/*/*/*.rb")
 ).each do |iFileName|
   require iFileName
 end
