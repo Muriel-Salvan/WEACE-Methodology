@@ -153,7 +153,7 @@ module WEACE
     # * *iVariable* (_Symbol_): The variable we are looking for.
     # * *iDescription* (_String_): The description of this variable. This will appear in the eventual error message.
     def checkVar(iVariable, iDescription)
-      if (!self.instance_variables.include?(iVariable.to_s))
+      if (!self.instance_variables.include?("@#{iVariable}"))
         logErr "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
         raise MissingVariableError, "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
       end

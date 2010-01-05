@@ -24,17 +24,32 @@ module WEACE
               include WEACE::Test::Slave::Common
 
               # Test normal behaviour
-              def testNormal
-#                executeSlave(
-#                  [
-#                    '--user', 'DummyUser',
-#                    '--tool', 'Redmine',
-#                    '--action', 'RejectDuplicate'
-#                  ],
-#                  :Repository => 'DummyActionAvailable'
-#                ) do |iError|
-#
-#                end
+              def testNormal2
+                executeSlave(
+                  [
+                    '--user', 'DummyUser',
+                    '--tool', 'TicketTracker',
+                    '--action', 'RejectDuplicate', '123', '456'
+                  ],
+                  :Repository => 'DummyActionAvailable',
+                  :InstallActions => [
+                    [ 'Redmine', 'TicketTracker', 'RejectDuplicate' ]
+                  ],
+                  :ConfigureProducts => [
+                    [
+                      'Redmine', 'TicketTracker',
+                      {
+                        :RedmineDir => '/home/groups/m/my/myproject/redmine',
+                        :DBHost => 'mysql-r',
+                        :DBName => 'redminedb',
+                        :DBUser => 'dbuser',
+                        :DBPassword => 'dbpassword'
+                      }
+                    ]
+                  ]
+                ) do |iError|
+
+                end
               end
 
             end

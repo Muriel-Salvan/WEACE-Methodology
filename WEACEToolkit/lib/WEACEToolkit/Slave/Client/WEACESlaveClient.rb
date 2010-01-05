@@ -494,7 +494,7 @@ Check http://weacemethod.sourceforge.net for details."
                 logDebug "***** #{iProductID} (NOT Installed)"
               end
             end
-            logDebug "**** Asked to be exectued #{iAskedParameters.size} times:"
+            logDebug "**** Asked to be executed #{iAskedParameters.size} times:"
             iAskedParameters.each do |iActionParameters|
               logDebug "***** #{iActionParameters.join(' ')}"
             end
@@ -536,21 +536,32 @@ Check http://weacemethod.sourceforge.net for details."
                 lNames = @PluginsManager.getPluginNames("Adapters/#{lProductID}/#{lToolID}")
                 if (!lNames.empty?)
                   lNames.each do |iActionID|
-                    if (@Actions[lToolID] == nil)
-                      @Actions[lToolID] = {}
-                    end
-                    if (@Actions[lToolID][iActionID] == nil)
-                      @Actions[lToolID][iActionID] = [ [], [] ]
-                    end
                     # Check if this Adapter has been installed
                     lInstalledDesc = getInstalledComponentDescription("Slave/Adapters/#{lProductID}/#{lToolID}/#{iActionID}")
-                    @Actions[lToolID][iActionID][0] << [ lProductID, (lInstalledDesc != nil) ]
+                    registerAction(lToolID, iActionID, lProductID, (lInstalledDesc != nil))
                   end
                 end
               end
             end
           end
         end
+      end
+
+      # Register a new Action
+      #
+      # Parameters:
+      # * *iToolID* (_String_): The Tool ID
+      # * *iActionID* (_String_): The Action ID
+      # * *iProductID* (_String_): The Product ID
+      # * *iIsInstalled* (_Boolean_): Is the Action installed ?
+      def registerAction(iToolID, iActionID, iProductID, iIsInstalled)
+        if (@Actions[iToolID] == nil)
+          @Actions[iToolID] = {}
+        end
+        if (@Actions[iToolID][iActionID] == nil)
+          @Actions[iToolID][iActionID] = [ [], [] ]
+        end
+        @Actions[iToolID][iActionID][0] << [ iProductID, iIsInstalled ]
       end
 
       # Read the configuration file
@@ -614,7 +625,7 @@ Check http://weacemethod.sourceforge.net for details."
         if (rError == nil)
           # Complete the configuration if needed
           if (rConfig[:LogFile] == nil)
-            rConfig[:LogFile] = "#{@DefaultLogDir}/WEACEMasterServer.log"
+            rConfig[:LogFile] = "#{@DefaultLogDir}/WEACESlaveClient.log"
           end
         end
 
