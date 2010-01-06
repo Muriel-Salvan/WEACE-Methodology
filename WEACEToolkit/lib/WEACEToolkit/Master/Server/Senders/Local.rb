@@ -21,6 +21,8 @@ module WEACE
         # Class that sends messages to a Slave Client local
         class Local
 
+          # Send a message containing the specified Slave Actions.
+          #
           # Parameters:
           # * *iUserScriptID* (_String_): The user ID of the script
           # * *iSlaveActions* (<em>map< ToolID, list< ActionID, Parameters > ></em>): The map of actions to send to the Slave Client

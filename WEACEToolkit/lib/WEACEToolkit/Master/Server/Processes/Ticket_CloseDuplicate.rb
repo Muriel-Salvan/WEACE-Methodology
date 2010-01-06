@@ -18,6 +18,8 @@ module WEACE
 
         class Ticket_CloseDuplicate
 
+          include WEACE::Toolbox
+
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
           # Parameters:
@@ -28,6 +30,8 @@ module WEACE
           def processScript(ioSlaveActions, iAdditionalParameters)
             rError = nil
 
+            checkVar(:MasterTicketID, 'Master Ticket ID to keep')
+            checkVar(:SlaveTicketID, 'Slave Ticket ID to be closed as a duplicate')
             ioSlaveActions.addSlaveAction(
               Tools_TicketTracker, Action_Ticket_RejectDuplicate,
               @MasterTicketID, @SlaveTicketID
