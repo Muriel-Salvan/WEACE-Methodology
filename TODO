@@ -1,6 +1,5 @@
 * Regression:
 ** Create test cases for any Process in Master/Server/Processes
-** Create test framework for Master/Server/Senders
 ** Create test cases for any Master/Adapter
 ** Create test framework for Master/Providers
 ** Create test framework for installing Slave/Listeners
@@ -14,3 +13,4 @@
 ** Implement an installation step that checks if the product is genuine before patching it + Regression
 ** Check WEACEShowMaster/SlaveInfo relevance
 ** Big code review to remove useless functions
+** When WEACE Slave Client does not execute Actions due to uninstalled or unconfigured Adapters, we have to know it.

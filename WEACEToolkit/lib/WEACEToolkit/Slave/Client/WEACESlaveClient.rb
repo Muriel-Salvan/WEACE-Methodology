@@ -177,7 +177,7 @@ Check http://weacemethod.sourceforge.net for details."
         lDisplayVersion = false
         lDisplayList = false
         lDisplayDetails = false
-        lDebugMode = false
+        @DebugMode = false
         lUserID = nil
         lInvalid = false
         lBeginNewTool = false
@@ -245,7 +245,7 @@ Check http://weacemethod.sourceforge.net for details."
                 when '-v', '--version'
                   lDisplayVersion = true
                 when '-d', '--debug'
-                  lDebugMode = true
+                  @DebugMode = true
                 when '-l', '--list'
                   lDisplayList = true
                 when '-e', '--detailedlist'
@@ -295,19 +295,7 @@ Check http://weacemethod.sourceforge.net for details."
               # Incorrect parameters
               rError = CommandLineError.new("Incorrect parameters: \"#{iParameters.join(' ')}\"\n#{lUsage}.")
             else
-              # Read the configuration file
-              rError, lConfig = readConfigFile
-              if (rError == nil)
-                # Here we can execute Actions correctly
-                # Create log file
-                require 'fileutils'
-                FileUtils::mkdir_p(File.dirname(lConfig[:LogFile]))
-                setLogFile(lConfig[:LogFile])
-                activateLogDebug(lDebugMode)
-                logInfo '== WEACE Slave Client called =='
-                dumpDebugInfo(lUserID, lConfig[:WEACESlaveAdapters])
-                rError = executeActions(lUserID, lConfig[:WEACESlaveAdapters])
-              end
+              rError = executeActions(lUserID)
             end
           end
         end
@@ -384,40 +372,54 @@ Check http://weacemethod.sourceforge.net for details."
       #
       # Parameters:
       # * *iUserID* (_String_): The User ID
-      # * *iSlaveAdapters* (<em>list<map<Symbol,Object>></em>): The list of WEACE Slave Adapters as stated in the configuration file
       # Return:
       # * _ActionExecutionsError_: An error, or nil in case of success
-      def executeActions(iUserID, iSlaveAdapters)
+      def executeActions(iUserID)
         rError = nil
 
-        # For each tool having an action, call all the adapters for this tool.
-        # List of errors that occurred on some Adapters
-        # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
-        lErrors = []
-        @Actions.each do |iToolID, iToolInfo|
-          # For each adapter adapting iToolID
-          iToolInfo.each do |iActionID, iActionInfo|
-            iProductsList, iAskedParameters = iActionInfo
-            iAskedParameters.each do |iActionParameters|
-              iProductsList.each do |iProductInfo|
-                iProductID, iProductInstalled = iProductInfo
-                if (iProductInstalled)
-                  # Check configuration for this Product
-                  lProductConfig = getProductConfig(iSlaveAdapters, iProductID, iToolID)
-                  if (lProductConfig != nil)
-                    # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
-                    lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
-                    if (lError != nil)
-                      lErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
+        # Read the configuration file
+        rError, lConfig = readConfigFile
+        if (rError == nil)
+
+          # Create log file
+          require 'fileutils'
+          FileUtils::mkdir_p(File.dirname(lConfig[:LogFile]))
+          setLogFile(lConfig[:LogFile])
+          activateLogDebug(@DebugMode)
+          logInfo '== WEACE Slave Client called =='
+          dumpDebugInfo(iUserID, lConfig[:WEACESlaveAdapters])
+          lSlaveAdapters = lConfig[:WEACESlaveAdapters]
+
+          # For each tool having an action, call all the adapters for this tool.
+          # List of errors that occurred on some Adapters
+          # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
+          lErrors = []
+          @Actions.each do |iToolID, iToolInfo|
+            # For each adapter adapting iToolID
+            iToolInfo.each do |iActionID, iActionInfo|
+              iProductsList, iAskedParameters = iActionInfo
+              iAskedParameters.each do |iActionParameters|
+                iProductsList.each do |iProductInfo|
+                  iProductID, iProductInstalled = iProductInfo
+                  if (iProductInstalled)
+                    # Check configuration for this Product
+                    lProductConfig = getProductConfig(lSlaveAdapters, iProductID, iToolID)
+                    if (lProductConfig != nil)
+                      # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
+                      lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
+                      if (lError != nil)
+                        lErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
+                      end
                     end
                   end
                 end
               end
             end
           end
-        end
-        if (!lErrors.empty?)
-          rError = ActionExecutionsError.new(lErrors)
+          if (!lErrors.empty?)
+            rError = ActionExecutionsError.new(lErrors)
+          end
+
         end
 
         return rError

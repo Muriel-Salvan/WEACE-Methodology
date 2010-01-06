@@ -33,6 +33,7 @@ require 'Slave/Adapters/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Senders/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Slave/Client/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Slave/Adapters/*/*/*.rb")
 ).each do |iFileName|

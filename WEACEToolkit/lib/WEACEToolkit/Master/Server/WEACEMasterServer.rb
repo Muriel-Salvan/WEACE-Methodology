@@ -7,6 +7,7 @@
 #++
 
 require 'WEACEToolkit/WEACE_Common'
+require 'WEACEToolkit/Master/Server/Common'
 
 module WEACE
 

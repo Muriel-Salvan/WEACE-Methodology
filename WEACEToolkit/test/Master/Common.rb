@@ -8,6 +8,48 @@ require 'WEACEToolkit/Master/Server/WEACEMasterServer'
 
 module WEACE
 
+  # Needed to track the WEACE Slave Client behaviour when testing Senders
+  module Slave
+
+    class Client
+
+      # Execute all the Actions having parameters.
+      # This method uses @Actions to get the possible Actions.
+      #
+      # Parameters:
+      # * *iUserID* (_String_): The User ID
+      # Return:
+      # * _ActionExecutionsError_: An error, or nil in case of success
+      def executeActions_Regression(iUserID)
+        # Actions to execute, taken from @Actions
+        # map< String, map< String,   list< list< String > > > >
+        # map< ToolID, map< ActionID, list< Parameters     > > >
+        lActionsToExecute = {}
+        @Actions.each do |iToolID, iToolInfo|
+          # For each adapter adapting iToolID
+          iToolInfo.each do |iActionID, iActionInfo|
+            iProductsList, iAskedParameters = iActionInfo
+            if (!iAskedParameters.empty?)
+              if (lActionsToExecute[iToolID] == nil)
+                lActionsToExecute[iToolID] = {}
+              end
+              lActionsToExecute[iToolID][iActionID] = iAskedParameters
+            end
+          end
+        end
+
+        $Variables[:SlaveActions] = {
+          :UserID => iUserID,
+          :ActionsToExecute => lActionsToExecute
+        }
+
+        return nil
+      end
+
+    end
+
+  end
+
   module Test
 
     module Master
@@ -103,6 +145,24 @@ module WEACE
           end
         end
 
+        # Give access to a Sender plugin
+        #
+        # Parameters:
+        # * _CodeBlock_: The code executed with the Sender instance created:
+        # ** *iSenderPlugin* (_Object_): The Sender plugin
+        def accessSenderPlugin
+          # Get the name of the Sender plugin
+          lMatch = self.class.to_s.match(/^WEACE::Test::Master::Senders::(.*)$/)
+          if (lMatch == nil)
+            logErr "Class #{self.class} does not have format /^WEACE::Test::Master::Senders::(.*)$/."
+          else
+            lProcessName = lMatch[1]
+            require "WEACEToolkit/Master/Server/Senders/#{lProcessName}"
+            lSenderPlugin = eval("WEACE::Master::Server::Senders::#{lProcessName}.new")
+            yield(lSenderPlugin)
+          end
+        end
+
         # Execute a Process plugin
         #
         # Parameters:
@@ -141,6 +201,66 @@ module WEACE
               # Additional checks if needed
               if (iCheckCode != nil)
                 iCheckCode.call(lError, lSlaveActions.SlaveActions)
+              end
+            end
+
+          end
+
+        end
+
+        # Execute a Sender plugin
+        #
+        # Parameters:
+        # * *iUserID* (_String_): the user ID to use while sending
+        # * *iSlaveActions* (<em>map<String,list<[String,Object]>></em>): The Slave Actions to send
+        # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
+        # ** *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
+        # ** *:DummySlaveClient* (_Boolean_): Do we bypass the executeActions of the WEACE Slave Client to trace it ? [optional = false]
+        # * _CodeBlock_: The code executed once the Process plugin has been called [optional = nil]
+        # ** *iError* (_Exception_): The error returned by the Process plugin, or nil if success
+        def executeSender(iUserID, iSlaveActions, iOptions = {}, &iCheckCode)
+          # Parse options
+          lExpectedErrorClass = iOptions[:Error]
+          lDummySlaveClient = iOptions[:DummySlaveClient]
+          if (lDummySlaveClient == nil)
+            lDummySlaveClient = false
+          end
+
+          initTestCase do
+
+            accessSenderPlugin do |iSenderPlugin|
+              # Bypass the Slave Client if needed
+              if (lDummySlaveClient)
+                WEACE::Slave::Client::module_eval("
+alias :executeActions_Original :executeActions
+alias :executeActions :executeActions_Regression
+"
+                )
+              end
+
+              begin
+                lError = iSenderPlugin.sendMessage(iUserID, iSlaveActions)
+              rescue Exception
+                lError = $!
+              end
+              # Check
+              if (lExpectedErrorClass == nil)
+                assert_equal(nil, lError)
+              else
+                assert(lError.kind_of?(lExpectedErrorClass))
+              end
+              # Additional checks if needed
+              if (iCheckCode != nil)
+                iCheckCode.call(lError)
+              end
+
+              # Set back the Slave Client if needed
+              if (lDummySlaveClient)
+                WEACE::Slave::Client::module_eval("
+alias :executeActions_Regression :executeActions
+alias :executeActions :executeActions_Original
+"
+                )
               end
             end
 

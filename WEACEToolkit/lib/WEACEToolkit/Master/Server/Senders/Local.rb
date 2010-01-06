@@ -21,6 +21,8 @@ module WEACE
         # Class that sends messages to a Slave Client local
         class Local
 
+          include WEACE::Master::Server::Common
+
           # Send a message containing the specified Slave Actions.
           #
           # Parameters:
@@ -35,8 +37,10 @@ module WEACE
             require "WEACEToolkit/Slave/Client/WEACESlaveClient"
             # Save the Log file location before, and restore it after
             lOldLogFile = getLogFile
+            # Create the list of parameters to give the WEACE Slave Client
+            lParameters = getSlaveClientParamsFromActions(iUserScriptID, iSlaveActions)
             # Call the Slave Client directly
-            rError = WEACE::Slave::Client.new.execute(iUserScriptID, iSlaveActions)
+            rError = WEACE::Slave::Client.new.execute(lParameters)
             setLogFile(lOldLogFile)
 
             return rError
