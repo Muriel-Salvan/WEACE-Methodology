@@ -5,7 +5,6 @@
 ** Create test framework for Master/Providers
 ** Create test framework for installing Slave/Listeners
 ** Create test framework for Slave/Providers
-** Create test framework for Slave/Adapters
 ** Create test framework for Slave/Listeners
 ** Create tests for configuration files
 

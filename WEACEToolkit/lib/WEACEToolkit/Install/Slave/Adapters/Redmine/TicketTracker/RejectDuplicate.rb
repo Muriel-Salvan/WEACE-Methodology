@@ -19,7 +19,7 @@ module WEACEInstall
       
         module TicketTracker
         
-          class Ticket_RejectDuplicate
+          class RejectDuplicate
           
             include WEACE::Toolbox
             include WEACEInstall::Slave::Adapters::Redmine::CommonInstall

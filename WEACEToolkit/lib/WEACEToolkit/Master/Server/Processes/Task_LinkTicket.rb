@@ -30,8 +30,8 @@ module WEACE
           def processScript(ioSlaveActions, iAdditionalParameters)
             rError = nil
 
-            checkVar(:@TicketID, 'Ticket ID to link to the Task')
-            checkVar(:@TaskID, 'Task ID to be linked to the Ticket')
+            checkVar(:TicketID, 'Ticket ID to link to the Task')
+            checkVar(:TaskID, 'Task ID to be linked to the Ticket')
             ioSlaveActions.addSlaveAction(
               Tools_TicketTracker, Action_Ticket_AddLinkToTask,
               @TicketID, @TaskID

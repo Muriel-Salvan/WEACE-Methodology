@@ -21,7 +21,7 @@ module WEACE
 
             module TicketTracker
 
-              class Ticket_RejectDuplicate < ::Test::Unit::TestCase
+              class RejectDuplicate < ::Test::Unit::TestCase
 
                 include WEACE::Test::Install::Adapters
 

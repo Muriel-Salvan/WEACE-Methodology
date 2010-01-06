@@ -39,7 +39,8 @@ module WEACE
               checkVar(:DBName, 'The name of the database of Redmine')
               checkVar(:DBUser, 'The name of the database user')
               checkVar(:DBPassword, 'The password of the database user')
-              execMySQLOtherSession(@RedmineDir, @DBHost, @DBName, @DBUser, @DBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
+#              execMySQLOtherSession(@RedmineDir, @DBHost, @DBName, @DBUser, @DBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
+              execMySQL(@DBHost, @DBName, @DBUser, @DBPassword, iUserID, iMasterTicketID, iSlaveTicketID)
               return nil
             end
 

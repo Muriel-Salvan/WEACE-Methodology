@@ -17,6 +17,7 @@ require 'Install/Common'
 require 'Install/Adapters'
 require 'Master/Common'
 require 'Slave/Common'
+require 'Slave/Adapters/Common'
 (
   Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +

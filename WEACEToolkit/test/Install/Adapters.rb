@@ -167,44 +167,6 @@ module WEACE
           return rResult
         end
 
-        # Get details about the test case currently running (based on the class name)
-        #
-        # Return:
-        # * _String_: The type (Master|Slave)
-        # * _String_: The Product ID
-        # * _String_: The Tool ID
-        # * _String_: The Script ID
-        # * _String_: The test case name
-        # * _Boolean_: Does this test case test installation scripts ?
-        def getTestDetails
-          rType = nil
-          rProductID = nil
-          rToolID = nil
-          rScriptID = nil
-          rTestName = 'unknown'
-          rInstallTest = nil
-
-          # Get the ID of the test, based on its class name
-          lMatchData = self.class.name.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)::(.*)$/)
-          if (lMatchData == nil)
-            lMatchData = self.class.name.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
-            if (lMatchData == nil)
-              logErr "Testing class (#{self.class.name}) is not of the form WEACE::Test[::Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::<ScriptID>"
-              raise RuntimeError, "Testing class (#{self.class.name}) is not of the form WEACE::Test[::Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::<ScriptID>"
-            else
-              rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
-              rInstallTest = false
-            end
-          else
-            rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
-            rInstallTest = true
-          end
-          # Remove the beginning 'test' from the method name
-          rTestName = @method_name[4..-1]
-
-          return rType, rProductID, rToolID, rScriptID, rTestName, rInstallTest
-        end
-
         # Setup each test
         def setup
           @Type, @ProductID, @ToolID, @ScriptID, @TestName, @InstallTest = getTestDetails
@@ -308,33 +270,6 @@ module WEACE
                 end
               end
             end
-          end
-        end
-
-        # Execute a test.
-        # This is called by test cases of normal WEACE Slave Adapters.
-        #
-        # Parameters:
-        # * *iProductParameters* (<em>map<Symbol,Object></em>): The map of product parameters to give the Adapter
-        # * *Parameters*: List of additional Action parameters
-        def executeSlaveAdapterTest(iProductParameters, *iActionParameters)
-          logDebug "Execute component #{@ComponentName}"
-          # Require the correct adapter file for the given action
-          begin
-            require "WEACEToolkit/Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}"
-            begin
-              lAdapter = eval("#{@ProductID}::#{@ToolID}::#{@ActionID}.new")
-              instantiateVars(lAdapter, iProductParameters)
-              lAdapter.execute(iUserScriptID, *iActionParameters)
-            rescue Exception
-              logErr "Error while executing Adapter #{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb: #{$!}."
-              logErr $!.backtrace.join("\n")
-              @TestSuccess = false
-            end
-          rescue RuntimeError
-            logErr "Unable to load the Slave Adapter Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ProductID}_#{@ToolID}_#{@ScriptID}.rb: #{$!}."
-            logErr $!.backtrace.join("\n")
-            @TestSuccess = false
           end
         end
 

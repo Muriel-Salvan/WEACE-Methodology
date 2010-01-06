@@ -237,6 +237,32 @@ module WEACE
       puts '</html>'
     end
 
+    # Start a MySQL transaction, connecting first to the database.
+    #
+    # Parameters:
+    # * *iMySQLHost* (_String_): The name of the MySQL host
+    # * *iDBName* (_String_): The name of the database of Redmine
+    # * *iDBUser* (_String_): The name of the database user
+    # * *iDBPassword* (_String_): The password of the database user
+    # * _CodeBlock_: The code called once the Transaction is created
+    # ** *ioSQL* (_Object_): The SQL object used to perform queries
+    def beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword)
+      # Go on with real MySQL library
+      require 'rubygems'
+      require 'mysql'
+      # Connect to the db
+      lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
+      # Create a transaction
+      lMySQL.query("start transaction")
+      begin
+        yield(lMySQL)
+        lMySQL.query("commit")
+      rescue RuntimeError
+        lMySQL.query("rollback")
+        raise
+      end
+    end
+
     # Execute some Ruby code in the MySQL environment.
     # The code executed has to be in a method named executeSQL that takes the SQL connection as a first parameter.
     #
@@ -247,19 +273,8 @@ module WEACE
     # * *iDBPassword* (_String_): The password of the database user
     # * *Parameters* (<em>list<String></em>): Additional parameters
     def execMySQL(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-      # Go on with real MySQL library
-      require 'rubygems'
-      require 'mysql'
-      # Connect to the db
-      lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-      # Create a transaction
-      lMySQL.query("start transaction")
-      begin
-        executeSQL(lMySQL, *iParameters)
-        lMySQL.query("commit")
-      rescue RuntimeError
-        lMySQL.query("rollback")
-        raise
+      beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword) do |ioSQL|
+        executeSQL(ioSQL, *iParameters)
       end
     end
     
@@ -291,7 +306,7 @@ module WEACE
       require 'fileutils'
       FileUtils.chmod(0700, lFileName)
       # Call the other session
-      execCmd("#{iShellCmd}; ruby -w WEACEExecute.rb #{lFileName} 2>&1")
+      execCmd("#{iShellCmd}; ruby -w Execute.rb #{lFileName} 2>&1")
     end
   
     # Execute a command

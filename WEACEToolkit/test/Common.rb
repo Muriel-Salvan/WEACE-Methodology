@@ -13,6 +13,44 @@ module WEACE
 
     module Common
 
+      # Get details about the test case currently running (based on the class name)
+      #
+      # Return:
+      # * _String_: The type (Master|Slave)
+      # * _String_: The Product ID
+      # * _String_: The Tool ID
+      # * _String_: The Script ID
+      # * _String_: The test case name
+      # * _Boolean_: Does this test case test installation scripts ?
+      def getTestDetails
+        rType = nil
+        rProductID = nil
+        rToolID = nil
+        rScriptID = nil
+        rTestName = 'unknown'
+        rInstallTest = nil
+
+        # Get the ID of the test, based on its class name
+        lMatchData = self.class.name.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)::(.*)$/)
+        if (lMatchData == nil)
+          lMatchData = self.class.name.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
+          if (lMatchData == nil)
+            logErr "Testing class (#{self.class.name}) is not of the form WEACE::Test[::Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::<ScriptID>"
+            raise RuntimeError, "Testing class (#{self.class.name}) is not of the form WEACE::Test[::Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::<ScriptID>"
+          else
+            rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
+            rInstallTest = false
+          end
+        else
+          rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
+          rInstallTest = true
+        end
+        # Remove the beginning 'test' from the method name
+        rTestName = @method_name[4..-1]
+
+        return rType, rProductID, rToolID, rScriptID, rTestName, rInstallTest
+      end
+
       # Initialization of every test case.
       # This method can then be used in setup or in single execution methods.
       # It ensures that logging mechanism will be correctly initialized and finalized

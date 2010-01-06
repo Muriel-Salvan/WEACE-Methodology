@@ -40,6 +40,35 @@ module WEACE
 
       # Error occurring when an Adapter throws an exception
       class AdapterError < RuntimeError
+
+        # The Product that caused this error
+        #   String
+        attr_reader :ProductID
+
+        # The Tool that caused this error
+        #   String
+        attr_reader :ToolID
+
+        # The Action that caused this error
+        #   String
+        attr_reader :ActionID
+
+        # The Adapter error
+        #   String
+        attr_reader :AdapterError
+
+        # Constructor
+        #
+        # Parameters:
+        # * *iProductID* (_String_): The Product ID
+        # * *iToolID* (_String_): The Tool ID
+        # * *iActionID* (_String_): The Action ID
+        # * *iAdapterError* (_Exception_): The exception raised by this Adapter
+        def initialize(iProductID, iToolID, iActionID, iAdapterError)
+          @ProductID, @ToolID, @ActionID, @AdapterError = iProductID, iToolID, iActionID, iAdapterError
+          super("Slave Adapter #{@ProductID}/#{@ToolID}/#{@ActionID} raised an error: #{@AdapterError}. Stack:\n#{@AdapterError.backtrace.join("\n")}\n")
+        end
+
       end
 
       # Error occurring when errors were encountered during Actions executions
@@ -338,7 +367,7 @@ Check http://weacemethod.sourceforge.net for details."
           rescue ArgumentError
             rError = AdapterArgumentError.new("Adapter #{iProductID}/#{iToolID}/#{iActionID} did not get valid arguments. Check parameters or the Adapter's signature: #{$!}.")
           rescue Exception
-            rError = AdapterError.new("Adapter #{iProductID}/#{iToolID}/#{iActionID} failed with error: #{$!}.")
+            rError = AdapterError.new(iProductID, iToolID, iActionID, $!)
           end
           if (rError == nil)
             logDebug 'Adapter completed action without error.'
