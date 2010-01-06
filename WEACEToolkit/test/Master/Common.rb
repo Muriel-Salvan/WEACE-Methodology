@@ -216,6 +216,9 @@ module WEACE
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
         # ** *:DummySlaveClient* (_Boolean_): Do we bypass the executeActions of the WEACE Slave Client to trace it ? [optional = false]
+        # ** *:ClientAddRegressionActions* (_Boolean_): Do we add Actions defined from the regression in the WEACE Slave Client to be called ? [optional = false]
+        # ** *:ClientInstallActions* (<em>list<[String,String,String]></em>): List of Actions to install in the WEACE Slave Client to be called: [ ProductID, ToolID, ActionID ]. [optional = nil]
+        # ** *:ClientConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure in the WEACE Slave Client to be called: [ ProductID, ToolID, Parameters ]. [optional = nil]
         # * _CodeBlock_: The code executed once the Process plugin has been called [optional = nil]
         # ** *iError* (_Exception_): The error returned by the Process plugin, or nil if success
         def executeSender(iUserID, iSlaveActions, iOptions = {}, &iCheckCode)
@@ -225,43 +228,57 @@ module WEACE
           if (lDummySlaveClient == nil)
             lDummySlaveClient = false
           end
+          lClientAddRegressionActions = iOptions[:ClientAddRegressionActions]
+          if (lClientAddRegressionActions == nil)
+            lClientAddRegressionActions = false
+          end
+          lClientInstallActions = iOptions[:ClientInstallActions]
+          lClientConfigureProducts = iOptions[:ClientConfigureProducts]
 
           initTestCase do
 
             accessSenderPlugin do |iSenderPlugin|
               # Bypass the Slave Client if needed
-              if (lDummySlaveClient)
-                WEACE::Slave::Client::module_eval("
-alias :executeActions_Original :executeActions
-alias :executeActions :executeActions_Regression
-"
-                )
+              WEACE::Test::Common::changeMethod(
+                WEACE::Slave::Client,
+                :executeActions,
+                :executeActions_Regression,
+                lDummySlaveClient
+              ) do
+
+                # Create a new WEACE repository by copying the wanted one
+                setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/Empty"), 'WEACETestRepository') do |iTmpDir|
+                  @WEACERepositoryDir = iTmpDir
+
+                  WEACE::Slave::Client.changeClient(
+                    @WEACERepositoryDir,
+                    lClientAddRegressionActions,
+                    lClientInstallActions,
+                    lClientConfigureProducts
+                  ) do
+
+                    begin
+                      lError = iSenderPlugin.sendMessage(iUserID, iSlaveActions)
+                    rescue Exception
+                      lError = $!
+                    end
+                    # Check
+                    if (lExpectedErrorClass == nil)
+                      assert_equal(nil, lError)
+                    else
+                      assert(lError.kind_of?(lExpectedErrorClass))
+                    end
+                    # Additional checks if needed
+                    if (iCheckCode != nil)
+                      iCheckCode.call(lError)
+                    end
+
+                  end
+
+                end
+
               end
 
-              begin
-                lError = iSenderPlugin.sendMessage(iUserID, iSlaveActions)
-              rescue Exception
-                lError = $!
-              end
-              # Check
-              if (lExpectedErrorClass == nil)
-                assert_equal(nil, lError)
-              else
-                assert(lError.kind_of?(lExpectedErrorClass))
-              end
-              # Additional checks if needed
-              if (iCheckCode != nil)
-                iCheckCode.call(lError)
-              end
-
-              # Set back the Slave Client if needed
-              if (lDummySlaveClient)
-                WEACE::Slave::Client::module_eval("
-alias :executeActions_Regression :executeActions
-alias :executeActions :executeActions_Original
-"
-                )
-              end
             end
 
           end

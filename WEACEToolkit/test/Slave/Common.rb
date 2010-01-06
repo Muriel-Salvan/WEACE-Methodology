@@ -164,90 +164,46 @@ module WEACE
             setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
               @WEACERepositoryDir = iTmpDir
 
-              require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
-              lSlaveClient = WEACE::Slave::Client.new
+              WEACE::Slave::Client.changeClient(
+                @WEACERepositoryDir,
+                lAddRegressionActions,
+                lInstallActions,
+                lConfigureProducts
+              ) do
 
-              # Change the repository location internally in WEACE Slave Client
-              lSlaveClient.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
-              lSlaveClient.instance_variable_set(:@DefaultLogDir, "#{@WEACERepositoryDir}/Log")
-              lSlaveClient.instance_variable_set(:@ConfigFile, "#{@WEACERepositoryDir}/Config/SlaveClient.conf.rb")
+                # If we catch MySQL, do it now
+                WEACE::Test::Common::changeMethod(
+                  WEACE::Toolbox,
+                  :beginMySQLTransaction,
+                  :beginMySQLTransaction_Regression,
+                  lCatchMySQL) do
 
-              # Add regression Components if needed
-              if (lAddRegressionActions)
-                lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
-                lSlaveClient.send(:parseAdapters, "#{lNewWEACELibDir}/Slave/Adapters")
-              end
-
-              # First, register actions if needed
-              if (lInstallActions != nil)
-                lSlaveActions = lSlaveClient.instance_variable_get(:@Actions)
-                lInstallActions.each do |iInstalledActionInfo|
-                  iProductID, iToolID, iActionID = iInstalledActionInfo
-                  # Register the Action among the installed ones
-                  lSlaveActions[iToolID][iActionID][0].each do |ioProductInfo|
-                    iKnownProductID, iInstalled = ioProductInfo
-                    if (iKnownProductID == iProductID)
-                      ioProductInfo[1] = true
-                    end
+                  # Execute for real now that it has been modified
+                  require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
+                  begin
+                    lError = WEACE::Slave::Client.new.execute(iParameters)
+                    #lError = WEACE::Slave::Client.new.execute(['-d']+iParameters)
+                    #p lError
+                  rescue Exception
+                    # This way exception is shown on screen for better understanding
+                    assert_equal(nil, $!)
                   end
+
+                  # Check result
+                  if (lExpectedErrorClass == nil)
+                    assert_equal(nil, lError)
+                  else
+                    assert(lError.kind_of?(lExpectedErrorClass))
+                  end
+                  # Call additional checks from the test case itself
+                  if (iCheckCode != nil)
+                    iCheckCode.call(lError)
+                  end
+
                 end
+
               end
 
-              # Configure Products if needed
-              if (lConfigureProducts != nil)
-                # Bypass the configuration file reader to force our configuration
-                lError, $WEACESlaveConfig = lSlaveClient.send(:readConfigFile)
-                def lSlaveClient.readConfigFile
-                  return nil, $WEACESlaveConfig
-                end
-                lConfigureProducts.each do |iProductInfo|
-                  iProductID, iToolID, iProductConfig = iProductInfo
-                  $WEACESlaveConfig[:WEACESlaveAdapters] << iProductConfig.merge(
-                    {
-                    :Product => iProductID,
-                    :Tool => iToolID
-                    }
-                  )
-                end
-              end
-
-              # If we catch MySQL, do it now
-              if (lCatchMySQL)
-                WEACE::Toolbox::module_eval("
-alias :beginMySQLTransaction_Original :beginMySQLTransaction
-alias :beginMySQLTransaction :beginMySQLTransaction_Regression
-"
-                )
-              end
-
-              # Execute for real
-              begin
-                lError = lSlaveClient.execute(iParameters)
-                #lError = lSlaveClient.execute(['-d']+iParameters)
-                #p lError
-              rescue Exception
-                # This way exception is shown on screen for better understanding
-                assert_equal(nil, $!)
-              end
-              # Check
-              if (lExpectedErrorClass == nil)
-                assert_equal(nil, lError)
-              else
-                assert(lError.kind_of?(lExpectedErrorClass))
-              end
-              # Call additional checks from the test case itself
-              if (iCheckCode != nil)
-                iCheckCode.call(lError)
-              end
-
-              # If redirected execMySQL, put it back
-              if (lCatchMySQL)
-                WEACE::Toolbox::module_eval("
-alias :beginMySQLTransaction_Regression :beginMySQLTransaction
-alias :beginMySQLTransaction :beginMySQLTransaction_Original
-"
-                )
-              end
             end
 
           end

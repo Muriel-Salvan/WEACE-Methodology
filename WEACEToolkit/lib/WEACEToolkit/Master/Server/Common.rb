@@ -22,7 +22,7 @@ module WEACE
           rParameters = [ '--user', iUserScriptID ]
 
           iSlaveActions.each do |iToolID, iActionsList|
-            lParameters += [ '--tool', iToolID ]
+            rParameters += [ '--tool', iToolID ]
             iActionsList.each do |iActionInfo|
               iActionID, iParameters = iActionInfo
               rParameters += [ '--action', iActionID ]

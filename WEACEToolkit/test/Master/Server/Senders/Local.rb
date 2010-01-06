@@ -16,7 +16,7 @@ module WEACE
           include WEACE::Test::Master::Common
 
           # Test a normal run without any action to execute
-          def testTest
+          def testNoAction
             executeSender(
               'DummyUser',
               {},
@@ -26,6 +26,43 @@ module WEACE
               assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
               lActions = $Variables[:SlaveActions][:ActionsToExecute]
               assert_equal({}, lActions)
+            end
+          end
+
+          # Test a normal run with 1 action to execute
+          def test1Action
+            executeSender(
+              'DummyUser',
+              {
+                'DummyTool' => [
+                  [ 'DummyAction', [] ]
+                ]
+              },
+              :DummySlaveClient => true,
+              :ClientAddRegressionActions => true,
+              :ClientInstallActions => [
+                [ 'DummyProduct', 'DummyTool', 'DummyAction' ]
+              ],
+              :ClientConfigureProducts => [
+                [
+                  'DummyProduct', 'DummyTool',
+                  {}
+                ]
+              ]
+            ) do |iError|
+              assert($Variables[:SlaveActions] != nil)
+              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
+              lActions = $Variables[:SlaveActions][:ActionsToExecute]
+              assert_equal(
+                {
+                  'DummyTool' => {
+                    'DummyAction' => [
+                      []
+                    ]
+                  }
+                },
+                lActions
+              )
             end
           end
 
