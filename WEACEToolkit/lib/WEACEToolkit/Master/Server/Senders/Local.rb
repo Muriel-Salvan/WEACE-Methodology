@@ -27,7 +27,7 @@ module WEACE
           #
           # Parameters:
           # * *iUserScriptID* (_String_): The user ID of the script
-          # * *iSlaveActions* (<em>map< ToolID, list< ActionID, Parameters > ></em>): The map of actions to send to the Slave Client
+          # * *iSlaveActions* (<em>map< ToolID, map< ActionID, list < Parameters > > ></em>): The map of actions to send to the Slave Client
           # Return:
           # * _Exception_: An error, or nil in case of success
           def sendMessage(iUserScriptID, iSlaveActions)

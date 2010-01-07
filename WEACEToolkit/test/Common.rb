@@ -179,6 +179,38 @@ module WEACE
         end
       end
 
+      # Change a singleton method into another of a specific class, and ensure changing it back.
+      #
+      # Parameters:
+      # * *iClass* (_class_): Class in which we change the method
+      # * *iOldMethod* (_Symbol_): Symbol of the method to replace
+      # * *iNewMethod* (_Symbol_): Symbol of the replacing method
+      # * *iActive* (_Boolean_): Do we actually perform the change ? If not, nothing is done except calling the code block.
+      # * *CodeBlock*: Code called once the method has been changed
+      def self.changeSingletonMethod(iClass, iOldMethod, iNewMethod, iActive)
+        if (iActive)
+          iClass.instance_eval("
+            alias :#{iOldMethod}_Original :#{iOldMethod}
+            alias :#{iOldMethod} :#{iNewMethod}
+            ")
+          begin
+            yield
+          rescue Exception
+            iClass.instance_eval("
+              alias :#{iNewMethod} :#{iOldMethod}
+              alias :#{iOldMethod} :#{iOldMethod}_Original
+              ")
+            raise
+          end
+          iClass.instance_eval("
+            alias :#{iNewMethod} :#{iOldMethod}
+            alias :#{iOldMethod} :#{iOldMethod}_Original
+            ")
+        else
+          yield
+        end
+      end
+
       # Get details about the test case currently running (based on the class name)
       #
       # Return:

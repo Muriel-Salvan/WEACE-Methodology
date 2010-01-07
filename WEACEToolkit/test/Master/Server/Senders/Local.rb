@@ -13,193 +13,19 @@ module WEACE
 
         class Local < ::Test::Unit::TestCase
 
-          include WEACE::Test::Master::Common
+          include WEACE::Test::Master::Senders::Common
 
-          # Test a normal run without any action to execute
-          def testNoAction
-            executeSender(
-              'DummyUser',
-              {},
-              :DummySlaveClient => true
-            ) do |iError|
-              assert($Variables[:SlaveActions] != nil)
-              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
-              lActions = $Variables[:SlaveActions][:ActionsToExecute]
-              assert_equal({}, lActions)
-            end
-          end
-
-          # Test a normal run with 1 action to execute
-          def test1Action
-            executeSender(
-              'DummyUser',
-              {
-                'DummyTool' => [
-                  [ 'DummyAction', [] ]
-                ]
-              },
-              :DummySlaveClient => true,
-              :ClientAddRegressionActions => true,
-              :ClientInstallActions => [
-                [ 'DummyProduct', 'DummyTool', 'DummyAction' ]
-              ],
-              :ClientConfigureProducts => [
-                [
-                  'DummyProduct', 'DummyTool',
-                  {}
-                ]
-              ]
-            ) do |iError|
-              assert($Variables[:SlaveActions] != nil)
-              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
-              lActions = $Variables[:SlaveActions][:ActionsToExecute]
-              assert_equal(
-                {
-                  'DummyTool' => {
-                    'DummyAction' => [
-                      []
-                    ]
-                  }
-                },
-                lActions
-              )
-            end
-          end
-
-          # Test a normal run with 1 action to execute with parameters
-          def test1ActionParameters
-            executeSender(
-              'DummyUser',
-              {
-                'DummyTool' => [
-                  [ 'DummyActionWithParams', [ 'Param1', 'Param2' ] ]
-                ]
-              },
-              :DummySlaveClient => true,
-              :ClientAddRegressionActions => true,
-              :ClientInstallActions => [
-                [ 'DummyProduct', 'DummyTool', 'DummyActionWithParams' ]
-              ],
-              :ClientConfigureProducts => [
-                [
-                  'DummyProduct', 'DummyTool',
-                  {}
-                ]
-              ]
-            ) do |iError|
-              assert($Variables[:SlaveActions] != nil)
-              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
-              lActions = $Variables[:SlaveActions][:ActionsToExecute]
-              assert_equal(
-                {
-                  'DummyTool' => {
-                    'DummyActionWithParams' => [
-                      [ 'Param1', 'Param2' ]
-                    ]
-                  }
-                },
-                lActions
-              )
-            end
-          end
-
-          # Test a normal run with 1 action to execute 2 times with different parameters
-          def test1ActionTwiceDifferentParameters
-            executeSender(
-              'DummyUser',
-              {
-                'DummyTool' => [
-                  [ 'DummyActionWithParams', [ 'Param11', 'Param21' ] ],
-                  [ 'DummyActionWithParams', [ 'Param12', 'Param22' ] ]
-                ]
-              },
-              :DummySlaveClient => true,
-              :ClientAddRegressionActions => true,
-              :ClientInstallActions => [
-                [ 'DummyProduct', 'DummyTool', 'DummyActionWithParams' ]
-              ],
-              :ClientConfigureProducts => [
-                [
-                  'DummyProduct', 'DummyTool',
-                  {}
-                ]
-              ]
-            ) do |iError|
-              assert($Variables[:SlaveActions] != nil)
-              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
-              lActions = $Variables[:SlaveActions][:ActionsToExecute]
-              assert_equal(
-                {
-                  'DummyTool' => {
-                    'DummyActionWithParams' => [
-                      [ 'Param11', 'Param21' ],
-                      [ 'Param12', 'Param22' ]
-                    ]
-                  }
-                },
-                lActions
-              )
-            end
-          end
-
-          # Test a normal run with 2 different actions to execute
-          def test2Actions
-            executeSender(
-              'DummyUser',
-              {
-                'DummyTool' => [
-                  [ 'DummyActionWithParams', [ 'Param1', 'Param2' ] ],
-                  [ 'DummyAction', [] ]
-                ]
-              },
+          # Give additional execution parameters to be given to executeSender method
+          #
+          # Return:
+          # * <em>map<Symbol,Object></em>: The additional parameters
+          def getExecutionParameters
+            return {
               :DummySlaveClient => true,
               :ClientAddRegressionActions => true,
               :ClientInstallActions => [
                 [ 'DummyProduct', 'DummyTool', 'DummyAction' ],
-                [ 'DummyProduct', 'DummyTool', 'DummyActionWithParams' ]
-              ],
-              :ClientConfigureProducts => [
-                [
-                  'DummyProduct', 'DummyTool',
-                  {}
-                ]
-              ]
-            ) do |iError|
-              assert($Variables[:SlaveActions] != nil)
-              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
-              lActions = $Variables[:SlaveActions][:ActionsToExecute]
-              assert_equal(
-                {
-                  'DummyTool' => {
-                    'DummyActionWithParams' => [
-                      [ 'Param1', 'Param2' ]
-                    ],
-                    'DummyAction' => [
-                      []
-                    ]
-                  }
-                },
-                lActions
-              )
-            end
-          end
-
-          # Test a normal run with 2 different actions to execute on 2 different Tools
-          def test2ActionsDifferentTools
-            executeSender(
-              'DummyUser',
-              {
-                'DummyTool' => [
-                  [ 'DummyAction', [] ]
-                ],
-                'DummyTool2' => [
-                  [ 'DummyAction2', [] ]
-                ]
-              },
-              :DummySlaveClient => true,
-              :ClientAddRegressionActions => true,
-              :ClientInstallActions => [
-                [ 'DummyProduct', 'DummyTool', 'DummyAction' ],
+                [ 'DummyProduct', 'DummyTool', 'DummyActionWithParams' ],
                 [ 'DummyProduct', 'DummyTool2', 'DummyAction2' ]
               ],
               :ClientConfigureProducts => [
@@ -212,26 +38,28 @@ module WEACE
                   {}
                 ]
               ]
-            ) do |iError|
-              assert($Variables[:SlaveActions] != nil)
-              assert_equal('DummyUser', $Variables[:SlaveActions][:UserID])
-              lActions = $Variables[:SlaveActions][:ActionsToExecute]
-              assert_equal(
-                {
-                  'DummyTool' => {
-                    'DummyAction' => [
-                      []
-                    ]
-                  },
-                  'DummyTool2' => {
-                    'DummyAction2' => [
-                      []
-                    ]
-                  }
-                },
-                lActions
-              )
-            end
+            }
+          end
+
+          # Prepare for execution.
+          # Use this method to bypass methods to better track WEACE behaviour.
+          #
+          # Parameters:
+          # * *CodeBlock*: The code to call once preparation is done
+          def prepareExecution
+            yield
+          end
+
+          # Get back the User ID and the Actions once sent.
+          # This method is also used to assert some specific parts of the execution.
+          #
+          # Return:
+          # * _String_: The User ID
+          # * <em>map<String,map<String,list<list<String>>>></em>: The Actions
+          def getUserActions
+            assert($Variables[:SlaveActions] != nil)
+
+            return $Variables[:SlaveActions][:UserID], $Variables[:SlaveActions][:ActionsToExecute]
           end
 
         end

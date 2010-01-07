@@ -15,12 +15,16 @@ module WEACE
 
     # This class is used by the processing scripts to give actions to Slave Clients
     class SlaveActions
-    
+
+      # The Slave Actions
+      #   map< String, map< String,   list< list< String > > > >
+      #   map< ToolID, map< ActionID, list< Parameters     > > >
       attr_reader :SlaveActions
     
       # Constructor
       def initialize
-        # map< ToolID, list< [ ActionID, Parameters ] > >
+        # map< String, map< String,   list< list< String > > > >
+        # map< ToolID, map< ActionID, list< Parameters     > > >
         @SlaveActions = {}
       end
     
@@ -29,12 +33,15 @@ module WEACE
       # Parameters:
       # * *iToolID* (_String_): The tool ID (check values in ../../WEACE_Common.rb)
       # * *iActionID* (_String_): The action ID (check values in ../../WEACE_Common.rb)
-      # * *iParameters* (<em>list<Param></em>): Additional parameters to give the Slave Client
+      # * *iParameters* (<em>list<String></em>): Additional parameters to give the Slave Client
       def addSlaveAction(iToolID, iActionID, *iParameters)
         if (@SlaveActions[iToolID] == nil)
-          @SlaveActions[iToolID] = []
+          @SlaveActions[iToolID] = {}
         end
-        @SlaveActions[iToolID] << [ iActionID, iParameters ]
+        if (@SlaveActions[iToolID][iActionID] == nil)
+          @SlaveActions[iToolID][iActionID] = []
+        end
+        @SlaveActions[iToolID][iActionID] << iParameters
       end
       
     end
@@ -223,7 +230,7 @@ module WEACE
                         lErrors = []
                         lConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
                           # Gather all the Slave Actions to send to this client
-                          # map< ToolID, list< ActionID, Parameters > >
+                          # map< ToolID, map< ActionID, list< Parameters > >
                           lSlaveActionsForClient = {}
                           lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
                             if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
