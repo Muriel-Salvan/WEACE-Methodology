@@ -1,9 +1,7 @@
 * Regression:
 ** Create test cases for any Process in Master/Server/Processes
 ** Create test cases for any Master/Adapter
-** Create test framework for Master/Providers
 ** Create test framework for installing Slave/Listeners
-** Create test framework for Slave/Providers
 ** Create test framework for Slave/Listeners
 ** Create tests for configuration files
 
