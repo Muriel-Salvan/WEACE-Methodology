@@ -57,12 +57,28 @@ module WEACE
 
           # Test command line option enabling debug
           def testCommandLineDebug
-            executeMaster( [ '--debug' ] )
+            # Make sure we don't break debug
+            lDebugMode = debugActivated?
+            begin
+              executeMaster( [ '--debug' ] )
+            rescue Exception
+              activateLogDebug(lDebugMode)
+              raise
+            end
+            activateLogDebug(lDebugMode)
           end
 
           # Test command line option enabling debug (short version)
           def testCommandLineDebugShort
-            executeMaster( [ '-d' ] )
+            # Make sure we don't break debug
+            lDebugMode = debugActivated?
+            begin
+              executeMaster( [ '-d' ] )
+            rescue Exception
+              activateLogDebug(lDebugMode)
+              raise
+            end
+            activateLogDebug(lDebugMode)
           end
 
           # Test command line option setting a Process ID and a User ID

@@ -31,7 +31,9 @@ module WEACE
               executeInstall(['--install', 'Slave/Adapters/DummyProduct/DummyTool/DummyAdapter'],
                 :Repository => 'SlaveClientInstalled',
                 :AddRegressionSlaveAdapters => true
-              )
+              ) do |iError|
+                assert_equal(true, $Variables[:DummyAdapterInstall])
+              end
             end
 
           end

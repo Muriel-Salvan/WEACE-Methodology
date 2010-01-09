@@ -34,7 +34,10 @@ module WEACE
                       '--gems', '%{Repository}/rubygems/gems',
                       '--mysql', '%{Repository}/mysql/lib'
                     ],
-                    :ProductRepository => 'Virgin'
+                    :ProductRepository => 'Virgin',
+                    :ContextVars => {
+                      'WEACESlaveInfoURL' => 'http://weacemethod.sourceforge.net'
+                    }
                   ) do |iError|
                     compareWithRepository('Normal')
                   end
@@ -49,7 +52,10 @@ module WEACE
                       '--gems', '%{Repository}/rubygems/gems',
                       '--mysql', '%{Repository}/mysql/lib'
                     ],
-                    :ProductRepository => 'Normal'
+                    :ProductRepository => 'Normal',
+                    :ContextVars => {
+                      'WEACESlaveInfoURL' => 'http://weacemethod.sourceforge.net'
+                    }
                   ) do |iError|
                     compareWithRepository('Normal')
                   end

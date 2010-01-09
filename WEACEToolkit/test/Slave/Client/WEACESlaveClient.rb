@@ -57,12 +57,28 @@ module WEACE
 
           # Test command line option enabling debug
           def testCommandLineDebug
-            executeSlave( [ '--debug' ] )
+            # Make sure we don't break debug
+            lDebugMode = debugActivated?
+            begin
+              executeSlave( [ '--debug' ] )
+            rescue Exception
+              activateLogDebug(lDebugMode)
+              raise
+            end
+            activateLogDebug(lDebugMode)
           end
 
           # Test command line option enabling debug (short version)
           def testCommandLineDebugShort
-            executeSlave( [ '-d' ] )
+            # Make sure we don't break debug
+            lDebugMode = debugActivated?
+            begin
+              executeSlave( [ '-d' ] )
+            rescue Exception
+              activateLogDebug(lDebugMode)
+              raise
+            end
+            activateLogDebug(lDebugMode)
           end
 
           # Test executing an Action without User

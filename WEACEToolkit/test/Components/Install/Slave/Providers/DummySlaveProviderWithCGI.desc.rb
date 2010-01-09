@@ -8,6 +8,13 @@
 # ** :Description (_String_): Quick description
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
-  :Description => 'This listener creates a CGI script that routes actions to the WEACE Slave Client.',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Description => 'A dummy Slave Provider using CGI for regression purposes only.',
+  :Author => 'murielsalvan@users.sourceforge.net',
+  :VarOptions => [
+    [
+      :RepositoryDir,
+      '-r', '--repository <RepositoryDir>', String,
+      'Repository directory'
+    ]
+  ]
 }

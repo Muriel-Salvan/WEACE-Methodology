@@ -31,7 +31,9 @@ module WEACE
               executeInstall(['--install', 'Slave/Listeners/DummyListener'],
                 :Repository => 'SlaveClientInstalled',
                 :AddRegressionSlaveListeners => true
-              )
+              ) do |iError|
+                assert_equal(true, $Variables[:DummyListenerInstall])
+              end
             end
 
           end

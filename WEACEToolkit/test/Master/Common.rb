@@ -112,7 +112,12 @@ module WEACE
               end
 
               # Execute for real
-              lError = lMasterServer.execute(iParameters)
+              if (debugActivated?)
+                lError = lMasterServer.execute(['-d']+iParameters)
+                #p lError
+              else
+                lError = lMasterServer.execute(iParameters)
+              end
               # Check
               if (lExpectedErrorClass == nil)
                 assert_equal(nil, lError)

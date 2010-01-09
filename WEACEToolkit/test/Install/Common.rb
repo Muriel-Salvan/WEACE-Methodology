@@ -17,6 +17,189 @@ module WEACE
 
         include WEACE::Test::Common
 
+        # Setup a temporary repository as an image of a given repository.
+        # The repository is then deleted once the code block finishes.
+        #
+        # Parameters:
+        # * *iRepositoryName* (_String_): Name of the repository to use as an image.
+        # * *CodeBlock*: Code called once the repository is created.
+        def setupRepository(iRepositoryName)
+          if ((defined?(@ProductRepositoryDir)) and
+              (@ProductRepositoryDir != nil))
+            logErr "A repository has already been setup in this test case: #{@ProductRepositoryDir}. You can not cascade repository setups."
+            raise RuntimeError, "A repository has already been setup in this test case: #{@ProductRepositoryDir}. You can not cascade repository setups."
+          end
+          if (@InstallTest)
+            if (@ComponentType == 'Adapters')
+              @RepositoriesDir = "#{$WEACETestBaseDir}/Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}"
+            else
+              @RepositoriesDir = "#{$WEACETestBaseDir}/Install/#{@Type}/Listeners/#{@ScriptID}"
+            end
+          else
+            @RepositoriesDir = "#{$WEACETestBaseDir}/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}"
+          end
+          setupTmpDir("#{@RepositoriesDir}/#{iRepositoryName}", @ProductID) do |iTmpDir|
+            @ProductRepositoryDir = iTmpDir
+            @ContextVars['Repository'] = @ProductRepositoryDir
+            yield
+            @ProductRepositoryDir = nil
+          end
+        end
+
+        # Compare the current repository with a reference repository
+        #
+        # Parameters:
+        # * *iRepositoryName* (_String_): Name of the repository to use as a reference.
+        def compareWithRepository(iRepositoryName)
+          if ((!defined?(@ProductRepositoryDir)) or
+              (@ProductRepositoryDir == nil))
+            logErr "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
+            raise RuntimeError, "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
+          end
+          logDebug "Compare repositories with reference #{iRepositoryName}"
+          assert_equal(true, compareDirs(@ProductRepositoryDir, "#{@RepositoriesDir}/#{iRepositoryName}"))
+        end
+
+        # Compare 2 files contents.
+        # This is used for testing purposes. It compares each file (replacing variables and matching regexps if needed).
+        # The second file is considered the reference, and is the only one who can contain regexps.
+        # Regexps are identified like this, from the beginning of the line:
+        # %/<RegExp>/
+        #
+        # Parameters:
+        # * *iFile1* (_String_): First directory
+        # * *iFile2* (_String_): Second directory
+        # * *iVarContext* (<em>map<String,String></em>): The variables to be replaced
+        # Return:
+        # * _Boolean_: Are files the same ?
+        def compareFiles(iFile1, iFile2)
+          rResult = false
+
+          lContent1 = nil
+          File.open(iFile1, 'r') do |iFile|
+            lContent1 = iFile.readlines
+          end
+          lContent2 = nil
+          File.open(iFile2, 'r') do |iFile|
+            lContent2 = iFile.readlines
+          end
+          if (lContent1.size == lContent2.size)
+            rResult = true
+            (0..lContent1.size-1).each do |iIdx|
+              # Replace variables in lContent1 and lContent2
+              lReference = replaceVars(lContent2[iIdx])
+              # Look for a regexp
+              if (lContent2[iIdx][0..1] == '%/')
+                # Remove the %/ .. / characters
+                lReference = lReference[2..-2]
+                # Regexp
+                if (lContent1[iIdx].match(lReference) == nil)
+                  # A difference
+                  logErr "Files #{iFile1} and #{iFile2} differ on line #{iIdx}: '#{lContent1[iIdx]}' should match /#{lReference}/."
+                  rResult = false
+                  break
+                end
+                # String comparison
+              elsif (lContent1[iIdx] != lReference)
+                # A difference
+                logErr "Files #{iFile1} and #{iFile2} differ on line #{iIdx}:\n'#{lContent1[iIdx]}'\nshould be\n'#{lReference}'."
+                rResult = false
+                break
+              end
+            end
+          else
+            logErr "Number of lines differ from #{iFile1} (#{lContent1.size} lines), and #{iFile2} (#{lContent2.size} lines)."
+          end
+
+          return rResult
+        end
+
+        # Compare 2 directories contents.
+        # This is used for testing purposes. It compares each file (replacing variables and matching regexps if needed).
+        # The second directory is taken as the reference.
+        # Files whose extension is .WEACEBackup from the first directories are ignored.
+        # Parameters:
+        # * *iDir1* (_String_): First directory
+        # * *iDir2* (_String_): Second directory
+        # Return:
+        # * _Boolean_: Are directories the same ?
+        def compareDirs(iDir1, iDir2)
+          rResult = false
+
+          # First, the contents
+          lDir1Content = []
+          Dir.glob("#{iDir1}/*").each do |iFileName|
+            if (iFileName[-12..-1] != '.WEACEBackup')
+              lDir1Content << File.basename(iFileName)
+            end
+          end
+          lDir2Content = []
+          Dir.glob("#{iDir2}/*").each do |iFileName|
+            lDir2Content << File.basename(iFileName)
+          end
+          if (lDir1Content.size == lDir2Content.size)
+            # Get the list of files and directories
+            rResult = true
+            lFiles = []
+            lDirs = []
+            lDir2Content.each do |iFileName|
+              if (lDir1Content.index(iFileName) == nil)
+                # A difference
+                logErr "File #{iFileName} exists in #{iDir2}, but not in #{iDir1}."
+                rResult = false
+                break
+              end
+            end
+            lDir1Content.each do |iFileName|
+              if (lDir2Content.index(iFileName) == nil)
+                # A difference
+                logErr "File #{iFileName} exists in #{iDir1}, but not in #{iDir2}."
+                rResult = false
+                break
+              end
+              if (File.directory?("#{iDir1}/#{iFileName}"))
+                if (File.directory?("#{iDir2}/#{iFileName}"))
+                  lDirs << iFileName
+                else
+                  # A difference
+                  logErr "Directory #{iFileName} from #{iDir1} is a file in #{iDir2}."
+                  rResult = false
+                  break
+                end
+              elsif (!File.directory?("#{iDir2}/#{iFileName}"))
+                lFiles << iFileName
+              else
+                # A difference
+                logErr "File #{iFileName} from #{iDir1} is a directory in #{iDir2}."
+                rResult = false
+                break
+              end
+            end
+            if (rResult)
+              # Now we compare each directory
+              lDirs.each do |iDir|
+                rResult = compareDirs("#{iDir1}/#{iDir}", "#{iDir2}/#{iDir}")
+                if (!rResult)
+                  break
+                end
+              end
+              if (rResult)
+                # Now we compare each file
+                lFiles.each do |iFile|
+                  rResult = compareFiles("#{iDir1}/#{iFile}", "#{iDir2}/#{iFile}")
+                  if (!rResult)
+                    break
+                  end
+                end
+              end
+            end
+          else
+            logErr "Number of files differ from #{iDir1} (#{lDir1Content.size} files), and #{iDir2} (#{lDir2Content.size} files)."
+          end
+
+          return rResult
+        end
+
         # Initialize the installer
         #
         # Parameters:
@@ -117,20 +300,6 @@ module WEACE
                 @Installer.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
               end
 
-              # Set the ContextVars that can be needed from the Provider Environments
-              lMinorError, lMasterConf = @Installer.getAlreadyCreatedProviderConfig('Master')
-              if (lMasterConf != nil)
-                if (lMasterConf[:WEACEMasterInfoURL] != nil)
-                  @ContextVars['WEACEMasterInfoURL'] = lMasterConf[:WEACEMasterInfoURL]
-                end
-              end
-              lMinorError, lSlaveConf = @Installer.getAlreadyCreatedProviderConfig('Slave')
-              if (lSlaveConf != nil)
-                if (lSlaveConf[:WEACESlaveInfoURL] != nil)
-                  @ContextVars['WEACESlaveInfoURL'] = lSlaveConf[:WEACESlaveInfoURL]
-                end
-              end
-
               # Call client code
               yield
 
@@ -151,17 +320,22 @@ module WEACE
         # * *iParameters* (<em>list<String></em>): The parameters to give the installer
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
+        # * *CodeBlock*: Code executed once installation has been executed [optional = nil]
+        # ** *iError* (_Exception_): Result of the installation
         # Return:
         # * _Exception_: Error returned by the Installer's execution
-        def execInstaller(iParameters, iOptions)
+        def execInstaller(iParameters, iOptions, &iCheckCode)
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
 
           # Execute
           begin
-            rError = @Installer.execute(iParameters)
-            #rError = @Installer.execute(['-d']+iParameters)
-            #p rError
+            if (debugActivated?)
+              rError = @Installer.execute(['-d']+iParameters)
+              #p rError
+            else
+              rError = @Installer.execute(iParameters)
+            end
           rescue Exception
             # This way exception is shown on screen for better understanding
             assert_equal(nil, $!)
@@ -172,6 +346,9 @@ module WEACE
             assert_equal(nil, rError)
           else
             assert(rError.kind_of?(lExpectedErrorClass))
+          end
+          if (iCheckCode != nil)
+            iCheckCode.call(rError)
           end
 
           return rError

@@ -49,12 +49,28 @@ module WEACE
 
           # Test debug flag
           def testDebug
-            executeInstall(['--debug'])
+            # Make sure we don't break debug
+            lDebugMode = debugActivated?
+            begin
+              executeInstall(['--debug'])
+            rescue Exception
+              activateLogDebug(lDebugMode)
+              raise
+            end
+            activateLogDebug(lDebugMode)
           end
 
           # Test debug flag (short version)
           def testDebugShort
-            executeInstall(['-d'])
+            # Make sure we don't break debug
+            lDebugMode = debugActivated?
+            begin
+              executeInstall(['-d'])
+            rescue Exception
+              activateLogDebug(lDebugMode)
+              raise
+            end
+            activateLogDebug(lDebugMode)
           end
 
           # Test list flag

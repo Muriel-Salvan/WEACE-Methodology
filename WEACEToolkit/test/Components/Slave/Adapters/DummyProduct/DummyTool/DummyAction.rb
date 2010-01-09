@@ -23,7 +23,9 @@ module WEACE
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID)
               $Variables[:DummyAction_User] = iUserID
-              $Variables[:DummyAction_ProductConfigParam] = @DummyConfigParam
+              if (defined?(@DummyConfigParam))
+                $Variables[:DummyAction_ProductConfigParam] = @DummyConfigParam
+              end
 
               return nil
             end

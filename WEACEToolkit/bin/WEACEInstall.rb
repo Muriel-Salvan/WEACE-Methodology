@@ -305,7 +305,6 @@ module WEACEInstall
               (!lIsSlaveClient))
             # We are installing an Adapter or Listener. Check that its Server/Client is installed.
             if (lIsMaster)
-
               if (getInstalledComponentDescription('Master/Server/WEACEMasterServer') != nil)
                 # Read the Master Provider config
                 rError, lProviderConfig = getAlreadyCreatedProviderConfig('Master')

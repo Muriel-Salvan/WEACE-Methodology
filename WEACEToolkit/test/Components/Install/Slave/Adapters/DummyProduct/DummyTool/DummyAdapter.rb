@@ -26,7 +26,9 @@ module WEACEInstall
             # Return:
             # * _Exception_: An error, or nil in case of success
             def execute(iParameters)
+              $Variables[:DummyAdapterInstall] = true
               
+              return nil
             end
             
           end

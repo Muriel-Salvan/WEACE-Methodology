@@ -181,9 +181,12 @@ module WEACE
                   # Execute for real now that it has been modified
                   require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
                   begin
-                    lError = WEACE::Slave::Client.new.execute(iParameters)
-                    #lError = WEACE::Slave::Client.new.execute(['-d']+iParameters)
-                    #p lError
+                    if (debugActivated?)
+                      lError = WEACE::Slave::Client.new.execute(['-d']+iParameters)
+                      #p lError
+                    else
+                      lError = WEACE::Slave::Client.new.execute(iParameters)
+                    end
                   rescue Exception
                     # This way exception is shown on screen for better understanding
                     assert_equal(nil, $!)

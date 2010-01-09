@@ -211,42 +211,57 @@ module WEACE
         end
       end
 
-      # Get details about the test case currently running (based on the class name)
-      #
-      # Return:
-      # * _String_: The type (Master|Slave)
-      # * _String_: The Product ID
-      # * _String_: The Tool ID
-      # * _String_: The Script ID
-      # * _String_: The test case name
-      # * _Boolean_: Does this test case test installation scripts ?
-      def getTestDetails
-        rType = nil
-        rProductID = nil
-        rToolID = nil
-        rScriptID = nil
-        rTestName = 'unknown'
-        rInstallTest = nil
+      # Get details about the test case currently running (based on the class name).
+      # Fill the following instance variables with the information:
+      # * @Type (_String_): The type (Master or Slave) (nil if not applicable)
+      # * @ProductID (_String_): The Product ID (nil if not applicable)
+      # * @ToolID (_String_): The Tool ID (nil if not applicable)
+      # * @ScriptID (_String_): The Process, Action, Listener or Provider ID (nil if not applicable)
+      # * @TestName (_String_): Name of the test case
+      # * @InstallTest (_Boolean_): Is the test part of the installation ones ? (nil if not applicable)
+      # * @ComponentType (_String_): The component type (Adapters, Listeners or Providers) (nil if not applicable)
+      def initTestDetails
+        @Type = nil
+        @ProductID = nil
+        @ToolID = nil
+        @ScriptID = nil
+        @TestName = 'unknown'
+        @InstallTest = nil
 
         # Get the ID of the test, based on its class name
-        lMatchData = self.class.name.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)::(.*)$/)
+        lClassName = self.class.name
+        lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)::(.*)$/)
         if (lMatchData == nil)
-          lMatchData = self.class.name.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
+          lMatchData = lClassName.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
           if (lMatchData == nil)
-            logErr "Testing class (#{self.class.name}) is not of the form WEACE::Test[::Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::<ScriptID>"
-            raise RuntimeError, "Testing class (#{self.class.name}) is not of the form WEACE::Test[::Install]::{Master|Slave}::Adapters::<ProductID>::<ToolID>::<ScriptID>"
+            lMatchData = lClassName.match(/^WEACE::Test::Install::Slave::Listeners::(.*)$/)
+            if (lMatchData == nil)
+              lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Providers::(.*)$/)
+              if (lMatchData == nil)
+                logDebug "Unable to parse test case name: #{lClassName}."
+              else
+                @Type, @ScriptID = lMatchData[1..2]
+                @ComponentType = 'Providers'
+                @InstallTest = true
+              end
+            else
+              @ScriptID = lMatchData[1]
+              @Type = 'Slave'
+              @ComponentType = 'Listeners'
+              @InstallTest = true
+            end
           else
-            rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
-            rInstallTest = false
+            @Type, @ProductID, @ToolID, @ScriptID = lMatchData[1..4]
+            @InstallTest = false
+            @ComponentType = 'Adapters'
           end
         else
-          rType, rProductID, rToolID, rScriptID = lMatchData[1..4]
-          rInstallTest = true
+          @Type, @ProductID, @ToolID, @ScriptID = lMatchData[1..4]
+          @InstallTest = true
+          @ComponentType = 'Adapters'
         end
         # Remove the beginning 'test' from the method name
-        rTestName = @method_name[4..-1]
-
-        return rType, rProductID, rToolID, rScriptID, rTestName, rInstallTest
+        @TestName = @method_name[4..-1]
       end
 
       # Initialization of every test case.
@@ -256,22 +271,33 @@ module WEACE
       # Parameters:
       # * _CodeBlock_: Code executed once the test case has been initialized
       def initTestCase
-        # The possible variables replaced in regression test files (command lines, repositories...)
-        #   map< Symbol, Object >
-        @ContextVars = {}
-        # Mute any output except for terminal output.
-        setLogErrorsStack([])
-        setLogMessagesStack([])
-        # Clear variables set in tests
-        $Variables = {}
+        # It is possible to call it several times. Protect it from it.
+        if ((!defined?(@AlreadyInit)) or
+            (!@AlreadyInit))
+          @AlreadyInit = true
+          # The possible variables replaced in regression test files (command lines, repositories...)
+          #   map< Symbol, Object >
+          @ContextVars = {}
+          # Mute any output except for terminal output.
+          setLogErrorsStack([])
+          setLogMessagesStack([])
+          # Clear variables set in tests
+          $Variables = {}
+          # Initialize instance variables used to identify the Test case
+          initTestDetails
 
-        begin
-          yield
-        rescue Exception
+          begin
+            yield
+          rescue Exception
+            setLogFile(nil)
+            @AlreadyInit = false
+            raise
+          end
           setLogFile(nil)
-          raise
+          @AlreadyInit = false
+        else
+          yield
         end
-        setLogFile(nil)
       end
 
       # Replace variables that can be used in lines of test files.
@@ -357,7 +383,9 @@ module WEACE
           yield(lTmpDir)
         ensure
           # Delete the temporary directory
-          FileUtils::rm_rf(lTmpDir)
+          if (!debugActivated?)
+            FileUtils::rm_rf(lTmpDir)
+          end
         end
       end
 

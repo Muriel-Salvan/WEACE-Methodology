@@ -43,30 +43,30 @@ module WEACE
               lCatchMySQL = false
             end
 
-            # Get the Product, Tool and Action IDs from the test class name
-            lType, lProductID, lToolID, lActionID, lTestName, lInstallTest = getTestDetails
+            initTestCase do
 
-            executeSlave(
-              [
-                '--user', 'DummyUser',
-                '--tool', lToolID,
-                '--action', lActionID
-              ] + iActionParameters,
-              :Error => lExpectedErrorClass,
-              :AddRegressionActions => lAddRegressionActions,
-              :Repository => lRepositoryName,
-              :InstallActions => [
-                [ lProductID, lToolID, lActionID ]
-              ],
-              :ConfigureProducts => [
+              executeSlave(
                 [
-                  lProductID, lToolID,
-                  iProductToolConfig
-                ]
-              ],
-              :CatchMySQL => lCatchMySQL
-            ) do |iError|
-              yield(iError)
+                  '--user', 'DummyUser',
+                  '--tool', @ToolID,
+                  '--action', @ScriptID
+                ] + iActionParameters,
+                :Error => lExpectedErrorClass,
+                :AddRegressionActions => lAddRegressionActions,
+                :Repository => lRepositoryName,
+                :InstallActions => [
+                  [ @ProductID, @ToolID, @ScriptID ]
+                ],
+                :ConfigureProducts => [
+                  [
+                    @ProductID, @ToolID,
+                    iProductToolConfig
+                  ]
+                ],
+                :CatchMySQL => lCatchMySQL
+              ) do |iError|
+                yield(iError)
+              end
             end
           end
 

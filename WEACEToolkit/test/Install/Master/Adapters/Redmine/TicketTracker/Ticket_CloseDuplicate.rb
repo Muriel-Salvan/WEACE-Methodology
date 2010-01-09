@@ -32,7 +32,10 @@ module WEACE
                       '--redminedir', '%{Repository}/redmine-0.8.2',
                       '--ruby', '/usr/bin/ruby'
                     ],
-                    :ProductRepository => 'Virgin'
+                    :ProductRepository => 'Virgin',
+                    :ContextVars => {
+                      'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
+                    }
                   ) do |iError|
                     compareWithRepository('Normal')
                   end
@@ -45,7 +48,10 @@ module WEACE
                       '--redminedir', '%{Repository}/redmine-0.8.2',
                       '--ruby', '/usr/bin/ruby'
                     ],
-                    :ProductRepository => 'Normal'
+                    :ProductRepository => 'Normal',
+                    :ContextVars => {
+                      'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
+                    }
                   ) do |iError|
                     compareWithRepository('Normal')
                   end

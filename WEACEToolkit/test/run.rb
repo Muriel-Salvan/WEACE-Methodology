@@ -8,6 +8,7 @@ $WEACETestBaseDir = File.expand_path(File.dirname(__FILE__))
 
 require 'rUtilAnts/Logging'
 RUtilAnts::Logging::initializeLogging(File.expand_path("#{$WEACETestBaseDir}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+# If activated, the testNoParameter tests will fail as they will have the --debug flag given to them.
 activateLogDebug(false)
 
 $LOAD_PATH << File.dirname(__FILE__)
@@ -15,6 +16,7 @@ $LOAD_PATH << File.dirname(__FILE__)
 require 'Common'
 require 'Install/Common'
 require 'Install/Adapters'
+require 'Install/Slave/Listeners'
 require 'Install/Providers'
 require 'Master/Common'
 require 'Slave/Common'
@@ -32,8 +34,6 @@ require 'Slave/Adapters/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*/*/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Senders/*.rb") +
