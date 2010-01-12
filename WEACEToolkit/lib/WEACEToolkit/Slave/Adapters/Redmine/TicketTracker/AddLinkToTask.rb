@@ -30,10 +30,6 @@ module WEACE
             #
             # Parameters:
             # * *iUserID* (_String_): User ID of the script adding this info
-            # * *iMySQLHost* (_String_): The name of the MySQL host
-            # * *iDBName* (_String_): The name of the database of Redmine
-            # * *iDBUser* (_String_): The name of the database user
-            # * *iDBPassword* (_String_): The pasword of the database user
             # * *iTicketID* (_String_): The Ticket ID
             # * *iTaskID* (_String_): The Task ID
             # * *iTaskName* (_String_): The Task name to add into the comment
