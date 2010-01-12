@@ -25,6 +25,7 @@ module WEACE
           # ** *:Repository* (_String_): Name of the repository to be used [optional = 'SlaveClientInstalled']
           # ** *:AddRegressionActions* (_Boolean_): Do we add Actions defined from the regression ? [optional = false]
           # ** *:CatchMySQL* (_Boolean_): Do we redirect MySQL calls to a local Regression function ? [optional = false]
+          # ** *:DummySQLAnswers* (<em>list<list<list<String>>></em>): The list of rows to return when asked. [optional = nil]
           # * _CodeBlock_: The code called once the server was run: [optional = nil]
           # ** *iError* (_Exception_): The error returned by the server, or nil in case of success
           def executeSlaveAdapter(iProductToolConfig, iActionParameters, iOptions = {})
@@ -42,6 +43,7 @@ module WEACE
             if (lCatchMySQL == nil)
               lCatchMySQL = false
             end
+            lDummySQLAnswers = iOptions[:DummySQLAnswers]
 
             initTestCase do
 
@@ -63,7 +65,8 @@ module WEACE
                     iProductToolConfig
                   ]
                 ],
-                :CatchMySQL => lCatchMySQL
+                :CatchMySQL => lCatchMySQL,
+                :DummySQLAnswers => lDummySQLAnswers
               ) do |iError|
                 yield(iError)
               end

@@ -22,8 +22,10 @@ module WEACE
       #
       # Parameters:
       # * *ioCallsList* (<em>list<[String,String]></em>): The list of calls to complete
-      def initialize(ioCallsList)
-        @CallsList = ioCallsList
+      # * *iDummyAnswers* (<em>list<list<list<String>>></em>: The list of rows to return when asked
+      def initialize(ioCallsList, iDummyAnswers)
+        @CallsList, @DummyAnswers = ioCallsList, iDummyAnswers
+        @IdxAnswers = 0
         @ID = 0
       end
 
@@ -31,8 +33,20 @@ module WEACE
       #
       # Parameters:
       # * *iText* (_String_): Text of the query
+      # Return:
+      # * <em>list<list<String>></em>: The rows returned by the query
       def query(iText)
+        rRows = []
+
         @CallsList << [ 'query', iText ]
+        if (@DummyAnswers[@IdxAnswers] == nil)
+          @CallsList << [ 'error', "Query \"#{iText}\" was supposed to return rows, but none were prepared by the WEACE regression." ]
+        else
+          rRows = @DummyAnswers[@IdxAnswers]
+          @IdxAnswers += 1
+        end
+
+        return rRows
       end
 
       # Return a new ID
@@ -72,12 +86,12 @@ module WEACE
         :DBPassword => iDBPassword,
         :Calls => lCalls
       }
-      lDummySQL = DummySQLConnection.new(lCalls)
+      lDummySQL = DummySQLConnection.new(lCalls, $WEACERegression_DummySQLAnswers)
       begin
         yield(lDummySQL)
       rescue Exception
         # Do this to track the error.
-        lDummySQL.query("rollback: #{$!}")
+        lDummySQL.query("rollback: #{$!} (#{$!.backtrace.join("\n")})")
       end
       # Remove whitspaces from the queries
       lCalls.each do |ioCallInfo|
@@ -106,6 +120,9 @@ module WEACE
         # * *iCallsMatch* (<em>list<[String,Object]></em>): The calls matching patterns
         # * *iCalls* (<em>list<[String,Object]></em>): The calls to test against the patterns
         def checkCallsMatch(iCallsMatch, iCalls)
+          if (iCallsMatch.size != iCalls.size)
+            logErr "Mismatch Call data:\nExpected #{iCallsMatch.size} lines:\n#{iCallsMatch.inspect}\nReceived #{iCalls.size} lines:\n#{iCalls.inspect}"
+          end
           assert_equal(iCallsMatch.size, iCalls.size)
           lIdxCall = 0
           iCalls.each do |iCallInfo|
@@ -118,7 +135,13 @@ module WEACE
               # The data should be a String
               assert(iCallData.kind_of?(String))
               # Match using the RegExp
-              assert(iCallData.match(iCallMatchData) != nil)
+              lMatchData = iCallData.match(iCallMatchData)
+              if (lMatchData == nil)
+                logErr "Mismatch Call data:\nExpected:\n#{iCallMatchData}\nReceived:\n#{iCallData}"
+                assert(false)
+              else
+                assert(true)
+              end
             else
               # Exact matching test
               assert_equal(iCallMatchData, iCallData)
@@ -138,6 +161,7 @@ module WEACE
         # ** *:InstallActions* (<em>list<[String,String,String]></em>): List of Actions to install: [ ProductID, ToolID, ActionID ]. [optional = nil]
         # ** *:ConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ]. [optional = nil]
         # ** *:CatchMySQL* (_Boolean_): Do we redirect MySQL calls to a local Regression function ? [optional = false]
+        # ** *:DummySQLAnswers* (<em>list<list<list<String>>></em>): The list of rows to return when asked. [optional = nil]
         # * _CodeBlock_: The code called once the server was run: [optional = nil]
         # ** *iError* (_Exception_): The error returned by the server, or nil in case of success
         def executeSlave(iParameters, iOptions = {}, &iCheckCode)
@@ -157,6 +181,7 @@ module WEACE
           if (lCatchMySQL == nil)
             lCatchMySQL = false
           end
+          lDummySQLAnswers = iOptions[:DummySQLAnswers]
 
           initTestCase do
 
@@ -177,6 +202,13 @@ module WEACE
                   :beginMySQLTransaction,
                   :beginMySQLTransaction_Regression,
                   lCatchMySQL) do
+
+                  # If we need to setup dummy answers, do it now
+                  if (lDummySQLAnswers == nil)
+                    $WEACERegression_DummySQLAnswers = []
+                  else
+                    $WEACERegression_DummySQLAnswers = lDummySQLAnswers
+                  end
 
                   # Execute for real now that it has been modified
                   require 'WEACEToolkit/Slave/Client/WEACESlaveClient'

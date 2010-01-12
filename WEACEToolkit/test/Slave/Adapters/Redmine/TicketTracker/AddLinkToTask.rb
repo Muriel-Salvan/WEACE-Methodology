@@ -19,7 +19,7 @@ module WEACE
 
           module TicketTracker
 
-            class RejectDuplicate < ::Test::Unit::TestCase
+            class AddLinkToTask < ::Test::Unit::TestCase
 
               include WEACE::Test::Slave::Adapters::Common
 
@@ -33,22 +33,11 @@ module WEACE
                     :DBUser => 'DummyDBUser',
                     :DBPassword => 'DummyDBPassword'
                   },
-                  [ '123', '456' ],
+                  [ '123', '456', 'DummyTaskName' ],
                   :CatchMySQL => true,
                   :DummySQLAnswers => [
                     [ # Select
                       [ 666 ]
-                    ],
-                    [ # Insert
-                    ],
-                    [ # Insert
-                    ],
-                    [ # Insert
-                    ],
-                    [ # Select
-                      [ 42 ]
-                    ],
-                    [ # Update
                     ],
                     [ # Insert
                     ]
@@ -67,13 +56,7 @@ module WEACE
                   checkCallsMatch(
                     [
                       ['query', 'select id from users where login = \'DummyUser\''],
-                      ['query', /^insert into journals \( journalized_id, journalized_type, user_id, notes, created_on \) values \( 123, 'Issue', 666, 'Another Ticket \(ID=456\) has been closed as a duplicate of this one\.', '....-..-.. ..:..:..' \)$/],
-                      ['query', 'insert into issue_relations ( issue_from_id, issue_to_id, relation_type, delay ) values ( 123, 456, \'duplicates\', NULL )'],
-                      ['query', /^insert into journals \( journalized_id, journalized_type, user_id, notes, created_on \) values \( 456, 'Issue', 666, 'This Ticket is a duplicate of another Ticket \(ID=123\).', '....-..-.. ..:..:..' \)$/],
-                      ['insert_id', 0],
-                      ['query', 'select status_id from issues where id = 456'],
-                      ['query', 'update issues set status_id = 6 where id = 456'],
-                      ['query', 'insert into journal_details ( journal_id, property, prop_key, old_value, value ) values ( 0, \'attr\', \'status_id\', 42, 6 )']
+                      ['query', /^insert into journals \( journalized_id, journalized_type, user_id, notes, created_on \) values \( 123, 'Issue', 666, '\[....-..-.. ..:..:..\] - This Ticket has been linked to Task "DummyTaskName" \(ID: 456\)', '....-..-.. ..:..:..' \)$/]
                     ],
                     lCalls
                   )

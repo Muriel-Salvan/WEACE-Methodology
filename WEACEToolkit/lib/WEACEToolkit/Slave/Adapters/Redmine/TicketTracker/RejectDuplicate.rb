@@ -46,7 +46,7 @@ module WEACE
 
             private
 
-            # Mark 2 tickets as duplicated and close the slave ticket
+            # Execute the corresponding SQL statements
             #
             # Parameters:
             # * *iSQL* (_Object_): The SQL connection
