@@ -77,6 +77,21 @@ module WEACE
                 :AddRegressionSlaveProviders => true
               ) do |iError|
                 assert_equal(true, $Variables[:SlaveProviderDummyFlag])
+                # Check that the environment has been created correctly
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
+                assert(File.exists?(lEnvFileName))
+                lEnv = nil
+                File.open(lEnvFileName, 'r') do |iFile|
+                  lEnv = eval(iFile.read)
+                end
+                assert_equal('Slave', lEnv[:ProviderType])
+                assert_equal('DummySlaveProviderWithParams', lEnv[:ProviderID])
+                assert_equal(
+                  [
+                    '--flag'
+                  ],
+                  lEnv[:Parameters]
+                )
               end
             end
 
@@ -86,6 +101,46 @@ module WEACE
                 :AddRegressionSlaveProviders => true
               ) do |iError|
                 assert_equal('testvalue', $Variables[:SlaveProviderDummyVar])
+                # Check that the environment has been created correctly
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
+                assert(File.exists?(lEnvFileName))
+                lEnv = nil
+                File.open(lEnvFileName, 'r') do |iFile|
+                  lEnv = eval(iFile.read)
+                end
+                assert_equal('Slave', lEnv[:ProviderType])
+                assert_equal('DummySlaveProviderWithParamsValues', lEnv[:ProviderID])
+                assert_equal(
+                  [
+                    '--dummyvar', 'testvalue'
+                  ],
+                  lEnv[:Parameters]
+                )
+              end
+            end
+
+            # Test installing the Slave Client with a Provider giving CGI abilities
+            def testSlaveClientWithCGIProvider
+              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithCGI', '--', '--repository', '%{WEACERepositoryDir}/CGI'],
+                :AddRegressionSlaveProviders => true
+              ) do |iError|
+                # Check that the environment has been created correctly
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
+                assert(File.exists?(lEnvFileName))
+                lEnv = nil
+                File.open(lEnvFileName, 'r') do |iFile|
+                  lEnv = eval(iFile.read)
+                end
+                assert_equal('Slave', lEnv[:ProviderType])
+                assert_equal('DummySlaveProviderWithCGI', lEnv[:ProviderID])
+                assert_equal(
+                  [
+                    '--repository', "#{@WEACERepositoryDir}/CGI"
+                  ],
+                  lEnv[:Parameters]
+                )
+                # Check that CGI files have been created correctly
+                assert(File.exists?("#{@WEACERepositoryDir}/CGI/cgi/WEACE/ShowWEACESlaveInfo.cgi"))
               end
             end
 

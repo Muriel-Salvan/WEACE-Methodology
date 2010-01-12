@@ -77,6 +77,21 @@ module WEACE
                 :AddRegressionMasterProviders => true
               ) do |iError|
                 assert_equal(true, $Variables[:MasterProviderDummyFlag])
+                # Check that the environment has been created correctly
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
+                assert(File.exists?(lEnvFileName))
+                lEnv = nil
+                File.open(lEnvFileName, 'r') do |iFile|
+                  lEnv = eval(iFile.read)
+                end
+                assert_equal('Master', lEnv[:ProviderType])
+                assert_equal('DummyMasterProviderWithParams', lEnv[:ProviderID])
+                assert_equal(
+                  [
+                    '--flag'
+                  ],
+                  lEnv[:Parameters]
+                )
               end
             end
 
@@ -86,6 +101,46 @@ module WEACE
                 :AddRegressionMasterProviders => true
               ) do |iError|
                 assert_equal('testvalue', $Variables[:MasterProviderDummyVar])
+                # Check that the environment has been created correctly
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
+                assert(File.exists?(lEnvFileName))
+                lEnv = nil
+                File.open(lEnvFileName, 'r') do |iFile|
+                  lEnv = eval(iFile.read)
+                end
+                assert_equal('Master', lEnv[:ProviderType])
+                assert_equal('DummyMasterProviderWithParamsValues', lEnv[:ProviderID])
+                assert_equal(
+                  [
+                    '--dummyvar', 'testvalue'
+                  ],
+                  lEnv[:Parameters]
+                )
+              end
+            end
+
+            # Test installing the Master Server with a Provider giving CGI abilities
+            def testMasterServerWithCGIProvider
+              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithCGI', '--', '--repository', '%{WEACERepositoryDir}/CGI'],
+                :AddRegressionMasterProviders => true
+              ) do |iError|
+                # Check that the environment has been created correctly
+                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
+                assert(File.exists?(lEnvFileName))
+                lEnv = nil
+                File.open(lEnvFileName, 'r') do |iFile|
+                  lEnv = eval(iFile.read)
+                end
+                assert_equal('Master', lEnv[:ProviderType])
+                assert_equal('DummyMasterProviderWithCGI', lEnv[:ProviderID])
+                assert_equal(
+                  [
+                    '--repository', "#{@WEACERepositoryDir}/CGI"
+                  ],
+                  lEnv[:Parameters]
+                )
+                # Check that CGI files have been created correctly
+                assert(File.exists?("#{@WEACERepositoryDir}/CGI/cgi/WEACE/ShowWEACEMasterInfo.cgi"))
               end
             end
 

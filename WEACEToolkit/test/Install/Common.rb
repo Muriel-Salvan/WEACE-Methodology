@@ -246,6 +246,7 @@ module WEACE
             # Create a new WEACE repository by copying the wanted one
             setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
               @WEACERepositoryDir = iTmpDir
+              @ContextVars['WEACERepositoryDir'] = @WEACERepositoryDir
 
               # Change the installer repository location internally
               @Installer.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
@@ -328,13 +329,19 @@ module WEACE
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
 
+          # Replace variables from @ContextVars
+          lRealParams = []
+          iParameters.each do |iParam|
+            lRealParams << replaceVars(iParam)
+          end
+
           # Execute
           begin
             if (debugActivated?)
-              rError = @Installer.execute(['-d']+iParameters)
+              rError = @Installer.execute(['-d']+lRealParams)
               #p rError
             else
-              rError = @Installer.execute(iParameters)
+              rError = @Installer.execute(lRealParams)
             end
           rescue Exception
             # This way exception is shown on screen for better understanding
@@ -372,10 +379,11 @@ module WEACE
           # Initialize
           initInstaller(iOptions) do
             # Execute
-            lError = execInstaller(iParameters, iOptions)
-            # Call additional checks from the test case itself
-            if (iCheckCode != nil)
-              iCheckCode.call(lError)
+            lError = execInstaller(iParameters, iOptions) do |iError|
+              # Call additional checks from the test case itself
+              if (iCheckCode != nil)
+                iCheckCode.call(lError)
+              end
             end
           end
 

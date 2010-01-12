@@ -64,12 +64,7 @@ module WEACE
                 :AddRegressionMasterProviders => (@Type == 'Master'),
                 :AddRegressionSlaveProviders => (@Type == 'Slave')
               ) do
-                # Replace variables in the parameters
-                lReplacedParameters = []
-                iParameters.each do |iParam|
-                  lReplacedParameters << replaceVars(iParam)
-                end
-                execInstaller([ '--install', "#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}", '--' ] + lReplacedParameters,
+                execInstaller([ '--install', "#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}", '--' ] + iParameters,
                   :Error => lExpectedError
                 ) do |iError|
                   if (iCheckCode != nil)

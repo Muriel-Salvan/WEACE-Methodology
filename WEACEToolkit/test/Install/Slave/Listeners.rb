@@ -51,12 +51,7 @@ module WEACE
                   # Always add the Providers, as otherwise it can't retrieve the Provider's config.
                   :AddRegressionSlaveProviders => true
                 ) do
-                  # Replace variables in the parameters
-                  lReplacedParameters = []
-                  iParameters.each do |iParam|
-                    lReplacedParameters << replaceVars(iParam)
-                  end
-                  execInstaller([ '--install', "Slave/Listeners/#{@ScriptID}", '--' ] + lReplacedParameters,
+                  execInstaller([ '--install', "Slave/Listeners/#{@ScriptID}", '--' ] + iParameters,
                     :Error => lExpectedError
                   ) do |iError|
                     if (iCheckCode != nil)
