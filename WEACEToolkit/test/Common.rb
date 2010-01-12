@@ -156,9 +156,11 @@ module WEACE
       # * *iActive* (_Boolean_): Do we actually perform the change ? If not, nothing is done except calling the code block.
       # * *CodeBlock*: Code called once the method has been changed
       def self.changeMethod(iClass, iOldMethod, iNewMethod, iActive)
+        # Be careful with strange method names (for example :`)
+        lBackupMethodName = "#{iOldMethod.to_s.gsub(/\W/,'_')}_Original"
         if (iActive)
           iClass.module_eval("
-            alias :#{iOldMethod}_Original :#{iOldMethod}
+            alias :#{lBackupMethodName} :#{iOldMethod}
             alias :#{iOldMethod} :#{iNewMethod}
             ")
           begin
@@ -166,13 +168,13 @@ module WEACE
           rescue Exception
             iClass.module_eval("
               alias :#{iNewMethod} :#{iOldMethod}
-              alias :#{iOldMethod} :#{iOldMethod}_Original
+              alias :#{iOldMethod} :#{lBackupMethodName}
               ")
             raise
           end
           iClass.module_eval("
             alias :#{iNewMethod} :#{iOldMethod}
-            alias :#{iOldMethod} :#{iOldMethod}_Original
+            alias :#{iOldMethod} :#{lBackupMethodName}
             ")
         else
           yield
