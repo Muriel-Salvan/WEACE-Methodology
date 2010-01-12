@@ -30,9 +30,9 @@ module WEACEInstall
     def initialize
 
         # Read the directories locations
-      lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
-      @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
-      @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
+      @WEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
+      @WEACEInstallDir = "#{@WEACERepositoryDir}/Install"
+      @WEACEConfigDir = "#{@WEACERepositoryDir}/Config"
       @WEACEInstalledComponentsDir = "#{@WEACEInstallDir}/InstalledComponents"
 
       # Registered installable master and slave adapters
@@ -326,6 +326,7 @@ module WEACEInstall
                 # Give some references for the plugins to use
                 ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
                 ioPlugin.instance_variable_set(:@WEACEConfigDir, @WEACEConfigDir)
+                ioPlugin.instance_variable_set(:@WEACERepositoryDir, @WEACERepositoryDir)
                 if (lProviderConfig != nil)
                   ioPlugin.instance_variable_set(:@ProviderConfig, lProviderConfig)
                 end
