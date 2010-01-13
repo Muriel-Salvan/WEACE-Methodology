@@ -85,7 +85,7 @@ module WEACE
     # * <em>map<Symbol, Object></em>: The description, or nil if not installed
     def getInstalledComponentDescription(iComponentName)
       rDescription = nil
-
+      
       lRegisteredFileName = getInstalledDescFileName(iComponentName)
       if (File.exists?(lRegisteredFileName))
         File.open(lRegisteredFileName, 'r') do |iFile|

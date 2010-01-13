@@ -1,4 +1,4 @@
-#!env ruby
+#!/usr/bin/env ruby
 #
 # Call a function of the WEACE Master/Server or Slave/Client functions.
 # This is intended to be used internally by some WEACE Toolkit scripts.
@@ -38,8 +38,7 @@ Usage: WEACEExecute.rb <Component> <Arguments>
   <Component>: Either MasterServer or SlaveClient
   <Arguments>: Depend on the component on execute. Check http://weacemethod.sourceforge.net for details.
 
-!!! This script is not intended to be run by the user directly. It is just here to provide an easy way for other
-WEACE Toolkit scripts to access WEACE Master Server and Slave Client.')
+!!! This script is not intended to be run by the user directly. It is just here to provide an easy way for other WEACE Toolkit scripts to access WEACE Master Server and Slave Client.')
     else
       logInfo "Execution of #{iParameters[1..-1].join(' ')}"
       rError = lComponent.execute(iParameters[1..-1])
@@ -55,6 +54,10 @@ if (__FILE__ == $0)
   # Initialize logging
   require 'rUtilAnts/Logging'
   RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+  require 'rUtilAnts/Platform'
+  RUtilAnts::Platform::initializePlatform
+  require 'rUtilAnts/Misc'
+  RUtilAnts::Misc::initializeMisc
   lError = WEACE::execute(ARGV)
   if (lError == nil)
     exit 0

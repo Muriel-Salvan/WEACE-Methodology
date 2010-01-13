@@ -439,7 +439,7 @@ Check http://weacemethod.sourceforge.net for details."
             puts "* Tool: #{iToolID} (#{iToolInfo.size} available Actions for this Tool):"
             iToolInfo.each do |iActionID, iActionInfo|
               iProductsList, iAskedParameters = iActionInfo
-              logDebug "** Action: #{iActionID}, updating #{iProductsList.size} Products:"
+              puts "** Action: #{iActionID}, updating #{iProductsList.size} Products:"
               iProductsList.each do |iProductInfo|
                 iProductID, iProductInstalled = iProductInfo
                 lStrInstalled = nil
@@ -456,7 +456,7 @@ Check http://weacemethod.sourceforge.net for details."
                 else
                   lStrConfig = 'Configured'
                 end
-                logDebug "*** #{iProductID} (#{lStrInstalled}) (#{lStrConfig})"
+                puts "*** #{iProductID} (#{lStrInstalled}) (#{lStrConfig})"
               end
             end
           end
