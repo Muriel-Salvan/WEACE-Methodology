@@ -326,6 +326,7 @@ module WEACEInstall
                 # Give some references for the plugins to use
                 ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
                 ioPlugin.instance_variable_set(:@WEACEConfigDir, @WEACEConfigDir)
+                ioPlugin.instance_variable_set(:@WEACELibDir, @WEACELibDir)
                 if (lProviderConfig != nil)
                   ioPlugin.instance_variable_set(:@ProviderConfig, lProviderConfig)
                 end

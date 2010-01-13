@@ -17,15 +17,14 @@ module WEACEInstall
   
         module CommonInstall
           
+          include WEACE::Toolbox
+
           # Install the common part of every adapter for Redmine.
-          #
-          # Parameters:
-          # * *iProviderEnv* (_ProviderEnv_): The provider environment
-          def installRedmineWEACESlaveLink(iProviderEnv)
+          def installRedmineWEACESlaveLink
             # Modify the layouts/base view to add WEACE Master icon if not already present
             modifyFile("#{@RedmineDir}/app/views/layouts/base.rhtml",
               /Powered by <%= link_to Redmine/,
-              "    <a title=\"Some content of this website can be modified by some WEACE processes. Click for explanations.\" href=\"#{iProviderEnv[:WEACESlaveInfoURL]}#Adapters.Redmine\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png\" alt=\"Some content of this website can be modified by some WEACE processes. Click for explanations.\"/></a>\n",
+              "    <a title=\"Some content of this website can be modified by some WEACE processes. Click for explanations.\" href=\"#{@ProviderConfig[:WEACESlaveInfoURL]}#Adapters.Redmine\"><img src=\"http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png\" alt=\"Some content of this website can be modified by some WEACE processes. Click for explanations.\"/></a>\n",
               /<\/div>/)
           end
 

@@ -21,7 +21,6 @@ module WEACEInstall
         
           class RejectDuplicate
           
-            include WEACE::Toolbox
             include WEACEInstall::Slave::Adapters::Redmine::CommonInstall
           
             # Execute the installation
@@ -32,7 +31,7 @@ module WEACEInstall
             # * _Exception_: An error, or nil in case of success
             def execute(iParameters)
               # Modify common parts
-              installRedmineWEACESlaveLink(@ProviderConfig)
+              installRedmineWEACESlaveLink
               generateDBEnv
 
               return nil

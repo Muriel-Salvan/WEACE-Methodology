@@ -323,20 +323,36 @@ module WEACE
     end
     
     # Modify a file in a safe way (exception protected, keep copy of original...).
-    # It inserts or replaces some of the content of this file, between 2 markers (1 begin and 1 end markers).
+    # It inserts (just before the end marker) or replaces some of the content of this file, between 2 markers (1 begin and 1 end markers).
     #
     # Parameters:
     # * *iFileName* (_String_): The file to modify
     # * *iBeginMarker* (_RegExp_): The begin marker (can be nil if it represents the beginning of the file)
-    # * *iNewLines* (_String_): The text to insert between the markers (can be nil if it represents the end of the file)
-    # * *iEndMarker* (_RegExp_): The end marker
+    # * *iNewLines* (_String_): The text to insert between the markers
+    # * *iEndMarker* (_RegExp_): The end marker (can be nil if it represents the end of the file)
     # * *iOptions* (_Hash_): Additional parameters: [ optional = {} ]
-    # ** *:Replace* (_Boolean_): Do we completely replace the text between the markers ?
-    # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ?
-    # ** *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed.
+    # ** *:Replace* (_Boolean_): Do we completely replace the text between the markers ? [optional = false]
+    # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ? [optional = false]
+    # ** *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed. [optional = nil]
+    # ** *:ExtraLinesDuringMatch* (_Boolean_): Do we ignore extra lines that could be present between the lines to match ? [optional = false]
     def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions = {})
+      # Parse options
+      lReplace = iOptions[:Replace]
+      if (lReplace == nil)
+        lReplace = false
+      end
+      lNoBackup = iOptions[:NoBackup]
+      if (lNoBackup == nil)
+        lNoBackup = false
+      end
+      lCheckMatch = iOptions[:CheckMatch]
+      lExtraLinesDuringMatch = iOptions[:ExtraLinesDuringMatch]
+      if (lExtraLinesDuringMatch == nil)
+        lExtraLinesDuringMatch = false
+      end
+
       logDebug "Modify file #{iFileName} ..."
-      if (iOptions[:NoBackup] == nil)
+      if (!lNoBackup)
         # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
         lBackupName = "#{iFileName}.WEACEBackup"
         if (!File.exists?(lBackupName))
@@ -398,26 +414,46 @@ module WEACE
         end
         # Check if the new content is not already in lContent (starting from lIdxBegin)
         lMatchLines = lNewLines
-        if (iOptions[:CheckMatch] != nil)
-          lMatchLines = iOptions[:CheckMatch]
+        if (lCheckMatch != nil)
+          lMatchLines = lCheckMatch
         end
         lFound = false
         if (lIdxBegin < lIdxEnd-lMatchLines.size)
-          (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
-            # Validate that each line equals or matches
-            lFound = true
-            (0 .. lMatchLines.size-1).each do |iIdxMatch|
-              if (((lMatchLines[iIdxMatch].is_a?(String)) and
-                   (lContent[iIdx+iIdxMatch] != lMatchLines[iIdxMatch])) or
-                  ((lMatchLines[iIdxMatch].is_a?(Regexp)) and 
-                   (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil)))
-                # It differs
-                lFound = false
-                break
+          if (lExtraLinesDuringMatch)
+            # Compare the lines one after the other, ignoring the ones that don't match.
+            # It is just required that every match is matched in its order.
+            lIdxNextLineToMatch = 0
+            (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
+              if (((lMatchLines[lIdxNextLineToMatch].is_a?(String)) and
+                   (lContent[iIdx] == lMatchLines[lIdxNextLineToMatch])) or
+                  ((lMatchLines[lIdxNextLineToMatch].is_a?(Regexp)) and 
+                   (lContent[iIdx].match(lMatchLines[lIdxNextLineToMatch]) != nil)))
+                # It matches
+                lIdxNextLineToMatch += 1
+                if (lIdxNextLineToMatch == lMatchLines.size)
+                  # They have all matched
+                  lFound = true
+                  break
+                end
               end
             end
-            if (lFound)
-              break
+          else
+            (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
+              # Validate that each line equals or matches
+              lFound = true
+              (0 .. lMatchLines.size-1).each do |iIdxMatch|
+                if (((lMatchLines[iIdxMatch].is_a?(String)) and
+                     (lContent[iIdx+iIdxMatch] != lMatchLines[iIdxMatch])) or
+                    ((lMatchLines[iIdxMatch].is_a?(Regexp)) and
+                     (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil)))
+                  # It differs
+                  lFound = false
+                  break
+                end
+              end
+              if (lFound)
+                break
+              end
             end
           end
         end
@@ -426,7 +462,7 @@ module WEACE
           logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
         else
           # Modify the content in memory
-          if (iOptions[:Replace] == true)
+          if (lReplace == true)
             # Erase everything between markers
             if (lIdxBegin == -1)
               lContent = lContent[lIdxEnd..-1]
