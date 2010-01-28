@@ -9,13 +9,5 @@
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
   :Description => 'The WEACE Slave Client.',
-  :Author => 'murielsalvan@users.sourceforge.net',
-  :VarOptions => [
-    [
-      :ProviderID,
-      '-t', '--providertype <ProvType>', String,
-      '<ProvType>: Type of provider where we install components.',
-      'Use -- after to add options that are specific to each Provider. Please use --list option to know available Slave Providers.'
-    ]
-  ]
+  :Author => 'murielsalvan@users.sourceforge.net'
 }

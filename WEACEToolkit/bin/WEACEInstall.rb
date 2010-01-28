@@ -436,7 +436,7 @@ module WEACEInstall
       lComponentInstallInfo = getInstalledComponentDescription(iComponentName)
       if ((@ForceMode) or
           (lComponentInstallInfo == nil))
-        if (lComponentInstallInfo == nil)
+        if (lComponentInstallInfo != nil)
           logWarn "Component #{iComponentName} already exists: it has been installed on #{lComponentInstallInfo[:InstallationDate]} with the following parameters: #{lComponentInstallInfo[:InstallationParameters]}. Will force its re-installation."
         end
         @PluginsManager.accessPlugin(iPluginCategory, iPluginName) do |ioPlugin|
@@ -509,7 +509,7 @@ module WEACEInstall
       lSlaveClientInstallInfo = getInstalledComponentDescription(lComponentName)
       if (lSlaveClientInstallInfo != nil)
         # Read the Slave Provider config
-        rError, lProviderEnv = getProviderEnv(iType, lSlaveClientInstallInfo[:ProviderID], lSlaveClientInstallInfo[:Parameters])
+        rError, lProviderEnv = getProviderEnv(iType, lSlaveClientInstallInfo[:ProviderID], lSlaveClientInstallInfo[:InstallationParameters])
         if (rError == nil)
           yield(lProviderEnv)
         end

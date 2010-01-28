@@ -17,43 +17,50 @@ module WEACE
           class WEACEMasterServer < ::Test::Unit::TestCase
 
             include WEACE::Test::Install::Common
+            include WEACE::Toolbox
 
             # Test installing the Master Server without specifying any provider
             def testMasterServerWithoutProvider
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer'], :Error => WEACEInstall::CommandLineError)
+              executeInstall(['--install', 'MasterServer'], :Error => WEACEInstall::CommandLineError)
             end
 
             # Test installing the Master Server with specifying a missing provider
             def testMasterServerWithMissingProvider
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider'], :Error => WEACEInstall::CommandLineError)
+              executeInstall(['--install', 'MasterServer', '--provider'], :Error => OptionParser::MissingArgument)
             end
 
             # Test installing the Master Server with specifying an unknown provider
             def testMasterServerWithUnknownProvider
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::ProviderError)
+              executeInstall(['--install', 'MasterServer', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::ProviderError)
             end
 
             # Test installing the Master Server
             def testMasterServer
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProvider'],
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider'],
                 :AddRegressionMasterProviders => true
               ) do |iError|
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Master', lEnv[:ProviderType])
-                assert_equal('DummyMasterProvider', lEnv[:ProviderID])
-                assert_equal([], lEnv[:Parameters])
+                # Test the installation file
+                lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/MasterServer.inst.rb"
+                assert(File.exists?(lInstallFileName))
+                lInstallInfo = getMapFromFile(lInstallFileName)
+                assert(lInstallInfo.kind_of?(Hash))
+                assert(lInstallInfo[:InstallationDate] != nil)
+                assert_equal('The WEACE Master Server.', lInstallInfo[:Description])
+                assert_equal('murielsalvan@users.sourceforge.net', lInstallInfo[:Author])
+                assert_equal('', lInstallInfo[:InstallationParameters])
+                assert_equal('DummyMasterProvider', lInstallInfo[:ProviderID])
+                # Test the configuration file
+                lConfigFileName = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+                assert(File.exists?(lConfigFileName))
+                lConfigInfo = getMapFromFile(lConfigFileName)
+                assert(lConfigInfo.kind_of?(Hash))
+                assert_equal([], lConfigInfo[:WEACESlaveClients])
               end
             end
 
             # Test installing the Master Server with a Provider missing some parameters
             def testMasterServerWithProviderMissingParameters
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParams'],
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProviderWithParams'],
                 :Error => WEACEInstall::CommandLineError,
                 :AddRegressionMasterProviders => true
               ) do |iError|
@@ -63,7 +70,7 @@ module WEACE
 
             # Test installing the Master Server with a Provider missing some parameters values
             def testMasterServerWithProviderMissingParametersValues
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParamsValues', '--', '--dummyvar'],
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProviderWithParamsValues', '--', '--dummyvar'],
                 :Error => WEACEInstall::CommandLineError,
                 :AddRegressionMasterProviders => true
               ) do |iError|
@@ -73,25 +80,26 @@ module WEACE
 
             # Test installing the Master Server with a Provider having some parameters
             def testMasterServerWithProviderHavingParameters
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParams', '--', '--flag'],
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProviderWithParams', '--', '--flag'],
                 :AddRegressionMasterProviders => true
               ) do |iError|
                 assert_equal(true, $Variables[:MasterProviderDummyFlag])
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Master', lEnv[:ProviderType])
-                assert_equal('DummyMasterProviderWithParams', lEnv[:ProviderID])
-                assert_equal(
-                  [
-                    '--flag'
-                  ],
-                  lEnv[:Parameters]
-                )
+                # Test the installation file
+                lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/MasterServer.inst.rb"
+                assert(File.exists?(lInstallFileName))
+                lInstallInfo = getMapFromFile(lInstallFileName)
+                assert(lInstallInfo.kind_of?(Hash))
+                assert(lInstallInfo[:InstallationDate] != nil)
+                assert_equal('The WEACE Master Server.', lInstallInfo[:Description])
+                assert_equal('murielsalvan@users.sourceforge.net', lInstallInfo[:Author])
+                assert_equal('--flag', lInstallInfo[:InstallationParameters])
+                assert_equal('DummyMasterProviderWithParams', lInstallInfo[:ProviderID])
+                # Test the configuration file
+                lConfigFileName = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+                assert(File.exists?(lConfigFileName))
+                lConfigInfo = getMapFromFile(lConfigFileName)
+                assert(lConfigInfo.kind_of?(Hash))
+                assert_equal([], lConfigInfo[:WEACESlaveClients])
               end
             end
 
@@ -101,21 +109,22 @@ module WEACE
                 :AddRegressionMasterProviders => true
               ) do |iError|
                 assert_equal('testvalue', $Variables[:MasterProviderDummyVar])
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Master', lEnv[:ProviderType])
-                assert_equal('DummyMasterProviderWithParamsValues', lEnv[:ProviderID])
-                assert_equal(
-                  [
-                    '--dummyvar', 'testvalue'
-                  ],
-                  lEnv[:Parameters]
-                )
+                # Test the installation file
+                lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/MasterServer.inst.rb"
+                assert(File.exists?(lInstallFileName))
+                lInstallInfo = getMapFromFile(lInstallFileName)
+                assert(lInstallInfo.kind_of?(Hash))
+                assert(lInstallInfo[:InstallationDate] != nil)
+                assert_equal('The WEACE Master Server.', lInstallInfo[:Description])
+                assert_equal('murielsalvan@users.sourceforge.net', lInstallInfo[:Author])
+                assert_equal('--dummyvar testvalue', lInstallInfo[:InstallationParameters])
+                assert_equal('DummyMasterProviderWithParamsValues', lInstallInfo[:ProviderID])
+                # Test the configuration file
+                lConfigFileName = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+                assert(File.exists?(lConfigFileName))
+                lConfigInfo = getMapFromFile(lConfigFileName)
+                assert(lConfigInfo.kind_of?(Hash))
+                assert_equal([], lConfigInfo[:WEACESlaveClients])
               end
             end
 
@@ -124,23 +133,46 @@ module WEACE
               executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithCGI', '--', '--repository', '%{WEACERepositoryDir}/CGI'],
                 :AddRegressionMasterProviders => true
               ) do |iError|
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Master_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Master', lEnv[:ProviderType])
-                assert_equal('DummyMasterProviderWithCGI', lEnv[:ProviderID])
-                assert_equal(
-                  [
-                    '--repository', "#{@WEACERepositoryDir}/CGI"
-                  ],
-                  lEnv[:Parameters]
-                )
+                # Test the installation file
+                lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/MasterServer.inst.rb"
+                assert(File.exists?(lInstallFileName))
+                lInstallInfo = getMapFromFile(lInstallFileName)
+                assert(lInstallInfo.kind_of?(Hash))
+                assert(lInstallInfo[:InstallationDate] != nil)
+                assert_equal('The WEACE Master Server.', lInstallInfo[:Description])
+                assert_equal('murielsalvan@users.sourceforge.net', lInstallInfo[:Author])
+                assert_equal("--repository #{@WEACERepositoryDir}/CGI", lInstallInfo[:InstallationParameters])
+                assert_equal('DummyMasterProviderWithCGI', lInstallInfo[:ProviderID])
+                # Test the configuration file
+                lConfigFileName = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+                assert(File.exists?(lConfigFileName))
+                lConfigInfo = getMapFromFile(lConfigFileName)
+                assert(lConfigInfo.kind_of?(Hash))
+                assert_equal([], lConfigInfo[:WEACESlaveClients])
                 # Check that CGI files have been created correctly
-                assert(File.exists?("#{@WEACERepositoryDir}/CGI/cgi/WEACE/ShowWEACEMasterInfo.cgi"))
+                lCGIFileName = "#{@WEACERepositoryDir}/CGI/cgi/WEACE/ShowWEACEMasterInfo.cgi"
+                assert(File.exists?(lCGIFileName))
+                lCGIContent = nil
+                File.open(lCGIFileName, 'r') do |iFile|
+                  lCGIContent = iFile.read
+                end
+                assert_equal("\#!/usr/bin/env ruby
+\# This file has been generated by the installation of WEACE Master Server
+\# Print header
+puts 'Content-type: text/html'
+puts ''
+puts ''
+begin
+  \# Add WEACE Toolkit path to Ruby's path
+  $LOAD_PATH << '#{File.expand_path(@WEACELibDir)}'
+  require 'WEACEToolkit/Master/Server/ShowWEACEMasterInfo'
+  WEACE::Master::Dump_HTML.new.dumpWEACEMasterInfo_HTML
+rescue Exception
+  puts \"WEACE Master Installation is corrupted: \#{$!}\"
+end
+",
+                  lCGIContent
+                )
               end
             end
 

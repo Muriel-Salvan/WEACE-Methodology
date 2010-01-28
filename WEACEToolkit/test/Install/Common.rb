@@ -339,10 +339,10 @@ module WEACE
           begin
             if (debugActivated?)
               rError = @Installer.execute(['-d']+lRealParams)
-              #p rError
             else
               rError = @Installer.execute(lRealParams)
             end
+            #p rError
           rescue Exception
             # This way exception is shown on screen for better understanding
             assert_equal(nil, $!)
