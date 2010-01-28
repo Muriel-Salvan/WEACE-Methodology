@@ -59,6 +59,34 @@ end
         return rError
       end
     
+      # Get the default configuration
+      #
+      # Return:
+      # * _String_: The default configuration text to put in the configuration file.
+      def getDefaultConfig
+        return "
+{
+  \# Log file used
+  \# String
+  \# :LogFile => '/var/log/WEACESlaveClient.log',
+
+  \# List of WEACE Slave Adapters that can be used by WEACE Slave Client
+  \# map <
+  \#   <ProductName> => map <
+  \#     <ToolName> => list< <ActionName> >
+  \#   >
+  \# >
+  :WEACESlaveAdapters => {
+  \# 'Redmine_01' => {
+  \#   'TicketTracker' => [
+  \#     'RejectDuplicate'
+  \#   ]
+  \# }
+  }
+}
+"
+      end
+
     end
   
   end

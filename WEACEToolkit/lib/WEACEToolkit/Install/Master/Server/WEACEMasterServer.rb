@@ -59,6 +59,37 @@ end
         return rError
       end
 
+      # Get the default configuration
+      #
+      # Return:
+      # * _String_: The default configuration text to put in the configuration file.
+      def getDefaultConfig
+        return "
+{
+  \# Log file used
+  \# String
+  \# :LogFile => '/var/log/WEACEMasterServer.log',
+
+  \# List of WEACE Slave Clients to contact
+  \# list <
+  \#   {
+  \#     :Type => <ClientType>,
+  \#     :Tools => list < <ToolName> >
+  \#   }
+  \# >
+  :WEACESlaveClients => [
+  \#  {
+  \#    :Type => 'Local',
+  \#    :Tools => [
+  \#      Tools::Wiki,
+  \#      Tools::TicketTracker
+  \#    ]
+  \#  }
+  ]
+}
+"
+      end
+
     end
   
   end
