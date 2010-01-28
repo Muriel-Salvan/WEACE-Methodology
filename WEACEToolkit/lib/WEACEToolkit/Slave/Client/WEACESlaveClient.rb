@@ -459,6 +459,7 @@ Check http://weacemethod.sourceforge.net for details."
                 puts "*** #{iProductID} (#{lStrInstalled}) (#{lStrConfig})"
               end
             end
+            puts ''
           end
         else
           # Just display Tools/Actions that are available for installed Products

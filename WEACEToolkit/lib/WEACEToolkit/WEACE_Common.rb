@@ -32,6 +32,10 @@ module WEACE
   # Exception raised when a variable is missing
   class MissingVariableError < RuntimeError
   end
+
+  # Error issued when modifying a file fails
+  class FileModificationError < RuntimeError
+  end
   
   # Class containing info for serialized method calls
   class MethodCallInfo
@@ -73,8 +77,18 @@ module WEACE
     # * *iComponentName* (_String_): Component name
     # Return:
     # * _String_: The file name
-    def getInstalledDescFileName(iComponentName)
-      return "#{@WEACEInstallDir}/InstalledComponents/#{getValidFileName(iComponentName)}.rb"
+    def getInstallFileName(iComponentName)
+      return "#{@WEACEInstallDir}/InstalledComponents/#{getValidFileName(iComponentName)}.inst.rb"
+    end
+
+    # Get the name of the file used to configure an installed component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # Return:
+    # * _String_: The file name
+    def getConfigFileName(iComponentName)
+      return "#{@WEACEConfigDir}/#{getValidFileName(iComponentName)}.conf.rb"
     end
 
     # Get the installed description of a component
@@ -84,16 +98,35 @@ module WEACE
     # Return:
     # * <em>map<Symbol, Object></em>: The description, or nil if not installed
     def getInstalledComponentDescription(iComponentName)
-      rDescription = nil
+      return getMapFromFile(getInstallFileName(iComponentName))
+    end
+
+    # Get the installed configuration of a component
+    #
+    # Parameters:
+    # * *iComponentName* (_String_): Component name
+    # Return:
+    # * <em>map<Symbol, Object></em>: The configuration, or nil if not installed
+    def getInstalledComponentConfiguration(iComponentName)
+      return getMapFromFile(getConfigFileName(iComponentName))
+    end
+
+    # Get a map that was stored in a file
+    #
+    # Parameters:
+    # * *iFileName* (_String_): Name of the file that stores the map
+    # Return:
+    # * <em>map<Object,Object></em>: The map read, or nil if none or no file
+    def getMapFromFile(iFileName)
+      rMap = nil
       
-      lRegisteredFileName = getInstalledDescFileName(iComponentName)
-      if (File.exists?(lRegisteredFileName))
-        File.open(lRegisteredFileName, 'r') do |iFile|
-          rDescription = eval(iFile.read)
+      if (File.exists?(iFileName))
+        File.open(iFileName, 'r') do |iFile|
+          rMap = eval(iFile.read)
         end
       end
 
-      return rDescription
+      return rMap
     end
 
     # Get WEACE directories.
@@ -335,7 +368,12 @@ module WEACE
     # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ? [optional = false]
     # ** *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed. [optional = nil]
     # ** *:ExtraLinesDuringMatch* (_Boolean_): Do we ignore extra lines that could be present between the lines to match ? [optional = false]
+    # ** *:CommitModifications* (_Boolean_): Do we actually commit modifications made ? [optional = true]
+    # Return:
+    # * _Exception_: An error, or nil in case of success
     def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions = {})
+      rError = nil
+
       # Parse options
       lReplace = iOptions[:Replace]
       if (lReplace == nil)
@@ -350,9 +388,14 @@ module WEACE
       if (lExtraLinesDuringMatch == nil)
         lExtraLinesDuringMatch = false
       end
+      lCommitModifications = iOptions[:CommitModifications]
+      if (lCommitModifications == nil)
+        lCommitModifications = true
+      end
 
       logDebug "Modify file #{iFileName} ..."
-      if (!lNoBackup)
+      if ((!lNoBackup) and
+          lCommitModifications)
         # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
         lBackupName = "#{iFileName}.WEACEBackup"
         if (!File.exists?(lBackupName))
@@ -394,11 +437,9 @@ module WEACE
       end
       # If we didn't find both of them, stop it
       if (lIdxBegin == nil)
-        logErr "Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification."
-        raise RuntimeError, "Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification."
+        rError = FileModificationError.new("Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification.")
       elsif (lIdxEnd == nil)
-        logErr "Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification."
-        raise RuntimeError, "Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification."
+        rError = FileModificationError.new("Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification.")
       else
         # Ensure that new lines separate the content of iNewLines, and each line terminates with a \n
         lNewLines = nil
@@ -459,8 +500,10 @@ module WEACE
         end
         if (lFound)
           # Already here
-          logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
-        else
+          if (lCommitModifications)
+            logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
+          end
+        elsif (lCommitModifications)
           # Modify the content in memory
           if (lReplace == true)
             # Erase everything between markers
@@ -487,7 +530,8 @@ module WEACE
           logDebug "File #{iFileName} modified successfully."
         end
       end
-      
+
+      return rError
     end
     
   end

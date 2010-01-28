@@ -22,6 +22,8 @@ module WEACEInstall
         # * <em>map<Symbol,Object></em>: The map of options
         def getProviderEnvironment
           return {
+            # TODO: Check Ruby's Path
+            :WEACEExecuteCmd => '/usr/bin/ruby -w WEACEExecute.rb',
             :CGI => {
               :InternalDirectory => "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}/cgi-bin",
               :URL => "http://#{@ProjectUnixName}.sourceforge.net/cgi-bin"

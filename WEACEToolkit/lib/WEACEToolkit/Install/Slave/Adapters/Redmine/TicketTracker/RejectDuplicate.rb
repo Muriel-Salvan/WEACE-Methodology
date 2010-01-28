@@ -7,36 +7,27 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/Install/Slave/Adapters/Redmine/Install_Redmine_Common'
-
 module WEACEInstall
 
   module Slave
   
     module Adapters
   
-      module Redmine
+      class Redmine
       
-        module TicketTracker
+        class TicketTracker
         
           class RejectDuplicate
-          
-            include WEACEInstall::Slave::Adapters::Redmine::CommonInstall
-          
-            # Execute the installation
+
+            # Install for real.
+            # This is called only when check method returned no error.
             #
-            # Parameters:
-            # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
             # Return:
             # * _Exception_: An error, or nil in case of success
-            def execute(iParameters)
-              # Modify common parts
-              installRedmineWEACESlaveLink
-              generateDBEnv
-
+            def execute
               return nil
             end
-            
+
           end
             
         end

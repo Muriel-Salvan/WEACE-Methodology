@@ -16,22 +16,21 @@ module WEACEInstall
       include WEACEInstall::Common
       include WEACE::Toolbox
       
-      # Execute the installation
+      # Install for real.
+      # This is called only when check method returned no error.
       #
-      # Parameters:
-      # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
       # Return:
       # * _Exception_: An error, or nil in case of success
-      def execute(iParameters)
+      def execute
         rError = nil
         
-        rError, lProviderConfig = getProviderConfig('Master', @ProviderID, iParameters)
+        rError, lProviderEnv = getProviderEnv('Master', @ProviderID, @AdditionalParameters)
         if (rError == nil)
           # Store the way we retrieved the provider config in a file to be parsed for Adapters installations
-          saveProviderConfig('Master', @ProviderID, iParameters)
-          if (lProviderConfig[:CGI] != nil)
+          saveProviderConfig('Master', @ProviderID, @AdditionalParameters)
+          if (lProviderEnv[:CGI] != nil)
             # Generate the cgi script that will give details about the installed WEACE Master Adapters
-            lShowComponentsFileName = "#{lProviderConfig[:CGI][:InternalDirectory]}/WEACE/ShowWEACEMasterInfo.cgi"
+            lShowComponentsFileName = "#{lProviderEnv[:CGI][:InternalDirectory]}/WEACE/ShowWEACEMasterInfo.cgi"
             logDebug "Generate CGI script that shows installed WEACE Master Adapters (#{lShowComponentsFileName}) ..."
             require 'fileutils'
             FileUtils.mkdir_p(File.dirname(lShowComponentsFileName))

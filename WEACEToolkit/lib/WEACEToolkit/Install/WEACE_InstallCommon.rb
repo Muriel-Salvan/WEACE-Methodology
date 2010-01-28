@@ -37,7 +37,7 @@ module WEACEInstall
 
   module Common
 
-    # Get a Provider's configuration
+    # Get a Provider's environment
     #
     # Parameters:
     # * *iProviderType* (_String_): The Provider type (Master or Slave)
@@ -45,8 +45,8 @@ module WEACEInstall
     # * *iParameters* (<em>list<String></em>): The parameters to give this provider
     # Return:
     # * _Exception_: An error, or nil in case of success
-    # * <em>map<Symbol,Object></em>: The provider configuration
-    def getProviderConfig(iProviderType, iProviderID, iParameters)
+    # * <em>map<Symbol,Object></em>: The Provider's environment
+    def getProviderEnv(iProviderType, iProviderID, iParameters)
       rError = nil
       rProviderConfig = nil
 
@@ -117,37 +117,6 @@ module WEACEInstall
 }
 "
       end
-    end
-
-    # Get the Provider's configuration from the repository
-    #
-    # Parameters:
-    # * *iProviderType* (_String_): The Provider type (Master or Slave)
-    # Return:
-    # * _Exception_: An error, or nil in case of success
-    # * <em>map<Symbol,Object></em>: The Provider's configuration
-    def getAlreadyCreatedProviderConfig(iProviderType)
-      rError = nil
-      rProviderConfig = nil
-
-      # First, read how the provider was initialized
-      lProviderParams = nil
-      begin
-        File.open("#{@WEACEConfigDir}/#{iProviderType}_Env.rb", 'r') do |iFile|
-          lProviderParams = eval(iFile.read)
-        end
-      rescue Exception
-        rError = $!
-      end
-      if (rError == nil)
-        if (lProviderParams == nil)
-          rError = RuntimeError.new("Unable to get the #{iProviderType} Provider parameters.")
-        else
-          rError, rProviderConfig = getProviderConfig(lProviderParams[:ProviderType], lProviderParams[:ProviderID], lProviderParams[:Parameters])
-        end
-      end
-
-      return rError, rProviderConfig
     end
 
     # Check that mandatory variables are affected.

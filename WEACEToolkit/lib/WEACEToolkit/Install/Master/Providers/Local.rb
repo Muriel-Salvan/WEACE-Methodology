@@ -21,7 +21,9 @@ module WEACEInstall
         # Return:
         # * <em>map<Symbol,Object></em>: The map of options
         def getProviderEnvironment
-          return {}
+          return {
+            :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb'
+          }
         end
 
       end

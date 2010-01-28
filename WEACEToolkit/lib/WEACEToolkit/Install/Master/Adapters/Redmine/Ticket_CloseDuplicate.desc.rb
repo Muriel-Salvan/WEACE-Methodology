@@ -8,6 +8,6 @@
 # ** :Description (_String_): Quick description
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
-  :Description => 'This adapter creates a relation between a master and a slave tickets, and reject the slave as a duplicate of the master.',
+  :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
   :Author => 'murielsalvan@users.sourceforge.net'
 }

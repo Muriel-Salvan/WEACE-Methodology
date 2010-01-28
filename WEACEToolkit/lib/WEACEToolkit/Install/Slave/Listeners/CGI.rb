@@ -15,21 +15,20 @@ module WEACEInstall
   
       class CGI
           
-        # Execute the installation
+        # Install for real.
+        # This is called only when check method returned no error.
         #
-        # Parameters:
-        # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
         # Return:
         # * _Exception_: An error, or nil in case of success
-        def execute(iParameters)
+        def execute
           rError = nil
 
           # Get the CGI directory from the Provider environment
-          if ((@ProviderConfig[:CGI] == nil) or
-              (@ProviderConfig[:CGI][:InternalDirectory] == nil))
+          if ((@ProviderEnv[:CGI] == nil) or
+              (@ProviderEnv[:CGI][:InternalDirectory] == nil))
             rError = RuntimeError.new('Listener CGI can only be installed on Providers that are configured with CGI directories.')
           else
-            lCGIDir = @ProviderConfig[:CGI][:InternalDirectory]
+            lCGIDir = @ProviderEnv[:CGI][:InternalDirectory]
             # Generate the CGI script
             lCGIScriptFileName = "#{lCGIDir}/WEACE/Actions.cgi"
             logDebug "Generate CGI script (#{lCGIScriptFileName}) ..."

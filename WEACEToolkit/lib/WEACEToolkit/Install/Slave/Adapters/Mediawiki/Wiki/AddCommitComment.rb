@@ -3,31 +3,24 @@
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
-require 'WEACEToolkit/Install/Slave/Adapters/Mediawiki/Install_Mediawiki_Common'
-
 module WEACEInstall
 
   module Slave
 
     module Adapters
 
-      module Mediawiki
+      class Mediawiki
 
-        module Wiki
+        class Wiki
 
           class AddCommitComment
 
-            include WEACEInstall::Slave::Adapters::Mediawiki::CommonInstall
-
-            # Execute the installation
+            # Install for real.
+            # This is called only when check method returned no error.
             #
-            # Parameters:
-            # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
             # Return:
             # * _Exception_: An error, or nil in case of success
-            def execute(iParameters)
-              installMediawikiWEACESlaveLink
-
+            def execute
               return nil
             end
 
