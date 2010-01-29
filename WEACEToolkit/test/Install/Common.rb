@@ -242,6 +242,7 @@ module WEACE
 
             # Create the installer
             @Installer = WEACEInstall::Installer.new
+            @WEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
 
             # Create a new WEACE repository by copying the wanted one
             setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
@@ -321,6 +322,9 @@ module WEACE
         # * *iParameters* (<em>list<String></em>): The parameters to give the installer
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
+        # ** *:CheckComponentName* (_String_): Check that installation has been made for this Component name in case of success [optional = nil]
+        # ** *:CheckInstallFile* (<em>map<Symbol,Object></em>): Check the content of the installation file in case of success. To be used with :CheckComponentName. [optional = nil]
+        # ** *:CheckConfigFile* (<em>map<Symbol,Object></em>): Check the content of the configuration file in case of success. To be used with :CheckComponentName. [optional = nil]
         # * *CodeBlock*: Code executed once installation has been executed [optional = nil]
         # ** *iError* (_Exception_): Result of the installation
         # Return:
@@ -328,6 +332,9 @@ module WEACE
         def execInstaller(iParameters, iOptions, &iCheckCode)
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
+          lCheckComponentName = iOptions[:CheckComponentName]
+          lCheckInstallFile = iOptions[:CheckInstallFile]
+          lCheckConfigFile = iOptions[:CheckConfigFile]
 
           # Replace variables from @ContextVars
           lRealParams = []
@@ -351,6 +358,40 @@ module WEACE
           # Check
           if (lExpectedErrorClass == nil)
             assert_equal(nil, rError)
+            # Check that the Component has been installed as required
+            if (lCheckComponentName != nil)
+              lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/MasterServer.inst.rb"
+              assert(File.exists?(lInstallFileName))
+              lConfigFileName = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+              assert(File.exists?(lConfigFileName))
+              # Check the installation file's content
+              if (lCheckInstallFile != nil)
+                lInstallInfo = getMapFromFile(lInstallFileName)
+                assert(lInstallInfo.kind_of?(Hash))
+                # + 1 is due to the :InstallationDate property that is not part of the regression map
+                assert_equal(lCheckInstallFile.size + 1, lInstallInfo.size)
+                assert(lInstallInfo[:InstallationDate] != nil)
+                lCheckInstallFile.each do |iProperty, iValue|
+                  if (iValue.kind_of?(String))
+                    assert_equal(replaceVars(iValue), lInstallInfo[iProperty])
+                  else
+                    assert_equal(iValue, lInstallInfo[iProperty])
+                  end
+                end
+              end
+              # Check the configuration file's content
+              if (lCheckConfigFile != nil)
+                lConfigInfo = getMapFromFile(lConfigFileName)
+                assert_equal(lCheckConfigFile.size, lConfigInfo.size)
+                lCheckConfigFile.each do |iProperty, iValue|
+                  if (iValue.kind_of?(String))
+                    assert_equal(replaceVars(iValue), lConfigInfo[iProperty])
+                  else
+                    assert_equal(iValue, lConfigInfo[iProperty])
+                  end
+                end
+              end
+            end
           else
             assert(rError.kind_of?(lExpectedErrorClass))
           end
@@ -373,6 +414,9 @@ module WEACE
         # ** *:AddRegressionSlaveListeners (_Boolean_): Do we add the Slave Listeners from regression ? [optional = false]
         # ** *:AddRegressionMasterProviders (_Boolean_): Do we add the Master Providers from regression ? [optional = false]
         # ** *:AddRegressionSlaveProviders (_Boolean_): Do we add the Slave Providers from regression ? [optional = false]
+        # ** *:CheckComponentName* (_String_): Check that installation has been made for this Component name in case of success [optional = nil]
+        # ** *:CheckInstallFile* (<em>map<Symbol,Object></em>): Check the content of the installation file in case of success. To be used with :CheckComponentName. [optional = nil]
+        # ** *:CheckConfigFile* (<em>map<Symbol,Object></em>): Check the content of the configuration file in case of success. To be used with :CheckComponentName. [optional = nil]
         # * _CodeBlock_: The code called once the installer was run: [optional = nil]
         # ** *iError* (_Exception_): The error returned by the installer, or nil in case of success
         def executeInstall(iParameters, iOptions = {}, &iCheckCode)

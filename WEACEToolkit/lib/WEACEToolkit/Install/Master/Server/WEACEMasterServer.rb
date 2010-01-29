@@ -23,7 +23,7 @@ module WEACEInstall
       # * _Exception_: An error, or nil in case of success
       def execute
         rError = nil
-        
+
         rError, lProviderEnv = getProviderEnv('Master', @ProviderID, @AdditionalParameters)
         if (rError == nil)
           # Store the way we retrieved the provider config in a file to be parsed for Adapters installations

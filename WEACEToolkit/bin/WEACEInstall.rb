@@ -560,7 +560,8 @@ module WEACEInstall
         'MasterServer',
         'Master/Server',
         'WEACEMasterServer',
-        iParameters,
+        # Options are to be given to the Provider, not the MasterServer installer. So add a -- in front of them.
+        ['--'] + iParameters,
         nil,
         {
           :ProviderID => iProviderType
@@ -624,7 +625,8 @@ module WEACEInstall
         'SlaveClient',
         'Slave/Client',
         'WEACESlaveClient',
-        iParameters,
+        # Options are to be given to the Provider, not the SlaveClient installer. So add a -- in front of them.
+        ['--'] + iParameters,
         nil,
         {
           :ProviderID => iProviderType

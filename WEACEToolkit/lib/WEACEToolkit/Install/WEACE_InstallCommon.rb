@@ -156,10 +156,10 @@ module WEACEInstall
       rError = nil
       rAdditionalArgs = []
 
+      lInstallerArgs, rAdditionalArgs = splitParameters(iParameters)
       lOptions = ioPlugin.pluginDescription[:Options]
       if (lOptions != nil)
         # Parse them
-        lInstallerArgs, rAdditionalArgs = splitParameters(iParameters)
         begin
           lRemainingArgs = lOptions.parse(lInstallerArgs)
           if (!lRemainingArgs.empty?)
