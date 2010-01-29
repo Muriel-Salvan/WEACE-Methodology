@@ -21,23 +21,21 @@ module WEACE
 
             class Ticket_CloseDuplicate < ::Test::Unit::TestCase
 
-              include WEACE::Test::Install::Adapters
+              include WEACE::Test::Install::Master::MasterProcess
 
               # Test normal behaviour
               def testNormal
-                executeInstall( [ '--install', 'MasterProcess', '--process', 'Ticket_CloseDuplicate', '--on', 'RegRedmine' ],
-                  :AddRegressionMasterProviders => true,
+                executeInstallMasterProcess(
+                  [],
                   :Repository => 'MasterRedmineInstalled',
                   :ProductRepository => 'Redmine/Master/Ticket_CloseDuplicate/Virgin',
                   :ContextVars => {
                     'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
                     'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
                   },
-                  :CheckComponentName => 'RegRedmine.Ticket_CloseDuplicate',
                   :CheckInstallFile => {
                     :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
-                    :Author => 'murielsalvan@users.sourceforge.net',
-                    :InstallationParameters => ''
+                    :Author => 'murielsalvan@users.sourceforge.net'
                   },
                   :CheckConfigFile => {}
                 ) do |iError|
@@ -47,19 +45,17 @@ module WEACE
 
               # Test duplicate behaviour
               def testDuplicate
-                executeInstall( [ '--install', 'MasterProcess', '--process', 'Ticket_CloseDuplicate', '--on', 'RegRedmine' ],
-                  :AddRegressionMasterProviders => true,
+                executeInstallMasterProcess(
+                  [],
                   :Repository => 'MasterRedmineInstalled',
                   :ProductRepository => 'Redmine/Master/Ticket_CloseDuplicate/Normal',
                   :ContextVars => {
                     'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
                     'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
                   },
-                  :CheckComponentName => 'RegRedmine.Ticket_CloseDuplicate',
                   :CheckInstallFile => {
                     :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
-                    :Author => 'murielsalvan@users.sourceforge.net',
-                    :InstallationParameters => ''
+                    :Author => 'murielsalvan@users.sourceforge.net'
                   },
                   :CheckConfigFile => {}
                 ) do |iError|
