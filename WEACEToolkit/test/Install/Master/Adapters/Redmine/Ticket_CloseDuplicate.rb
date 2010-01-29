@@ -17,46 +17,42 @@ module WEACE
 
         module Adapters
 
-          module Redmine
+          class Redmine
 
-            module TicketTracker
+            class Ticket_CloseDuplicate < ::Test::Unit::TestCase
 
-              class Ticket_CloseDuplicate < ::Test::Unit::TestCase
+              include WEACE::Test::Install::Adapters
 
-                include WEACE::Test::Install::Adapters
-
-                # Test normal behaviour
-                def testNormal
-                  executeInstallAdapter(
-                    [
-                      '--redminedir', '%{Repository}/redmine-0.8.2',
-                      '--ruby', '/usr/bin/ruby'
-                    ],
-                    :ProductRepository => 'Virgin',
-                    :ContextVars => {
-                      'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                    }
-                  ) do |iError|
-                    compareWithRepository('Normal')
-                  end
+              # Test normal behaviour
+              def testNormal
+                executeInstallAdapter(
+                  [
+                    '--redminedir', '%{ProductDir}/redmine-0.8.2',
+                    '--ruby', '/usr/bin/ruby'
+                  ],
+                  :ProductRepository => 'Virgin',
+                  :ContextVars => {
+                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
+                  }
+                ) do |iError|
+                  compareWithRepository('Normal')
                 end
+              end
 
-                # Test duplicate behaviour
-                def testDuplicate
-                  executeInstallAdapter(
-                    [
-                      '--redminedir', '%{Repository}/redmine-0.8.2',
-                      '--ruby', '/usr/bin/ruby'
-                    ],
-                    :ProductRepository => 'Normal',
-                    :ContextVars => {
-                      'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                    }
-                  ) do |iError|
-                    compareWithRepository('Normal')
-                  end
+              # Test duplicate behaviour
+              def testDuplicate
+                executeInstallAdapter(
+                  [
+                    '--redminedir', '%{ProductDir}/redmine-0.8.2',
+                    '--ruby', '/usr/bin/ruby'
+                  ],
+                  :ProductRepository => 'Normal',
+                  :ContextVars => {
+                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
+                  }
+                ) do |iError|
+                  compareWithRepository('Normal')
                 end
-
               end
 
             end

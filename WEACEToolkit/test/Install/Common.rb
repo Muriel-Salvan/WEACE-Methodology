@@ -15,6 +15,7 @@ module WEACE
 
       module Common
 
+        include WEACE::Toolbox
         include WEACE::Test::Common
 
         # Setup a temporary repository as an image of a given repository.
@@ -29,18 +30,9 @@ module WEACE
             logErr "A repository has already been setup in this test case: #{@ProductRepositoryDir}. You can not cascade repository setups."
             raise RuntimeError, "A repository has already been setup in this test case: #{@ProductRepositoryDir}. You can not cascade repository setups."
           end
-          if (@InstallTest)
-            if (@ComponentType == 'Adapters')
-              @RepositoriesDir = "#{$WEACETestBaseDir}/Install/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}"
-            else
-              @RepositoriesDir = "#{$WEACETestBaseDir}/Install/#{@Type}/Listeners/#{@ScriptID}"
-            end
-          else
-            @RepositoriesDir = "#{$WEACETestBaseDir}/#{@Type}/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}"
-          end
-          setupTmpDir("#{@RepositoriesDir}/#{iRepositoryName}", @ProductID) do |iTmpDir|
+          setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../ProductRepositories/#{iRepositoryName}"), @ProductID) do |iTmpDir|
             @ProductRepositoryDir = iTmpDir
-            @ContextVars['Repository'] = @ProductRepositoryDir
+            @ContextVars['ProductDir'] = @ProductRepositoryDir
             yield
             @ProductRepositoryDir = nil
           end
@@ -57,7 +49,7 @@ module WEACE
             raise RuntimeError, "You must first setup a repository using 'setupRepository' before calling 'compareWithRepository'."
           end
           logDebug "Compare repositories with reference #{iRepositoryName}"
-          assert_equal(true, compareDirs(@ProductRepositoryDir, "#{@RepositoriesDir}/#{iRepositoryName}"))
+          assert_equal(true, compareDirs(@ProductRepositoryDir, File.expand_path("#{File.dirname(__FILE__)}/../ProductRepositories/#{iRepositoryName}")))
         end
 
         # Compare 2 files contents.
@@ -205,6 +197,7 @@ module WEACE
         # Parameters:
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
+        # ** *:ProductRepository* (_String_): Name of the Product repository to use [optional = 'Empty']
         # ** *:AddRegressionMasterAdapters (_Boolean_): Do we add the Master Adapters from regression ? [optional = false]
         # ** *:AddRegressionSlaveAdapters (_Boolean_): Do we add the Slave Adapters from regression ? [optional = false]
         # ** *:AddRegressionSlaveListeners (_Boolean_): Do we add the Slave Listeners from regression ? [optional = false]
@@ -216,6 +209,10 @@ module WEACE
           lRepositoryName = iOptions[:Repository]
           if (lRepositoryName == nil)
             lRepositoryName = 'Empty'
+          end
+          lProductRepositoryName = iOptions[:ProductRepository]
+          if (lProductRepositoryName == nil)
+            lProductRepositoryName = 'Empty'
           end
           lAddRegressionMasterAdapters = iOptions[:AddRegressionMasterAdapters]
           if (lAddRegressionMasterAdapters == nil)
@@ -237,78 +234,88 @@ module WEACE
           if (lAddRegressionSlaveProviders == nil)
             lAddRegressionSlaveProviders = false
           end
+          lContextVarsToMerge = iOptions[:ContextVars]
           
           initTestCase do
 
-            # Create the installer
-            @Installer = WEACEInstall::Installer.new
-            @WEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
+            if (lContextVarsToMerge != nil)
+              @ContextVars.merge!(lContextVarsToMerge)
+            end
+            
+            # Setup the Product repository
+            setupRepository(lProductRepositoryName) do
 
-            # Create a new WEACE repository by copying the wanted one
-            setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
-              @WEACERepositoryDir = iTmpDir
-              @ContextVars['WEACERepositoryDir'] = @WEACERepositoryDir
+              # Create the installer
+              @Installer = WEACEInstall::Installer.new
+              @WEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
 
-              # Change the installer repository location internally
-              @Installer.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
-              @Installer.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
-              @Installer.instance_variable_set(:@WEACEInstalledComponentsDir, "#{@WEACERepositoryDir}/Install/InstalledComponents")
+              # Create a new WEACE repository by copying the wanted one
+              setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
+                @WEACERepositoryDir = iTmpDir
+                @ContextVars['WEACERepositoryDir'] = @WEACERepositoryDir
 
-              # Add additional components for the regression here
-              if (lAddRegressionMasterAdapters or
-                  lAddRegressionSlaveAdapters or
-                  lAddRegressionSlaveListeners or
-                  lAddRegressionMasterProviders or
-                  lAddRegressionSlaveProviders)
-                # Change the library directory (save it to restore it after)
-                lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
-                lOldWEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
-                @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
+                # Change the installer repository location internally
+                @Installer.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
+                @Installer.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
+                @Installer.instance_variable_set(:@WEACEInstalledComponentsDir, "#{@WEACERepositoryDir}/Install/InstalledComponents")
 
-                if (lAddRegressionMasterAdapters)
-                  # Get the current adapters
-                  lCurrentAdapters = @Installer.instance_variable_get(:@MasterAdapters)
-                  # Parse for the regression adapters
-                  @Installer.send(:parseAdapters, 'Master', lCurrentAdapters)
-                  # Change the adapters with the newly parsed ones
-                  @Installer.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
-                end
-
-                if (lAddRegressionSlaveAdapters)
-                  # Get the current adapters
-                  lCurrentAdapters = @Installer.instance_variable_get(:@SlaveAdapters)
-                  # Parse for the regression adapters
-                  @Installer.send(:parseAdapters, 'Slave', lCurrentAdapters)
-                  # Change the adapters with the newly parsed ones
-                  @Installer.instance_variable_set(:@SlaveAdapters, lCurrentAdapters)
-                end
-
-                if (lAddRegressionSlaveListeners)
-                  @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
-                end
-
-                if (lAddRegressionMasterProviders or
-                    lAddRegressionMasterAdapters)
-                  @Installer.send(:parseWEACEPluginsFromDir, 'Master/Providers', "#{lNewWEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
-                end
-
-                if (lAddRegressionSlaveProviders or
+                # Add additional components for the regression here
+                if (lAddRegressionMasterAdapters or
                     lAddRegressionSlaveAdapters or
-                    lAddRegressionSlaveListeners)
-                  @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Providers', "#{lNewWEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+                    lAddRegressionSlaveListeners or
+                    lAddRegressionMasterProviders or
+                    lAddRegressionSlaveProviders)
+                  # Change the library directory (save it to restore it after)
+                  lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
+                  lOldWEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
+                  @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
+
+                  if (lAddRegressionMasterAdapters)
+                    # Get the current adapters
+                    lCurrentAdapters = @Installer.instance_variable_get(:@MasterAdapters)
+                    # Parse for the regression adapters
+                    @Installer.send(:parseAdapters, 'Master', lCurrentAdapters)
+                    # Change the adapters with the newly parsed ones
+                    @Installer.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
+                  end
+
+                  if (lAddRegressionSlaveAdapters)
+                    # Get the current adapters
+                    lCurrentAdapters = @Installer.instance_variable_get(:@SlaveAdapters)
+                    # Parse for the regression adapters
+                    @Installer.send(:parseAdapters, 'Slave', lCurrentAdapters)
+                    # Change the adapters with the newly parsed ones
+                    @Installer.instance_variable_set(:@SlaveAdapters, lCurrentAdapters)
+                  end
+
+                  if (lAddRegressionSlaveListeners)
+                    @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+                  end
+
+                  if (lAddRegressionMasterProviders or
+                      lAddRegressionMasterAdapters)
+                    @Installer.send(:parseWEACEPluginsFromDir, 'Master/Providers', "#{lNewWEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+                  end
+
+                  if (lAddRegressionSlaveProviders or
+                      lAddRegressionSlaveAdapters or
+                      lAddRegressionSlaveListeners)
+                    @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Providers', "#{lNewWEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+                  end
+
+                  # Restore back the WEACE lib dir
+                  @Installer.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
                 end
 
-                # Restore back the WEACE lib dir
-                @Installer.instance_variable_set(:@WEACELibDir, lOldWEACELibDir)
+                # Call client code
+                yield
+
+                # Clean installer
+                @Installer = nil
+
+                setLogFile(nil)
+
               end
-
-              # Call client code
-              yield
-
-              # Clean installer
-              @Installer = nil
-
-              setLogFile(nil)
 
             end
             
@@ -322,6 +329,7 @@ module WEACE
         # * *iParameters* (<em>list<String></em>): The parameters to give the installer
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
+        # ** *:ContextVars* (<em>map<String,String></em>): Context variables to add [optional = nil]
         # ** *:CheckComponentName* (_String_): Check that installation has been made for this Component name in case of success [optional = nil]
         # ** *:CheckInstallFile* (<em>map<Symbol,Object></em>): Check the content of the installation file in case of success. To be used with :CheckComponentName. [optional = nil]
         # ** *:CheckConfigFile* (<em>map<Symbol,Object></em>): Check the content of the configuration file in case of success. To be used with :CheckComponentName. [optional = nil]
@@ -360,13 +368,14 @@ module WEACE
             assert_equal(nil, rError)
             # Check that the Component has been installed as required
             if (lCheckComponentName != nil)
-              lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/MasterServer.inst.rb"
+              lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/#{lCheckComponentName}.inst.rb"
               assert(File.exists?(lInstallFileName))
-              lConfigFileName = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+              lConfigFileName = "#{@WEACERepositoryDir}/Config/#{lCheckComponentName}.conf.rb"
               assert(File.exists?(lConfigFileName))
               # Check the installation file's content
               if (lCheckInstallFile != nil)
                 lInstallInfo = getMapFromFile(lInstallFileName)
+                logDebug "Installation file info: #{lInstallInfo.inspect}"
                 assert(lInstallInfo.kind_of?(Hash))
                 # + 1 is due to the :InstallationDate property that is not part of the regression map
                 assert_equal(lCheckInstallFile.size + 1, lInstallInfo.size)
@@ -382,6 +391,7 @@ module WEACE
               # Check the configuration file's content
               if (lCheckConfigFile != nil)
                 lConfigInfo = getMapFromFile(lConfigFileName)
+                logDebug "Configuration file info: #{lConfigInfo.inspect}"
                 assert_equal(lCheckConfigFile.size, lConfigInfo.size)
                 lCheckConfigFile.each do |iProperty, iValue|
                   if (iValue.kind_of?(String))
@@ -409,6 +419,8 @@ module WEACE
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
         # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
+        # ** *:ProductRepository* (_String_): Name of the Product repository to use [optional = 'Empty']
+        # ** *:ContextVars* (<em>map<String,String></em>): Context variables to add [optional = nil]
         # ** *:AddRegressionMasterAdapters (_Boolean_): Do we add the Master Adapters from regression ? [optional = false]
         # ** *:AddRegressionSlaveAdapters (_Boolean_): Do we add the Slave Adapters from regression ? [optional = false]
         # ** *:AddRegressionSlaveListeners (_Boolean_): Do we add the Slave Listeners from regression ? [optional = false]

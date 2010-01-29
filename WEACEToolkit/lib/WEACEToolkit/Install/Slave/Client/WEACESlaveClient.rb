@@ -26,8 +26,6 @@ module WEACEInstall
 
         rError, lProviderEnv = getProviderEnv('Slave', @ProviderID, @AdditionalParameters)
         if (rError == nil)
-          # Store the way we retrieved the provider config in a file to be parsed for Adapters installations
-          saveProviderConfig('Slave', @ProviderID, @AdditionalParameters)
           if (lProviderEnv[:CGI] != nil)
             # Generate the cgi script that will give details about the installed WEACE Slave Adapters
             lShowComponentsFileName = "#{lProviderEnv[:CGI][:InternalDirectory]}/WEACE/ShowWEACESlaveInfo.cgi"

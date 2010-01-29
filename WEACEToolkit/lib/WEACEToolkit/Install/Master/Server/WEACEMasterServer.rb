@@ -26,8 +26,6 @@ module WEACEInstall
 
         rError, lProviderEnv = getProviderEnv('Master', @ProviderID, @AdditionalParameters)
         if (rError == nil)
-          # Store the way we retrieved the provider config in a file to be parsed for Adapters installations
-          saveProviderConfig('Master', @ProviderID, @AdditionalParameters)
           if (lProviderEnv[:CGI] != nil)
             # Generate the cgi script that will give details about the installed WEACE Master Adapters
             lShowComponentsFileName = "#{lProviderEnv[:CGI][:InternalDirectory]}/WEACE/ShowWEACEMasterInfo.cgi"

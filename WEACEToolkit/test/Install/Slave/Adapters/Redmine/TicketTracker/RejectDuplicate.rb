@@ -29,10 +29,10 @@ module WEACE
                 def testNormal
                   executeInstallAdapter(
                     [
-                      '--redminedir', '%{Repository}/redmine-0.8.2',
-                      '--rubygemslib', '%{Repository}/rubygems/lib',
-                      '--gems', '%{Repository}/rubygems/gems',
-                      '--mysql', '%{Repository}/mysql/lib'
+                      '--redminedir', '%{ProductDir}/redmine-0.8.2',
+                      '--rubygemslib', '%{ProductDir}/rubygems/lib',
+                      '--gems', '%{ProductDir}/rubygems/gems',
+                      '--mysql', '%{ProductDir}/mysql/lib'
                     ],
                     :ProductRepository => 'Virgin',
                     :ContextVars => {
@@ -47,10 +47,10 @@ module WEACE
                 def testDuplicate
                   executeInstallAdapter(
                     [
-                      '--redminedir', '%{Repository}/redmine-0.8.2',
-                      '--rubygemslib', '%{Repository}/rubygems/lib',
-                      '--gems', '%{Repository}/rubygems/gems',
-                      '--mysql', '%{Repository}/mysql/lib'
+                      '--redminedir', '%{ProductDir}/redmine-0.8.2',
+                      '--rubygemslib', '%{ProductDir}/rubygems/lib',
+                      '--gems', '%{ProductDir}/rubygems/gems',
+                      '--mysql', '%{ProductDir}/mysql/lib'
                     ],
                     :ProductRepository => 'Normal',
                     :ContextVars => {

@@ -29,7 +29,7 @@ module WEACE
                 def testNormal
                   executeInstallAdapter(
                     [
-                      '--mediawikidir', '%{Repository}/wiki'
+                      '--mediawikidir', '%{ProductDir}/wiki'
                     ],
                     :ProductRepository => 'Virgin',
                     :ContextVars => {
@@ -44,7 +44,7 @@ module WEACE
                 def testDuplicate
                   executeInstallAdapter(
                     [
-                      '--mediawikidir', '%{Repository}/wiki'
+                      '--mediawikidir', '%{ProductDir}/wiki'
                     ],
                     :ProductRepository => 'Normal',
                     :ContextVars => {
