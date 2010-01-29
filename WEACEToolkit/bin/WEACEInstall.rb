@@ -427,9 +427,11 @@ module WEACEInstall
     # * *iParameters* (<em>list<String></em>): The additional parameters given to this component's installation
     # * *iProviderEnv* (<em>map<Symbol,Object></em>): The Provider's environment, or nil if not applicable
     # * *iAdditionalRegistrationInfo* (<em>map<Symbol,String></em>): Additional registration info to add to the installation info [optional = {}]
+    # * *iProductConfig* (<em>map<Symbol,String></em>): Corresponding Product's configuration This is used to instantiate @ProductConfig variable in the installation plugin. [optional = nil]
+    # * *iToolConfig* (<em>map<Symbol,String></em>): Corresponding Tool's configuration. This is used to instantiate @ToolConfig variable in the installation plugin. [optional = nil]
     # Return:
     # * _Exception_: An error, or nil in case of success
-    def installComponent(iComponentName, iPluginCategory, iPluginName, iParameters, iProviderEnv, iAdditionalRegistrationInfo = {} )
+    def installComponent(iComponentName, iPluginCategory, iPluginName, iParameters, iProviderEnv, iAdditionalRegistrationInfo = {}, iProductConfig = nil, iToolConfig = nil)
       rError = nil
 
       # Check that such a component does not exist yet
@@ -450,6 +452,12 @@ module WEACEInstall
             ioPlugin.instance_variable_set(:@AdditionalParameters, lAdditionalArgs)
             if (iProviderEnv != nil)
               ioPlugin.instance_variable_set(:@ProviderEnv, iProviderEnv)
+            end
+            if (iProductConfig != nil)
+              ioPlugin.instance_variable_set(:@ProductConfig, iProductConfig)
+            end
+            if (iToolConfig != nil)
+              ioPlugin.instance_variable_set(:@ToolConfig, iToolConfig)
             end
             # Give variables that are part of the installation
             iAdditionalRegistrationInfo.each do |iSymbol, iObject|
@@ -603,12 +611,15 @@ module WEACEInstall
     # * _Exception_: An error, or nil in case of success
     def installMasterProcess(iProcessID, iProductName, iParameters)
       return checkInstalledProduct('Master', iProductName) do |iProviderEnv, iProductID|
+        lProductConfig = getInstalledComponentConfiguration(iProductName)
         next installComponent(
           "#{iProductName}.#{iProcessID}",
           "Master/Processes/#{iProductID}",
           iProcessID,
           iParameters,
-          iProviderEnv
+          iProviderEnv,
+          {},
+          lProductConfig
         )
       end
     end
@@ -668,12 +679,15 @@ module WEACEInstall
     # * _Exception_: An error, or nil in case of success
     def installSlaveTool(iToolID, iProductName, iParameters)
       return checkInstalledProduct('Slave', iProductName) do |iProviderEnv, iProductID|
+        lProductConfig = getInstalledComponentConfiguration(iProductName)
         next installComponent(
           "#{iProductName}.#{iToolID}",
           "Slave/Tools/#{iProductID}",
           iToolID,
           iParameters,
-          iProviderEnv
+          iProviderEnv,
+          {},
+          lProductConfig
         )
       end
     end
@@ -691,6 +705,8 @@ module WEACEInstall
       return checkInstalledProduct('Slave', iProductName) do |iProviderEnv, iProductID|
         lError = nil
 
+        lProductConfig = getInstalledComponentConfiguration(iProductName)
+        lToolConfig = getInstalledComponentConfiguration("#{iProductName}.#{iToolID}")
         # Then, check that the Tool is installed
         lComponentName = "#{iProductName}.#{iToolID}"
         lToolInstallInfo = getInstalledComponentDescription(lComponentName)
@@ -700,7 +716,10 @@ module WEACEInstall
             "Slave/Actions/#{iProductID}/#{iToolID}",
             iActionID,
             iParameters,
-            iProviderEnv
+            iProviderEnv,
+            {},
+            lProductConfig,
+            lToolConfig
           )
         else
           lError = MissingComponentError.new("You must first install the Tool #{iToolID} on the Slave Product #{iProductName} before installing any Action for this Tool.")

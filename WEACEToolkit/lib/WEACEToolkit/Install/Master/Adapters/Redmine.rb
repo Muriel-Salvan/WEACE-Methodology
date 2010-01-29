@@ -32,6 +32,19 @@ module WEACEInstall
           return performModify(true)
         end
 
+        # Get the default configuration
+        #
+        # Return:
+        # * _String_: The default configuration text to put in the configuration file.
+        def getDefaultConfig
+          return "
+{
+  \# Directory where Redmine is installed
+  :RedmineDir => '#{@RedmineDir}'
+}
+"
+        end
+
         private
 
         # Perform modifications or simulate them

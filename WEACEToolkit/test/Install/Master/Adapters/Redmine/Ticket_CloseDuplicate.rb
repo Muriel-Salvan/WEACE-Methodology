@@ -25,33 +25,45 @@ module WEACE
 
               # Test normal behaviour
               def testNormal
-                executeInstallAdapter(
-                  [
-                    '--redminedir', '%{ProductDir}/redmine-0.8.2',
-                    '--ruby', '/usr/bin/ruby'
-                  ],
-                  :ProductRepository => 'Virgin',
+                executeInstall( [ '--install', 'MasterProcess', '--process', 'Ticket_CloseDuplicate', '--on', 'RegRedmine' ],
+                  :AddRegressionMasterProviders => true,
+                  :Repository => 'MasterRedmineInstalled',
+                  :ProductRepository => 'Redmine/Master/Ticket_CloseDuplicate/Virgin',
                   :ContextVars => {
-                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                  }
+                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
+                    'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
+                  },
+                  :CheckComponentName => 'RegRedmine.Ticket_CloseDuplicate',
+                  :CheckInstallFile => {
+                    :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
+                    :Author => 'murielsalvan@users.sourceforge.net',
+                    :InstallationParameters => ''
+                  },
+                  :CheckConfigFile => {}
                 ) do |iError|
-                  compareWithRepository('Normal')
+                  compareWithRepository('Redmine/Master/Ticket_CloseDuplicate/Normal')
                 end
               end
 
               # Test duplicate behaviour
               def testDuplicate
-                executeInstallAdapter(
-                  [
-                    '--redminedir', '%{ProductDir}/redmine-0.8.2',
-                    '--ruby', '/usr/bin/ruby'
-                  ],
-                  :ProductRepository => 'Normal',
+                executeInstall( [ '--install', 'MasterProcess', '--process', 'Ticket_CloseDuplicate', '--on', 'RegRedmine' ],
+                  :AddRegressionMasterProviders => true,
+                  :Repository => 'MasterRedmineInstalled',
+                  :ProductRepository => 'Redmine/Master/Ticket_CloseDuplicate/Normal',
                   :ContextVars => {
-                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                  }
+                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
+                    'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
+                  },
+                  :CheckComponentName => 'RegRedmine.Ticket_CloseDuplicate',
+                  :CheckInstallFile => {
+                    :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
+                    :Author => 'murielsalvan@users.sourceforge.net',
+                    :InstallationParameters => ''
+                  },
+                  :CheckConfigFile => {}
                 ) do |iError|
-                  compareWithRepository('Normal')
+                  compareWithRepository('Redmine/Master/Ticket_CloseDuplicate/Normal')
                 end
               end
 

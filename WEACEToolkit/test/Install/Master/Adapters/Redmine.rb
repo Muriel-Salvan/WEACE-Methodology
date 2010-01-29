@@ -34,7 +34,9 @@ module WEACE
                   :Product => 'Redmine',
                   :Type => 'Master'
                 },
-                :CheckConfigFile => {}
+                :CheckConfigFile => {
+                  :RedmineDir => '%{ProductDir}/redmine-0.8.2'
+                }
               ) do |iError|
                 compareWithRepository('Redmine/Master/Normal')
               end
@@ -58,7 +60,9 @@ module WEACE
                   :Product => 'Redmine',
                   :Type => 'Master'
                 },
-                :CheckConfigFile => {}
+                :CheckConfigFile => {
+                  :RedmineDir => '%{ProductDir}/redmine-0.8.2'
+                }
               ) do |iError|
                 compareWithRepository('Redmine/Master/Normal')
               end
