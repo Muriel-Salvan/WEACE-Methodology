@@ -23,14 +23,6 @@ module WEACEInstall
   class ComponentAlreadyInstalledError < RuntimeError
   end
 
-  # Error raised when attempting to install components depending on WEACE Master Server
-  class MissingWEACEMasterServerError < RuntimeError
-  end
-
-  # Error raised when attempting to install components depending on WEACE Slave Client
-  class MissingWEACESlaveClientError < RuntimeError
-  end
-
   # Error raised when we can't access a Provider
   class ProviderError < RuntimeError
   end

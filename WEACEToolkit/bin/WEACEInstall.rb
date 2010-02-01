@@ -30,8 +30,24 @@ module WEACEInstall
     class AlreadyInstalledComponentError < RuntimeError
     end
 
-    # Error used to indicate that a Component is missing
-    class MissingComponentError < RuntimeError
+    # Error used to indicate that a Master Product is missing
+    class MissingMasterProductError < RuntimeError
+    end
+
+    # Error used to indicate that a Slave Product is missing
+    class MissingSlaveProductError < RuntimeError
+    end
+
+    # Error raised when attempting to install components depending on WEACE Master Server
+    class MissingWEACEMasterServerError < RuntimeError
+    end
+
+    # Error raised when attempting to install components depending on WEACE Slave Client
+    class MissingWEACESlaveClientError < RuntimeError
+    end
+
+    # Error used to indicate that a Slave Tool is missing
+    class MissingSlaveToolError < RuntimeError
     end
 
     # Constructor
@@ -58,50 +74,8 @@ module WEACEInstall
       # Read plugins
       require 'rUtilAnts/Plugins'
       @PluginsManager = RUtilAnts::Plugins::PluginsManager.new
-      # Master Server
-      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/Install/Master/Server", 'WEACEInstall::Master')
-      # Master Providers
-      parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
-      # Master Adapters
-      # Master Products
-      parseWEACEPluginsFromDir('Master/Products', "#{@WEACELibDir}/Install/Master/Adapters", 'WEACEInstall::Master::Adapters', false)
-      Dir.glob("#{@WEACELibDir}/Install/Master/Adapters/*").each do |iProductDirName|
-        if (File.directory?(iProductDirName))
-          lProductID = File.basename(iProductDirName)
-          # Master Processes
-          parseWEACEPluginsFromDir("Master/Processes/#{lProductID}", "#{@WEACELibDir}/Install/Master/Adapters/#{lProductID}", "WEACEInstall::Master::Adapters::#{lProductID}")
-          # Register this product/tool category
-          @MasterAdapters[lProductID] = nil
-        end
-      end
-      # Slave Providers
-      parseWEACEPluginsFromDir('Slave/Providers', "#{@WEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
-      # Slave Client
-      parseWEACEPluginsFromDir('Slave/Client', "#{@WEACELibDir}/Install/Slave/Client", 'WEACEInstall::Slave')
-      # Slave Adapters
-      # Slave Products
-      parseWEACEPluginsFromDir('Slave/Products', "#{@WEACELibDir}/Install/Slave/Adapters", 'WEACEInstall::Slave::Adapters', false)
-      Dir.glob("#{@WEACELibDir}/Install/Slave/Adapters/*").each do |iProductDirName|
-        if (File.directory?(iProductDirName))
-          lProductID = File.basename(iProductDirName)
-          # Slave Tools
-          parseWEACEPluginsFromDir("Slave/Tools/#{lProductID}", "#{@WEACELibDir}/Install/Slave/Adapters/#{lProductID}", "WEACEInstall::Slave::Adapters::#{lProductID}", false)
-          Dir.glob("#{iProductDirName}/*").each do |iToolDirName|
-            if (File.directory?(iToolDirName))
-              lToolID = File.basename(iToolDirName)
-              # Slave Actions
-              parseWEACEPluginsFromDir("Slave/Actions/#{lProductID}/#{lToolID}", "#{@WEACELibDir}/Install/Slave/Adapters/#{lProductID}/#{lToolID}", "WEACEInstall::Slave::Adapters::#{lProductID}::#{lToolID}")
-              # Register this product/tool category
-              if (@SlaveAdapters[lProductID] == nil)
-                @SlaveAdapters[lProductID] = {}
-              end
-              @SlaveAdapters[lProductID][lToolID] = nil
-            end
-          end
-        end
-      end
-      # Slave Listeners
-      parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+      parseMasterPlugins
+      parseSlavePlugins
     end
 
     # Execute the installer
@@ -234,6 +208,58 @@ module WEACEInstall
 
     private
     
+    # Parse Master plugins
+    def parseMasterPlugins
+      # Master Server
+      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/Install/Master/Server", 'WEACEInstall::Master')
+      # Master Providers
+      parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+      # Master Adapters
+      # Master Products
+      parseWEACEPluginsFromDir('Master/Products', "#{@WEACELibDir}/Install/Master/Adapters", 'WEACEInstall::Master::Adapters', false)
+      Dir.glob("#{@WEACELibDir}/Install/Master/Adapters/*").each do |iProductDirName|
+        if (File.directory?(iProductDirName))
+          lProductID = File.basename(iProductDirName)
+          # Master Processes
+          parseWEACEPluginsFromDir("Master/Processes/#{lProductID}", "#{@WEACELibDir}/Install/Master/Adapters/#{lProductID}", "WEACEInstall::Master::Adapters::#{lProductID}")
+          # Register this product/tool category
+          @MasterAdapters[lProductID] = nil
+        end
+      end
+    end
+
+    # Parse Slave plugins
+    def parseSlavePlugins
+      # Slave Providers
+      parseWEACEPluginsFromDir('Slave/Providers', "#{@WEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+      # Slave Client
+      parseWEACEPluginsFromDir('Slave/Client', "#{@WEACELibDir}/Install/Slave/Client", 'WEACEInstall::Slave')
+      # Slave Adapters
+      # Slave Products
+      parseWEACEPluginsFromDir('Slave/Products', "#{@WEACELibDir}/Install/Slave/Adapters", 'WEACEInstall::Slave::Adapters', false)
+      Dir.glob("#{@WEACELibDir}/Install/Slave/Adapters/*").each do |iProductDirName|
+        if (File.directory?(iProductDirName))
+          lProductID = File.basename(iProductDirName)
+          # Slave Tools
+          parseWEACEPluginsFromDir("Slave/Tools/#{lProductID}", "#{@WEACELibDir}/Install/Slave/Adapters/#{lProductID}", "WEACEInstall::Slave::Adapters::#{lProductID}", false)
+          Dir.glob("#{iProductDirName}/*").each do |iToolDirName|
+            if (File.directory?(iToolDirName))
+              lToolID = File.basename(iToolDirName)
+              # Slave Actions
+              parseWEACEPluginsFromDir("Slave/Actions/#{lProductID}/#{lToolID}", "#{@WEACELibDir}/Install/Slave/Adapters/#{lProductID}/#{lToolID}", "WEACEInstall::Slave::Adapters::#{lProductID}::#{lToolID}")
+              # Register this product/tool category
+              if (@SlaveAdapters[lProductID] == nil)
+                @SlaveAdapters[lProductID] = {}
+              end
+              @SlaveAdapters[lProductID][lToolID] = nil
+            end
+          end
+        end
+      end
+      # Slave Listeners
+      parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
+    end
+
     # Output information of a component
     #
     # Parameters:
@@ -508,10 +534,13 @@ module WEACEInstall
       rError = nil
 
       lComponentName = nil
+      lErrorClass = nil
       if (iType == 'Master')
         lComponentName = 'MasterServer'
+        lErrorClass = MissingWEACEMasterServerError
       else
         lComponentName = 'SlaveClient'
+        lErrorClass = MissingWEACESlaveClientError
       end
       # First, check that SlaveClient is installed
       lSlaveClientInstallInfo = getInstalledComponentDescription(lComponentName)
@@ -522,7 +551,7 @@ module WEACEInstall
           yield(lProviderEnv)
         end
       else
-        rError = MissingComponentError.new("You must first install component #{lComponentName} before installing other #{iType} Components.")
+        rError = lErrorClass.new("You must first install component #{lComponentName} before installing other #{iType} Components.")
       end
 
       return rError
@@ -549,7 +578,11 @@ module WEACEInstall
         if (lProductInstallInfo != nil)
           lError = yield(iProviderEnv, lProductInstallInfo[:Product])
         else
-          lError = MissingComponentError.new("You must first install a Slave Product as #{iProductName} before installing any Tool on this Slave Product.")
+          if (iType == 'Master')
+            lError = MissingMasterProductError.new("You must first install a #{iType} Product as #{iProductName} before installing any Tool on this #{iType} Product.")
+          else
+            lError = MissingSlaveProductError.new("You must first install a #{iType} Product as #{iProductName} before installing any Tool on this #{iType} Product.")
+          end
         end
 
         next lError
@@ -722,7 +755,7 @@ module WEACEInstall
             lToolConfig
           )
         else
-          lError = MissingComponentError.new("You must first install the Tool #{iToolID} on the Slave Product #{iProductName} before installing any Action for this Tool.")
+          lError = MissingSlaveToolError.new("You must first install the Tool #{iToolID} on the Slave Product #{iProductName} before installing any Action for this Tool.")
         end
 
         next lError
@@ -748,6 +781,7 @@ module WEACEInstall
 * MasterProcess => -c|--process <ProcessID> -o|--on <ProductName>
 
 <ComponentParameters> depends on each different component being installed. Please use --detailedlist to know their signatures.
+
 '
       # Options are defined here
       rOptions.on('-h', '--help',
@@ -792,7 +826,7 @@ module WEACEInstall
       end
       rOptions.on('-s', '--as <ProductName>', String,
         '<ProductName>: Alias to give the Product\'s installation. This alias will then be used to install further Adapters on this Product.',
-        'Specify the name of this Product\s installation to be referenced later.') do |iArg|
+        'Specify the name of this Product\'s installation to be referenced later.') do |iArg|
         @AsProductName = iArg
       end
       rOptions.on('-t', '--tool <ToolID>', String,

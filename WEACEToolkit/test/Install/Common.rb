@@ -271,12 +271,8 @@ module WEACE
                   @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
 
                   if (lAddRegressionMasterAdapters)
-                    # Get the current adapters
-                    lCurrentAdapters = @Installer.instance_variable_get(:@MasterAdapters)
                     # Parse for the regression adapters
-                    @Installer.send(:parseAdapters, 'Master', lCurrentAdapters)
-                    # Change the adapters with the newly parsed ones
-                    @Installer.instance_variable_set(:@MasterAdapters, lCurrentAdapters)
+                    @Installer.send(:parseMasterPlugins)
                   end
 
                   if (lAddRegressionSlaveAdapters)
@@ -357,7 +353,6 @@ module WEACE
             else
               rError = @Installer.execute(lRealParams)
             end
-            #p rError
           rescue Exception
             # This way exception is shown on screen for better understanding
             assert_equal(nil, $!)
@@ -365,6 +360,14 @@ module WEACE
 
           # Check
           if (lExpectedErrorClass == nil)
+            if (rError != nil)
+              logErr "Unexpected error: #{rError.class}: #{rError}"
+              if (rError.backtrace == nil)
+                logErr 'No backtrace'
+              else
+                logErr rError.backtrace.join("\n")
+              end
+            end
             assert_equal(nil, rError)
             # Check that the Component has been installed as required
             if (lCheckComponentName != nil)
@@ -403,6 +406,14 @@ module WEACE
               end
             end
           else
+            if (!rError.kind_of?(lExpectedErrorClass))
+              logErr "Unexpected error: #{rError.class}: #{rError}"
+              if (rError.backtrace == nil)
+                logErr 'No backtrace'
+              else
+                logErr rError.backtrace.join("\n")
+              end
+            end
             assert(rError.kind_of?(lExpectedErrorClass))
           end
           if (iCheckCode != nil)
