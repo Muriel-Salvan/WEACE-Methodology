@@ -15,18 +15,20 @@ module WEACEInstall
   
       class DummyProduct
       
-        class DummyProcess
+        class DummyProcessWithParams
 
           # Check if we can install
           #
           # Return:
           # * _Exception_: An error, or nil in case of success
           def check
-            if ($Variables[:DummyProduct_DummyProcess_Calls] == nil)
-              $Variables[:DummyProduct_DummyProcess_Calls] = []
+            if ($Variables[:DummyProduct_DummyProcessWithParams_Calls] == nil)
+              $Variables[:DummyProduct_DummyProcessWithParams_Calls] = []
             end
-            $Variables[:DummyProduct_DummyProcess_Calls] << [ 'check', [] ]
-            $Variables[:DummyProduct_DummyProcess_AdditionalParams] = @AdditionalParameters
+            $Variables[:DummyProduct_DummyProcessWithParams_Calls] << [ 'check', [] ]
+            if (defined?(@DummyFlag))
+              $Variables[:DummyProduct_DummyProcessWithParams_DummyFlag] = @DummyFlag
+            end
 
             return nil
           end
@@ -37,10 +39,10 @@ module WEACEInstall
           # Return:
           # * _Exception_: An error, or nil in case of success
           def execute
-            if ($Variables[:DummyProduct_DummyProcess_Calls] == nil)
-              $Variables[:DummyProduct_DummyProcess_Calls] = []
+            if ($Variables[:DummyProduct_DummyProcessWithParams_Calls] == nil)
+              $Variables[:DummyProduct_DummyProcessWithParams_Calls] = []
             end
-            $Variables[:DummyProduct_DummyProcess_Calls] << [ 'execute', [] ]
+            $Variables[:DummyProduct_DummyProcessWithParams_Calls] << [ 'execute', [] ]
 
             return nil
           end
@@ -50,10 +52,10 @@ module WEACEInstall
           # Return:
           # * _String_: The default configuration text to put in the configuration file.
           def getDefaultConfig
-            if ($Variables[:DummyProduct_DummyProcess_Calls] == nil)
-              $Variables[:DummyProduct_DummyProcess_Calls] = []
+            if ($Variables[:DummyProduct_DummyProcessWithParams_Calls] == nil)
+              $Variables[:DummyProduct_DummyProcessWithParams_Calls] = []
             end
-            $Variables[:DummyProduct_DummyProcess_Calls] << [ 'getDefaultConfig', [] ]
+            $Variables[:DummyProduct_DummyProcessWithParams_Calls] << [ 'getDefaultConfig', [] ]
 
             return "{}"
           end

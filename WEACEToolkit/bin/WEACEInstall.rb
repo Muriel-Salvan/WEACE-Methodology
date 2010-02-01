@@ -218,10 +218,10 @@ module WEACEInstall
     
     # Parse Master plugins
     def parseMasterPlugins
-      # Master Server
-      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/Install/Master/Server", 'WEACEInstall::Master')
       # Master Providers
       parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
+      # Master Server
+      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/Install/Master/Server", 'WEACEInstall::Master')
       # Master Adapters
       # Master Products
       parseWEACEPluginsFromDir('Master/Products', "#{@WEACELibDir}/Install/Master/Adapters", 'WEACEInstall::Master::Adapters', false)

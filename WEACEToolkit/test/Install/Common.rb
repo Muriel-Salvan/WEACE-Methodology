@@ -270,7 +270,8 @@ module WEACE
                   lOldWEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
                   @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
 
-                  if (lAddRegressionMasterAdapters)
+                  if (lAddRegressionMasterAdapters or
+                      lAddRegressionMasterProviders)
                     # Parse for the regression adapters
                     @Installer.send(:parseMasterPlugins)
                   end
@@ -286,11 +287,6 @@ module WEACE
 
                   if (lAddRegressionSlaveListeners)
                     @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
-                  end
-
-                  if (lAddRegressionMasterProviders or
-                      lAddRegressionMasterAdapters)
-                    @Installer.send(:parseWEACEPluginsFromDir, 'Master/Providers', "#{lNewWEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
                   end
 
                   if (lAddRegressionSlaveProviders or
