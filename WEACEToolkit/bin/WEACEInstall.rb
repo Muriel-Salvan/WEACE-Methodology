@@ -383,6 +383,7 @@ module WEACEInstall
     # * *iParameters* (<em>list<String></em>): The additional parameters given to this component's installer
     def generateConfigFile(iComponentName, iDefaultConfContent, iParameters)
       lConfFileName = getConfigFileName(iComponentName)
+      logDebug "Generate configuration file #{lConfFileName} for #{iComponentName} ..."
       if (File.exists?(lConfFileName))
         logWarn "Configuration file #{lConfFileName} already exists. Will not overwrite it."
       else
@@ -413,7 +414,7 @@ module WEACEInstall
     # * *iAdditionalRegistrationInfo* (<em>map<Symbol,String></em>): Additional registration info to add to the installation info [optional = {}]
     def generateInstallFile(iComponentName, iDescription, iParameters, iAdditionalRegistrationInfo)
       lFileName = getInstallFileName(iComponentName)
-      logDebug "Register #{iComponentName} in file #{lFileName} ..."
+      logDebug "Generate installation file #{lFileName} for #{iComponentName} ..."
       # Create the repository if needed
       lDirName = File.dirname(lFileName)
       if (!File.exists?(lDirName))
@@ -460,6 +461,11 @@ module WEACEInstall
     def installComponent(iComponentName, iPluginCategory, iPluginName, iParameters, iProviderEnv, iAdditionalRegistrationInfo = {}, iProductConfig = nil, iToolConfig = nil)
       rError = nil
 
+      logDebug "Install Component #{iComponentName} from plugin #{iPluginCategory}/#{iPluginName} with parameters \"#{iParameters.join(' ')}\""
+      logDebug "Provider environment: #{iProviderEnv.inspect}"
+      logDebug "Additional installation info: #{iAdditionalRegistrationInfo.inspect}"
+      logDebug "Product configuration: #{iProductConfig.inspect}"
+      logDebug "Tool configuration: #{iToolConfig.inspect}"
       # Check that such a component does not exist yet
       lComponentInstallInfo = getInstalledComponentDescription(iComponentName)
       if ((@ForceMode) or
@@ -548,7 +554,7 @@ module WEACEInstall
         # Read the Slave Provider config
         rError, lProviderEnv = getProviderEnv(iType, lSlaveClientInstallInfo[:ProviderID], lSlaveClientInstallInfo[:InstallationParameters])
         if (rError == nil)
-          yield(lProviderEnv)
+          rError = yield(lProviderEnv)
         end
       else
         rError = lErrorClass.new("You must first install component #{lComponentName} before installing other #{iType} Components.")

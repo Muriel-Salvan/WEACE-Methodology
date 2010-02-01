@@ -8,6 +8,6 @@
 # ** :Description (_String_): Quick description
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
-  :Description => 'This adapter is used for test purposes only.',
+  :Description => 'This Process is used for WEACE Regression only.',
   :Author => 'murielsalvan@users.sourceforge.net'
 }

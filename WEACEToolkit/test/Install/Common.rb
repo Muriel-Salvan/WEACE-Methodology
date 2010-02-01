@@ -406,7 +406,9 @@ module WEACE
               end
             end
           else
-            if (!rError.kind_of?(lExpectedErrorClass))
+            if (rError == nil)
+              logErr 'Unexpected success.'
+            elsif (!rError.kind_of?(lExpectedErrorClass))
               logErr "Unexpected error: #{rError.class}: #{rError}"
               if (rError.backtrace == nil)
                 logErr 'No backtrace'
