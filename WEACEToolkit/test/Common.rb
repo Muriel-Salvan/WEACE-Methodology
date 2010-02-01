@@ -236,27 +236,34 @@ module WEACE
         if (lMatchData == nil)
           lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)$/)
           if (lMatchData == nil)
-            lMatchData = lClassName.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
+            lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)$/)
             if (lMatchData == nil)
-              lMatchData = lClassName.match(/^WEACE::Test::Install::Slave::Listeners::(.*)$/)
+              lMatchData = lClassName.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
               if (lMatchData == nil)
-                lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Providers::(.*)$/)
+                lMatchData = lClassName.match(/^WEACE::Test::Install::Slave::Listeners::(.*)$/)
                 if (lMatchData == nil)
-                  logDebug "Unable to parse test case name: #{lClassName}."
+                  lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Providers::(.*)$/)
+                  if (lMatchData == nil)
+                    logDebug "Unable to parse test case name: #{lClassName}."
+                  else
+                    @Type, @ScriptID = lMatchData[1..2]
+                    @ComponentType = 'Providers'
+                    @InstallTest = true
+                  end
                 else
-                  @Type, @ScriptID = lMatchData[1..2]
-                  @ComponentType = 'Providers'
+                  @ScriptID = lMatchData[1]
+                  @Type = 'Slave'
+                  @ComponentType = 'Listeners'
                   @InstallTest = true
                 end
               else
-                @ScriptID = lMatchData[1]
-                @Type = 'Slave'
-                @ComponentType = 'Listeners'
-                @InstallTest = true
+                @Type, @ProductID, @ToolID, @ScriptID = lMatchData[1..4]
+                @InstallTest = false
+                @ComponentType = 'Adapters'
               end
             else
-              @Type, @ProductID, @ToolID, @ScriptID = lMatchData[1..4]
-              @InstallTest = false
+              @Type, @ProductID = lMatchData[1..2]
+              @InstallTest = true
               @ComponentType = 'Adapters'
             end
           else

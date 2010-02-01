@@ -26,21 +26,21 @@ require 'Master/Common'
 require 'Slave/Common'
 require 'Slave/Adapters/Common'
 (
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Providers/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/**/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Providers/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Senders/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Slave/Client/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Slave/Adapters/*/*/*.rb")
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/**/*.rb")
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Providers/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Senders/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Slave/Client/*.rb") +
+#  Dir.glob("#{File.dirname(__FILE__)}/Slave/Adapters/*/*/*.rb")
 ).each do |iFileName|
   require iFileName
 end

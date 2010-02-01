@@ -62,6 +62,30 @@ module WEACE
             end
           end
 
+          # Test installing a Master Process (short version)
+          def testMasterProcessShort
+            executeInstall(['--install', 'MasterProcess', '-c', 'DummyProcess', '-o', 'RegProduct'],
+              :Repository => 'MasterProductInstalled',
+              :AddRegressionMasterAdapters => true,
+              :CheckComponentName => 'RegProduct.DummyProcess',
+              :CheckInstallFile => {
+                :Description => 'This Process is used for WEACE Regression only.',
+                :Author => 'murielsalvan@users.sourceforge.net',
+                :InstallationParameters => ''
+               },
+              :CheckConfigFile => {}
+            ) do |iError|
+              assert_equal(
+                [
+                  [ 'check', [] ],
+                  [ 'execute', [] ],
+                  [ 'getDefaultConfig', [] ]
+                ],
+                $Variables[:DummyProduct_DummyProcess_Calls]
+              )
+            end
+          end
+
         end
 
       end

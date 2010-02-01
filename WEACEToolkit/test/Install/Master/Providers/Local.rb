@@ -23,7 +23,12 @@ module WEACE
             # Parameters:
             # * *iProviderEnv* (<em>map<Symbol,Object></em>): The Provider environment to check.
             def checkEnvironment(iProviderEnv)
-              assert_equal({}, iProviderEnv)
+              assert_equal(
+                {
+                  :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb'
+                },
+                iProviderEnv
+              )
             end
 
           end

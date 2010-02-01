@@ -50,7 +50,32 @@ module WEACE
                 ],
                 $Variables[:DummyProduct_Calls]
               )
+            end
+          end
 
+          # Test installing a Master Product (short version)
+          def testMasterProductShort
+            executeInstall(['--install', 'MasterProduct', '-r', 'DummyProduct', '-s', 'RegProduct'],
+              :Repository => 'MasterServerInstalled',
+              :AddRegressionMasterAdapters => true,
+              :CheckComponentName => 'RegProduct',
+              :CheckInstallFile => {
+                :Description => 'Dummy Product used in WEACE Regression.',
+                :Author => 'murielsalvan@users.sourceforge.net',
+                :InstallationParameters => '',
+                :Product => 'DummyProduct',
+                :Type => 'Master'
+               },
+              :CheckConfigFile => {}
+            ) do |iError|
+              assert_equal(
+                [
+                  [ 'check', [] ],
+                  [ 'execute', [] ],
+                  [ 'getDefaultConfig', [] ]
+                ],
+                $Variables[:DummyProduct_Calls]
+              )
             end
           end
 

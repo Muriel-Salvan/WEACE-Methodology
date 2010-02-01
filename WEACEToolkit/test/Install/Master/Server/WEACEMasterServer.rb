@@ -92,7 +92,7 @@ module WEACE
 
             # Test installing the Master Server with a Provider having some parameters values
             def testMasterServerWithProviderHavingParametersValues
-              executeInstall(['--install', 'Master/Server/WEACEMasterServer', '--', '--provider', 'DummyMasterProviderWithParamsValues', '--', '--dummyvar', 'testvalue'],
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProviderWithParamsValues', '--', '--dummyvar', 'testvalue'],
                 :AddRegressionMasterProviders => true,
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {

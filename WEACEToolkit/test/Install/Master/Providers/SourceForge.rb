@@ -36,6 +36,7 @@ module WEACE
             def checkEnvironment(iProviderEnv)
               assert_equal(
                 {
+                  :WEACEExecuteCmd => '/usr/bin/ruby -w WEACEExecute.rb',
                   :CGI => {
                     :InternalDirectory => "/home/groups/m/my/myproject/cgi-bin",
                     :URL => "http://myproject.sourceforge.net/cgi-bin"
