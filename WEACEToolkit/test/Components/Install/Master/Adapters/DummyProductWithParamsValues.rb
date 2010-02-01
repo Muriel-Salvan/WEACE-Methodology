@@ -9,18 +9,20 @@ module WEACEInstall
 
     module Adapters
 
-      class DummyProduct
+      class DummyProductWithParamsValues
 
         # Check if we can install
         #
         # Return:
         # * _Exception_: An error, or nil in case of success
         def check
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductWithParamsValues_Calls] == nil)
+            $Variables[:DummyProductWithParamsValues_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'check', [] ]
-          $Variables[:DummyProduct_AdditionalParams] = @AdditionalParameters
+          $Variables[:DummyProductWithParamsValues_Calls] << [ 'check', [] ]
+          if (defined?(@DummyVar))
+            $Variables[:DummyProductWithParamsValues_DummyVar] = @DummyVar
+          end
 
           return nil
         end
@@ -31,10 +33,10 @@ module WEACEInstall
         # Return:
         # * _Exception_: An error, or nil in case of success
         def execute
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductWithParamsValues_Calls] == nil)
+            $Variables[:DummyProductWithParamsValues_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'execute', [] ]
+          $Variables[:DummyProductWithParamsValues_Calls] << [ 'execute', [] ]
 
           return nil
         end
@@ -44,10 +46,10 @@ module WEACEInstall
         # Return:
         # * _String_: The default configuration text to put in the configuration file.
         def getDefaultConfig
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductWithParamsValues_Calls] == nil)
+            $Variables[:DummyProductWithParamsValues_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'getDefaultConfig', [] ]
+          $Variables[:DummyProductWithParamsValues_Calls] << [ 'getDefaultConfig', [] ]
 
           return "{}"
         end

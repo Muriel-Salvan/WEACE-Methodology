@@ -86,6 +86,109 @@ module WEACE
             end
           end
 
+          # Test installing a Master Process twice
+          def testMasterProcessTwice
+            executeInstall(['--install', 'MasterProcess', '--process', 'DummyProcess', '--on', 'RegProduct'],
+              :Repository => 'MasterProcessInstalled',
+              :AddRegressionMasterAdapters => true,
+              :Error => WEACEInstall::Installer::AlreadyInstalledComponentError
+            ) do |iError|
+              assert_equal(nil, $Variables[:DummyProduct_DummyProcess_Calls])
+            end
+          end
+
+          # Test installing a Master Process twice with force option
+          def testMasterProcessTwiceForce
+            executeInstall(['--install', 'MasterProcess', '--force', '--process', 'DummyProcess', '--on', 'RegProduct'],
+              :Repository => 'MasterProcessInstalled',
+              :AddRegressionMasterAdapters => true,
+              :CheckComponentName => 'RegProduct.DummyProcess',
+              :CheckInstallFile => {
+                :Description => 'This Process is used for WEACE Regression only.',
+                :Author => 'murielsalvan@users.sourceforge.net',
+                :InstallationParameters => ''
+               },
+              :CheckConfigFile => {}
+            ) do |iError|
+              assert_equal(
+                [
+                  [ 'check', [] ],
+                  [ 'execute', [] ],
+                  [ 'getDefaultConfig', [] ]
+                ],
+                $Variables[:DummyProduct_DummyProcess_Calls]
+              )
+            end
+          end
+
+          # Test installing a Master Process twice with force option (short version)
+          def testMasterProcessTwiceForceShort
+            executeInstall(['--install', 'MasterProcess', '-f', '--process', 'DummyProcess', '--on', 'RegProduct'],
+              :Repository => 'MasterProcessInstalled',
+              :AddRegressionMasterAdapters => true,
+              :CheckComponentName => 'RegProduct.DummyProcess',
+              :CheckInstallFile => {
+                :Description => 'This Process is used for WEACE Regression only.',
+                :Author => 'murielsalvan@users.sourceforge.net',
+                :InstallationParameters => ''
+               },
+              :CheckConfigFile => {}
+            ) do |iError|
+              assert_equal(
+                [
+                  [ 'check', [] ],
+                  [ 'execute', [] ],
+                  [ 'getDefaultConfig', [] ]
+                ],
+                $Variables[:DummyProduct_DummyProcess_Calls]
+              )
+            end
+          end
+
+          # Test installing a Master Process without --process option
+          def testMasterProcessWithoutProcess
+            executeInstall(['--install', 'MasterProcess', '--on', 'RegProduct'],
+              :Repository => 'MasterProductInstalled',
+              :AddRegressionMasterAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:DummyProduct_DummyProcess_Calls])
+            end
+          end
+
+          # Test installing a Master Process without --process argument
+          def testMasterProcessWithoutProcessArg
+            executeInstall(['--install', 'MasterProcess', '--process', '--on', 'RegProduct'],
+              :Repository => 'MasterProductInstalled',
+              :AddRegressionMasterAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:DummyProduct_DummyProcess_Calls])
+            end
+          end
+
+          # Test installing a Master Process without --on option
+          def testMasterProcessWithoutOn
+            executeInstall(['--install', 'MasterProcess', '--process', 'DummyProcess'],
+              :Repository => 'MasterProductInstalled',
+              :AddRegressionMasterAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:DummyProduct_DummyProcess_Calls])
+            end
+          end
+
+          # Test installing a Master Process without --on argument
+          def testMasterProcessWithoutOnArg
+            executeInstall(['--install', 'MasterProcess', '--process', 'DummyProcess', '--on'],
+              :Repository => 'MasterProductInstalled',
+              :AddRegressionMasterAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:DummyProduct_DummyProcess_Calls])
+            end
+          end
+
         end
 
       end

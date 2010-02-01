@@ -105,17 +105,17 @@ module WEACE
 
           # Test install an unknown component
           def testInstallUnknownComponent
-            executeInstall(['--install','UnknownComponentNameForTest'], :Error => WEACEInstall::UnknownComponentError)
+            executeInstall(['--install','UnknownComponentNameForTest'], :Error => WEACEInstall::Installer::UnknownComponentError)
           end
 
           # Test install an unknown component with force option
           def testInstallUnknownComponentWithForce
-            executeInstall(['--install','UnknownComponentNameForTest','--force'], :Error => WEACEInstall::UnknownComponentError)
+            executeInstall(['--install','UnknownComponentNameForTest','--force'], :Error => WEACEInstall::Installer::UnknownComponentError)
           end
 
           # Test install an unknown component with force option (short version)
           def testInstallUnknownComponentWithForceShort
-            executeInstall(['--install','UnknownComponentNameForTest','-f'], :Error => WEACEInstall::UnknownComponentError)
+            executeInstall(['--install','UnknownComponentNameForTest','-f'], :Error => WEACEInstall::Installer::UnknownComponentError)
           end
 
         end

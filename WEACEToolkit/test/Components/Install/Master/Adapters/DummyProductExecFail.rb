@@ -9,18 +9,21 @@ module WEACEInstall
 
     module Adapters
 
-      class DummyProduct
+      class DummyProductExecFail
+
+        # Error thrown by check
+        class ExecError < RuntimeError
+        end
 
         # Check if we can install
         #
         # Return:
         # * _Exception_: An error, or nil in case of success
         def check
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductExecFail_Calls] == nil)
+            $Variables[:DummyProductExecFail_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'check', [] ]
-          $Variables[:DummyProduct_AdditionalParams] = @AdditionalParameters
+          $Variables[:DummyProductExecFail_Calls] << [ 'check', [] ]
 
           return nil
         end
@@ -31,12 +34,12 @@ module WEACEInstall
         # Return:
         # * _Exception_: An error, or nil in case of success
         def execute
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductExecFail_Calls] == nil)
+            $Variables[:DummyProductExecFail_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'execute', [] ]
+          $Variables[:DummyProductExecFail_Calls] << [ 'execute', [] ]
 
-          return nil
+          return ExecError.new('Error during execute')
         end
 
         # Get the default configuration
@@ -44,10 +47,10 @@ module WEACEInstall
         # Return:
         # * _String_: The default configuration text to put in the configuration file.
         def getDefaultConfig
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductExecFail_Calls] == nil)
+            $Variables[:DummyProductExecFail_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'getDefaultConfig', [] ]
+          $Variables[:DummyProductExecFail_Calls] << [ 'getDefaultConfig', [] ]
 
           return "{}"
         end

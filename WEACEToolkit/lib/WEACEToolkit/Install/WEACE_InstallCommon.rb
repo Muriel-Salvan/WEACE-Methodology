@@ -15,14 +15,6 @@ module WEACEInstall
   class CommandLineError < RuntimeError
   end
 
-  # Error raised when encountering an unknown component
-  class UnknownComponentError < RuntimeError
-  end
-
-  # Error raised when installing an already installed component
-  class ComponentAlreadyInstalledError < RuntimeError
-  end
-
   # Error raised when we can't access a Provider
   class ProviderError < RuntimeError
   end

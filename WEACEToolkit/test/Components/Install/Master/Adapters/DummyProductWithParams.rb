@@ -9,18 +9,20 @@ module WEACEInstall
 
     module Adapters
 
-      class DummyProduct
+      class DummyProductWithParams
 
         # Check if we can install
         #
         # Return:
         # * _Exception_: An error, or nil in case of success
         def check
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductWithParams_Calls] == nil)
+            $Variables[:DummyProductWithParams_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'check', [] ]
-          $Variables[:DummyProduct_AdditionalParams] = @AdditionalParameters
+          $Variables[:DummyProductWithParams_Calls] << [ 'check', [] ]
+          if (defined?(@DummyFlag))
+            $Variables[:DummyProductWithParams_DummyFlag] = @DummyFlag
+          end
 
           return nil
         end
@@ -31,10 +33,10 @@ module WEACEInstall
         # Return:
         # * _Exception_: An error, or nil in case of success
         def execute
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductWithParams_Calls] == nil)
+            $Variables[:DummyProductWithParams_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'execute', [] ]
+          $Variables[:DummyProductWithParams_Calls] << [ 'execute', [] ]
 
           return nil
         end
@@ -44,10 +46,10 @@ module WEACEInstall
         # Return:
         # * _String_: The default configuration text to put in the configuration file.
         def getDefaultConfig
-          if ($Variables[:DummyProduct_Calls] == nil)
-            $Variables[:DummyProduct_Calls] = []
+          if ($Variables[:DummyProductWithParams_Calls] == nil)
+            $Variables[:DummyProductWithParams_Calls] = []
           end
-          $Variables[:DummyProduct_Calls] << [ 'getDefaultConfig', [] ]
+          $Variables[:DummyProductWithParams_Calls] << [ 'getDefaultConfig', [] ]
 
           return "{}"
         end
