@@ -54,14 +54,14 @@ module WEACE
               executeInstall(
                 [
                   '--install', 'MasterProcess',
-                  '--process', @ScriptID,
+                  '--process', @ToolID,
                   '--on', 'RegProduct'
                 ],
                 :AddRegressionMasterProviders => true,
                 :Repository => lRepository,
                 :ProductRepository => lProductRepository,
                 :ContextVars => lContextVars,
-                :CheckComponentName => "RegProduct.#{@ScriptID}",
+                :CheckComponentName => "RegProduct.#{@ToolID}",
                 :CheckInstallFile => lCheckInstallFile.merge(
                   {
                     :InstallationParameters => iParameters.join(' ')

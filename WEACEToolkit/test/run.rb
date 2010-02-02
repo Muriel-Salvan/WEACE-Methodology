@@ -16,6 +16,7 @@ $LOAD_PATH << File.dirname(__FILE__)
 require 'Common'
 require 'Install/Common'
 require 'Install/Adapters'
+require 'Install/GenericComponent'
 require 'Install/Master/MasterProcess'
 require 'Install/Master/MasterProduct'
 require 'Install/Master/MasterProcesses'

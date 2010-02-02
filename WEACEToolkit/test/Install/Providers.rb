@@ -17,8 +17,8 @@ module WEACE
         # Test that the Provider effectively returns correct value
         def testProviderEnv
           initTestCase do
-            require "WEACEToolkit/Install/#{@Type}/Providers/#{@ScriptID}"
-            lProviderPlugin = eval("WEACEInstall::#{@Type}::Providers::#{@ScriptID}.new")
+            require "WEACEToolkit/Install/#{@Type}/Providers/#{@ProductID}"
+            lProviderPlugin = eval("WEACEInstall::#{@Type}::Providers::#{@ProductID}.new")
 
             # If there is a need to instantiate variables, do it now
             if (defined?(getVariablesToInstantiate))

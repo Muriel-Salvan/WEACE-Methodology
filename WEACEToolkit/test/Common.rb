@@ -232,52 +232,48 @@ module WEACE
 
         # Get the ID of the test, based on its class name
         lClassName = self.class.name
-        lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)::(.*)$/)
-        if (lMatchData == nil)
-          lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)::(.*)$/)
+        if (lClassName.match(/^WEACE::Test::Install::.*$/) != nil)
+          @InstallTest = true
+          if (lClassName.match(/^WEACE::Test::Install::Master::.*$/) != nil)
+            @Type = 'Master'
+          else
+            @Type = 'Slave'
+          end
+          lMatchData = lClassName.match(/^WEACE::Test::Install::Slave::Adapters::(.*)::(.*)::(.*)$/)
           if (lMatchData == nil)
-            lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Adapters::(.*)$/)
+            lMatchData = lClassName.match(/^WEACE::Test::Install::.*::Adapters::(.*)::(.*)$/)
             if (lMatchData == nil)
-              lMatchData = lClassName.match(/^WEACE::Test::(.*)::Adapters::(.*)::(.*)::(.*)$/)
+              lMatchData = lClassName.match(/^WEACE::Test::Install::.*::Adapters::(.*)$/)
               if (lMatchData == nil)
-                lMatchData = lClassName.match(/^WEACE::Test::Install::Slave::Listeners::(.*)$/)
+                lMatchData = lClassName.match(/^WEACE::Test::Install::.*::Listeners::(.*)$/)
                 if (lMatchData == nil)
-                  lMatchData = lClassName.match(/^WEACE::Test::Install::(.*)::Providers::(.*)$/)
+                  lMatchData = lClassName.match(/^WEACE::Test::Install::.*::Providers::(.*)$/)
                   if (lMatchData == nil)
                     logDebug "Unable to parse test case name: #{lClassName}."
                   else
-                    @Type, @ScriptID = lMatchData[1..2]
+                    @ProductID = lMatchData[1]
                     @ComponentType = 'Providers'
-                    @InstallTest = true
                   end
                 else
-                  @ScriptID = lMatchData[1]
-                  @Type = 'Slave'
+                  @ProductID = lMatchData[1]
                   @ComponentType = 'Listeners'
-                  @InstallTest = true
                 end
               else
-                @Type, @ProductID, @ToolID, @ScriptID = lMatchData[1..4]
-                @InstallTest = false
+                @ProductID = lMatchData[1]
                 @ComponentType = 'Adapters'
               end
             else
-              @Type, @ProductID = lMatchData[1..2]
-              @InstallTest = true
+              @ProductID, @ToolID = lMatchData[1..2]
               @ComponentType = 'Adapters'
             end
           else
-            @Type, @ProductID, @ScriptID = lMatchData[1..3]
-            @InstallTest = true
+            @ProductID, @ToolID, @ScriptID = lMatchData[1..3]
             @ComponentType = 'Adapters'
           end
         else
-          @Type, @ProductID, @ToolID, @ScriptID = lMatchData[1..4]
-          @InstallTest = true
-          @ComponentType = 'Adapters'
+          @InstallTest = false
+          # TODO
         end
-        # Remove the beginning 'test' from the method name
-        @TestName = @method_name[4..-1]
       end
 
       # Initialization of every test case.
@@ -317,6 +313,35 @@ module WEACE
         else
           yield
         end
+      end
+
+      # Replace variables from @ContextVariables in generic objects.
+      # Processes lists and maps recursively.
+      #
+      # Parameters:
+      # * *iObject* (_Object_): The object were we want to replace variables (unmodified)
+      # Return:
+      # * _Object_: The object with variables replaced (can be a cloned version or not)
+      def replaceObjectVars(iObject)
+        rObject = nil
+
+        if (iObject.kind_of?(Array))
+          rObject = []
+          iObject.each do |iSubObject|
+            rObject << replaceObjectVars(iSubObject)
+          end
+        elsif (iObject.kind_of?(Hash))
+          rObject = {}
+          iObject.each do |iKey, iValue|
+            rObject[iKey] = replaceObjectVars(iValue)
+          end
+        elsif (iObject.kind_of?(String))
+          rObject = replaceVars(iObject)
+        else
+          rObject = iObject
+        end
+
+        return rObject
       end
 
       # Replace variables that can be used in lines of test files.

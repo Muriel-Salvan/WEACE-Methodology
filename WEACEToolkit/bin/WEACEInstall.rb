@@ -26,6 +26,24 @@ module WEACEInstall
     include WEACE::Toolbox
     include WEACEInstall::Common
 
+    # Error returned when the plugin's check method did not authorize the installation
+    class CheckError < RuntimeError
+
+      # The underlying error returned by the check method
+      #   Exception
+      attr_reader :CheckError
+
+      # Constructor
+      #
+      # Parameters:
+      # * *iCheckError* (_Exception_): The underlying error
+      def initialize(iCheckError)
+        super("Checking did not authorize the Component to be installed: #{iCheckError}")
+        @CheckError = iCheckError
+      end
+
+    end
+
     # Error raised when a plugin does not have any execute method
     class MissingExecuteError < RuntimeError
     end
@@ -501,7 +519,10 @@ module WEACEInstall
             end
             # First check if the installation is ready to be performed
             if (ioPlugin.respond_to?(:check))
-              rError = ioPlugin.check
+              lCheckError = ioPlugin.check
+              if (lCheckError != nil)
+                rError = CheckError.new(lCheckError)
+              end
             end
             if (rError == nil)
               # Execute the installation for real

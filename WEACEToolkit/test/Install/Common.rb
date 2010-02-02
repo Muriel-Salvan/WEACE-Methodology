@@ -327,8 +327,6 @@ module WEACE
         # ** *:CheckConfigFile* (<em>map<Symbol,Object></em>): Check the content of the configuration file in case of success. To be used with :CheckComponentName. [optional = nil]
         # * *CodeBlock*: Code executed once installation has been executed [optional = nil]
         # ** *iError* (_Exception_): Result of the installation
-        # Return:
-        # * _Exception_: Error returned by the Installer's execution
         def execInstaller(iParameters, iOptions, &iCheckCode)
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
@@ -345,9 +343,9 @@ module WEACE
           # Execute
           begin
             if (debugActivated?)
-              rError = @Installer.execute(['-d']+lRealParams)
+              lInstallerError = @Installer.execute(['-d']+lRealParams)
             else
-              rError = @Installer.execute(lRealParams)
+              lInstallerError = @Installer.execute(lRealParams)
             end
           rescue Exception
             # This way exception is shown on screen for better understanding
@@ -356,15 +354,15 @@ module WEACE
 
           # Check
           if (lExpectedErrorClass == nil)
-            if (rError != nil)
-              logErr "Unexpected error: #{rError.class}: #{rError}"
-              if (rError.backtrace == nil)
+            if (lInstallerError != nil)
+              logErr "Unexpected error: #{lInstallerError.class}: #{lInstallerError}"
+              if (lInstallerError.backtrace == nil)
                 logErr 'No backtrace'
               else
-                logErr rError.backtrace.join("\n")
+                logErr lInstallerError.backtrace.join("\n")
               end
             end
-            assert_equal(nil, rError)
+            assert_equal(nil, lInstallerError)
             # Check that the Component has been installed as required
             if (lCheckComponentName != nil)
               lInstallFileName = "#{@WEACERepositoryDir}/Install/InstalledComponents/#{lCheckComponentName}.inst.rb"
@@ -402,23 +400,21 @@ module WEACE
               end
             end
           else
-            if (rError == nil)
+            if (lInstallerError == nil)
               logErr 'Unexpected success.'
-            elsif (!rError.kind_of?(lExpectedErrorClass))
-              logErr "Unexpected error: #{rError.class}: #{rError}"
-              if (rError.backtrace == nil)
+            elsif (!lInstallerError.kind_of?(lExpectedErrorClass))
+              logErr "Unexpected error: #{lInstallerError.class}: #{lInstallerError}"
+              if (lInstallerError.backtrace == nil)
                 logErr 'No backtrace'
               else
-                logErr rError.backtrace.join("\n")
+                logErr lInstallerError.backtrace.join("\n")
               end
             end
-            assert(rError.kind_of?(lExpectedErrorClass))
+            assert(lInstallerError.kind_of?(lExpectedErrorClass))
           end
           if (iCheckCode != nil)
-            iCheckCode.call(rError)
+            iCheckCode.call(lInstallerError)
           end
-
-          return rError
         end
 
         # Execute the WEACEInstall script with some given parameters, and check its error.
@@ -444,14 +440,13 @@ module WEACE
           # Initialize
           initInstaller(iOptions) do
             # Execute
-            lError = execInstaller(iParameters, iOptions) do |iError|
+            execInstaller(iParameters, iOptions) do |iError|
               # Call additional checks from the test case itself
               if (iCheckCode != nil)
-                iCheckCode.call(lError)
+                iCheckCode.call(iError)
               end
             end
           end
-
         end
 
       end
