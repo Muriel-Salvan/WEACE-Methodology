@@ -9,5 +9,6 @@
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
   :Description => 'This Process is used for WEACE Regression only.',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'murielsalvan@users.sourceforge.net',
+  :VarOptions => WEACE::Test::Install::getGenericComponentVarOptions
 }

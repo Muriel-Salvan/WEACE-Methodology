@@ -296,6 +296,9 @@ module WEACE
           # Clear variables set in tests
           # map< Symbol, Object >
           $Variables = {}
+          # Clear the context that might be used to pilot some regression specific objects
+          # map< Symbol, Object >
+          $Context = {}
           # list< list< list< String > > >
           $WEACERegression_DummySQLAnswers = nil
           # Initialize instance variables used to identify the Test case

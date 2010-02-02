@@ -15,18 +15,12 @@ module WEACE
         # Initialize a test case for a generic Component
         #
         # Parameters:
-        # * *iComponentSuffix* (_String_): Component suffix to apply [optional = '']
         # * *CodeBlock*: The code to call once it is initialized
-        def initComponentTest(iComponentSuffix = '')
+        def initComponentTest
           initTestCase do
-            @ContextVars['ComponentSuffix'] = iComponentSuffix
             # Get test suite specificities
             @Specs = replaceObjectVars(getComponentTestSpecs)
             # Complete specs
-            @Specs[:CallsVar] = @Specs[:CallsVarName].to_sym
-            @Specs[:DummyFlagVar] = @Specs[:DummyFlagVarName].to_sym
-            @Specs[:DummyVarVar] = @Specs[:DummyVarVarName].to_sym
-            @Specs[:AdditionalParamsVar] = @Specs[:AdditionalParamsVarName].to_sym
             if (@Type == 'Master')
               @Specs[:MissingMainError] = WEACEInstall::Installer::MissingWEACEMasterServerError
               @Specs[:AddRegressionAdaptersVar] = :AddRegressionMasterAdapters
@@ -45,7 +39,7 @@ module WEACE
               :Error => @Specs[:MissingMainError],
               @Specs[:AddRegressionAdaptersVar] => true
             ) do |iError|
-              assert_equal(nil, $Variables[@Specs[:CallsVar]])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
         end
@@ -57,9 +51,7 @@ module WEACE
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {}
@@ -70,7 +62,7 @@ module WEACE
                   [ 'execute', [] ],
                   [ 'getDefaultConfig', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -83,9 +75,7 @@ module WEACE
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {}
@@ -96,7 +86,7 @@ module WEACE
                   [ 'execute', [] ],
                   [ 'getDefaultConfig', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -110,7 +100,7 @@ module WEACE
               @Specs[:AddRegressionAdaptersVar] => true,
               :Error => WEACEInstall::Installer::AlreadyInstalledComponentError
             ) do |iError|
-              assert_equal(nil, $Variables[@Specs[:CallsVar]])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
         end
@@ -122,9 +112,7 @@ module WEACE
               :Repository => @Specs[:RepositoryInstalled],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {}
@@ -134,7 +122,7 @@ module WEACE
                   [ 'check', [] ],
                   [ 'execute', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -147,9 +135,7 @@ module WEACE
               :Repository => @Specs[:RepositoryInstalled],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {}
@@ -159,7 +145,7 @@ module WEACE
                   [ 'check', [] ],
                   [ 'execute', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -167,28 +153,31 @@ module WEACE
 
         # Test installing the Component with missing parameters
         def testComponentWithoutParameters
-          initComponentTest('WithParams') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :AddFlagParameter => true
+            }
             executeInstall(@Specs[:InstallParameters],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
-              assert_equal(nil, $Variables[@Specs[:CallsVar]])
-              assert_equal(nil, $Variables[@Specs[:DummyFlagVar]])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
         end
 
         # Test installing the Component with Parameters
         def testComponentWithParameters
-          initComponentTest('WithParams') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :AddFlagParameter => true
+            }
             executeInstall(@Specs[:InstallParameters] + ['--', '--dummyflag'],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => '--dummyflag'
                } ),
               :CheckConfigFile => {}
@@ -199,37 +188,40 @@ module WEACE
                   [ 'execute', [] ],
                   [ 'getDefaultConfig', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
-              assert_equal(true, $Variables[@Specs[:DummyFlagVar]])
+              assert_equal(true, $Variables[:ComponentInstall][:DummyFlag])
             end
           end
         end
 
         # Test installing the Component, missing parameters values
         def testComponentWithoutParametersValues
-          initComponentTest('WithParamsValues') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :AddVarParameter => true
+            }
             executeInstall(@Specs[:InstallParameters] + ['--', '--dummyvar'],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
-              assert_equal(nil, $Variables[@Specs[:CallsVar]])
-              assert_equal(nil, $Variables[@Specs[:DummyVarVar]])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
         end
 
         # Test installing the Component with Parameters values
         def testComponentWithParametersValues
-          initComponentTest('WithParamsValues') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :AddVarParameter => true
+            }
             executeInstall(@Specs[:InstallParameters] + ['--', '--dummyvar', 'testvalue'],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => '--dummyvar testvalue'
                } ),
               :CheckConfigFile => {}
@@ -240,9 +232,9 @@ module WEACE
                   [ 'execute', [] ],
                   [ 'getDefaultConfig', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
-              assert_equal('testvalue', $Variables[@Specs[:DummyVarVar]])
+              assert_equal('testvalue', $Variables[:ComponentInstall][:DummyVar])
             end
           end
         end
@@ -254,9 +246,7 @@ module WEACE
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => '-- --dummyflag'
                } ),
               :CheckConfigFile => {}
@@ -267,16 +257,19 @@ module WEACE
                   [ 'execute', [] ],
                   [ 'getDefaultConfig', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
-              assert_equal(['--dummyflag'], $Variables[@Specs[:AdditionalParamsVar]])
+              assert_equal(['--dummyflag'], $Variables[:ComponentInstall][:AdditionalParams])
             end
           end
         end
 
         # Test installing the Component with check failing
         def testComponentWithCheckFail
-          initComponentTest('CheckFail') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :CheckFail => true
+            }
             executeInstall(@Specs[:InstallParameters],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
@@ -286,27 +279,30 @@ module WEACE
                 [
                   [ 'check', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
-              assert(iError.CheckError.is_a?(@Specs[:CheckFailErrorClass]))
+              assert(iError.CheckError.is_a?(WEACE::Test::Install::GenericComponentTestBody::CheckError))
             end
           end
         end
 
         # Test installing the Component with execute failing
         def testComponentWithExecFail
-          initComponentTest('ExecFail') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :ExecFail => true
+            }
             executeInstall(@Specs[:InstallParameters],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
-              :Error => @Specs[:ExecFailErrorClass]
+              :Error => WEACE::Test::Install::GenericComponentTestBody::ExecError
             ) do |iError|
               assert_equal(
                 [
                   [ 'check', [] ],
                   [ 'execute', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -314,14 +310,15 @@ module WEACE
 
         # Test installing the Component with no check
         def testComponentNoCheck
-          initComponentTest('NoCheck') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :NoCheck => true
+            }
             executeInstall(@Specs[:InstallParameters],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {}
@@ -331,7 +328,7 @@ module WEACE
                   [ 'execute', [] ],
                   [ 'getDefaultConfig', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -339,7 +336,10 @@ module WEACE
 
         # Test installing the Component with no execute
         def testComponentNoExec
-          initComponentTest('NoExec') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :NoExec => true
+            }
             executeInstall(@Specs[:InstallParameters],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
@@ -349,7 +349,7 @@ module WEACE
                 [
                   [ 'check', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -357,14 +357,15 @@ module WEACE
 
         # Test installing the Component with no default configuration
         def testComponentNoDefaultConf
-          initComponentTest('NoDefaultConf') do
+          initComponentTest do
+            $Context[:ComponentInstall] = {
+              :NoDefaultConf => true
+            }
             executeInstall(@Specs[:InstallParameters],
               :Repository => @Specs[:RepositoryNormal],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {}
@@ -374,7 +375,7 @@ module WEACE
                   [ 'check', [] ],
                   [ 'execute', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
@@ -387,9 +388,7 @@ module WEACE
               :Repository => @Specs[:RepositoryConfigured],
               @Specs[:AddRegressionAdaptersVar] => true,
               :CheckComponentName => @Specs[:ComponentName],
-              :CheckInstallFile => @Specs[:AdditionalComponentInstall].merge( {
-                :Description => @Specs[:ComponentDescription],
-                :Author => @Specs[:ComponentAuthor],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
                 :InstallationParameters => ''
                } ),
               :CheckConfigFile => {
@@ -401,7 +400,7 @@ module WEACE
                   [ 'check', [] ],
                   [ 'execute', [] ]
                 ],
-                $Variables[@Specs[:CallsVar]]
+                $Variables[:ComponentInstall][:Calls]
               )
             end
           end
