@@ -23,6 +23,7 @@ require 'Install/Master/MasterProduct'
 require 'Install/Master/MasterProcesses'
 require 'Install/Master/MasterProducts'
 require 'Install/Slave/Listeners'
+#require 'Install/Slave/SlaveListeners'
 require 'Install/Providers'
 require 'Master/Common'
 require 'Slave/Common'
@@ -31,9 +32,8 @@ require 'Slave/Adapters/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Global/**/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Providers/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/**/*.rb")
-
-#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/**/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb")
 #  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Providers/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +

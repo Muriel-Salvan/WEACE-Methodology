@@ -20,40 +20,39 @@ module WEACE
 
             # Test installing the Slave Client without specifying any provider
             def testSlaveClientWithoutProvider
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient'], :Error => WEACEInstall::CommandLineError)
+              executeInstall(['--install', 'SlaveClient'], :Error => WEACEInstall::CommandLineError)
             end
 
             # Test installing the Slave Client with specifying a missing provider
             def testSlaveClientWithMissingProvider
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider'], :Error => WEACEInstall::CommandLineError)
+              executeInstall(['--install', 'SlaveClient', '--provider'], :Error => OptionParser::MissingArgument)
             end
 
             # Test installing the Slave Client with specifying an unknown provider
             def testSlaveClientWithUnknownProvider
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::ProviderError)
+              executeInstall(['--install', 'SlaveClient', '--provider', 'UnknownProviderForRegression'], :Error => WEACEInstall::ProviderError)
             end
 
             # Test installing the Slave Client
             def testSlaveClient
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProvider'],
-                :AddRegressionSlaveProviders => true
-              ) do |iError|
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Slave', lEnv[:ProviderType])
-                assert_equal('DummySlaveProvider', lEnv[:ProviderID])
-                assert_equal([], lEnv[:Parameters])
-              end
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider'],
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummySlaveProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {}
+                }
+              )
             end
 
             # Test installing the Slave Client with a Provider missing some parameters
             def testSlaveClientWithProviderMissingParameters
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParams'],
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProviderWithParams'],
                 :Error => WEACEInstall::CommandLineError,
                 :AddRegressionSlaveProviders => true
               ) do |iError|
@@ -63,7 +62,7 @@ module WEACE
 
             # Test installing the Slave Client with a Provider missing some parameters values
             def testSlaveClientWithProviderMissingParametersValues
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParamsValues', '--', '--dummyvar'],
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProviderWithParamsValues', '--', '--dummyvar'],
                 :Error => WEACEInstall::CommandLineError,
                 :AddRegressionSlaveProviders => true
               ) do |iError|
@@ -73,74 +72,81 @@ module WEACE
 
             # Test installing the Slave Client with a Provider having some parameters
             def testSlaveClientWithProviderHavingParameters
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParams', '--', '--flag'],
-                :AddRegressionSlaveProviders => true
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProviderWithParams', '--', '--flag'],
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '-- --flag',
+                  :ProviderID => 'DummySlaveProviderWithParams'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {}
+                }
               ) do |iError|
                 assert_equal(true, $Variables[:SlaveProviderDummyFlag])
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Slave', lEnv[:ProviderType])
-                assert_equal('DummySlaveProviderWithParams', lEnv[:ProviderID])
-                assert_equal(
-                  [
-                    '--flag'
-                  ],
-                  lEnv[:Parameters]
-                )
               end
             end
 
             # Test installing the Slave Client with a Provider having some parameters values
             def testSlaveClientWithProviderHavingParametersValues
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithParamsValues', '--', '--dummyvar', 'testvalue'],
-                :AddRegressionSlaveProviders => true
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProviderWithParamsValues', '--', '--dummyvar', 'testvalue'],
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '-- --dummyvar testvalue',
+                  :ProviderID => 'DummySlaveProviderWithParamsValues'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {}
+                }
               ) do |iError|
                 assert_equal('testvalue', $Variables[:SlaveProviderDummyVar])
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Slave', lEnv[:ProviderType])
-                assert_equal('DummySlaveProviderWithParamsValues', lEnv[:ProviderID])
-                assert_equal(
-                  [
-                    '--dummyvar', 'testvalue'
-                  ],
-                  lEnv[:Parameters]
-                )
               end
             end
 
             # Test installing the Slave Client with a Provider giving CGI abilities
             def testSlaveClientWithCGIProvider
-              executeInstall(['--install', 'Slave/Client/WEACESlaveClient', '--', '--provider', 'DummySlaveProviderWithCGI', '--', '--repository', '%{WEACERepositoryDir}/CGI'],
-                :AddRegressionSlaveProviders => true
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProviderWithCGI', '--', '--repository', '%{WEACERepositoryDir}/CGI'],
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '-- --repository %{WEACERepositoryDir}/CGI',
+                  :ProviderID => 'DummySlaveProviderWithCGI'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {}
+                }
               ) do |iError|
-                # Check that the environment has been created correctly
-                lEnvFileName = "#{@WEACERepositoryDir}/Config/Slave_Env.rb"
-                assert(File.exists?(lEnvFileName))
-                lEnv = nil
-                File.open(lEnvFileName, 'r') do |iFile|
-                  lEnv = eval(iFile.read)
-                end
-                assert_equal('Slave', lEnv[:ProviderType])
-                assert_equal('DummySlaveProviderWithCGI', lEnv[:ProviderID])
-                assert_equal(
-                  [
-                    '--repository', "#{@WEACERepositoryDir}/CGI"
-                  ],
-                  lEnv[:Parameters]
-                )
                 # Check that CGI files have been created correctly
-                assert(File.exists?("#{@WEACERepositoryDir}/CGI/cgi/WEACE/ShowWEACESlaveInfo.cgi"))
+                lCGIFileName = "#{@WEACERepositoryDir}/CGI/cgi/WEACE/ShowWEACESlaveInfo.cgi"
+                assert(File.exists?(lCGIFileName))
+                lCGIContent = nil
+                File.open(lCGIFileName, 'r') do |iFile|
+                  lCGIContent = iFile.read
+                end
+                assert_equal("\#!/usr/bin/env ruby
+\# This file has been generated by the installation of WEACE Slave Client
+\# Print header
+puts 'Content-type: text/html'
+puts ''
+puts ''
+begin
+  \# Add WEACE Toolkit path to Ruby's path
+  $LOAD_PATH << '#{File.expand_path(@WEACELibDir)}'
+  require 'WEACEToolkit/Slave/Client/ShowWEACESlaveInfo'
+  WEACE::Slave::Dump_HTML.new.dumpWEACESlaveInfo_HTML
+rescue Exception
+  puts \"WEACE Slave Installation is corrupted: \#{$!}\"
+end
+",
+                  lCGIContent
+                )
               end
             end
 

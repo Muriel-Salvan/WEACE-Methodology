@@ -314,6 +314,29 @@ module WEACE
           end
         end
 
+        # Check a map's content along another one.
+        # Replace variables for String values before comparison.
+        # Throw assertions in case of failure.
+        #
+        # Parameters:
+        # * *iMapToEnsure* (_map_): The map used as the source comparison. Variables can be replaced here.
+        # * *iMapToCheck* (_map_): The map to check against iMapToEnsure.
+        def checkMap(iMapToEnsure, iMapToCheck)
+          iMapToEnsure.each do |iProperty, iValue|
+            if (iValue.kind_of?(String))
+              if (replaceVars(iValue) != iMapToCheck[iProperty])
+                logErr "Property #{iProperty} should have value #{iValue.inspect} (resolved to #{replaceVars(iValue).inspect}), but has #{iMapToCheck[iProperty]} instead."
+              end
+              assert_equal(replaceVars(iValue), iMapToCheck[iProperty])
+            else
+              if (iValue != iMapToCheck[iProperty])
+                logErr "Property #{iProperty} should have value #{iValue.inspect}, but has #{iMapToCheck[iProperty].inspect} instead."
+              end
+              assert_equal(iValue, iMapToCheck[iProperty])
+            end
+          end
+        end
+
         # Execute the installer and check its output.
         # Prerequisite: call initInstaller before.
         #
@@ -377,26 +400,14 @@ module WEACE
                 # + 1 is due to the :InstallationDate property that is not part of the regression map
                 assert_equal(lCheckInstallFile.size + 1, lInstallInfo.size)
                 assert(lInstallInfo[:InstallationDate] != nil)
-                lCheckInstallFile.each do |iProperty, iValue|
-                  if (iValue.kind_of?(String))
-                    assert_equal(replaceVars(iValue), lInstallInfo[iProperty])
-                  else
-                    assert_equal(iValue, lInstallInfo[iProperty])
-                  end
-                end
+                checkMap(lCheckInstallFile, lInstallInfo)
               end
               # Check the configuration file's content
               if (lCheckConfigFile != nil)
                 lConfigInfo = getMapFromFile(lConfigFileName)
                 logDebug "Configuration file info: #{lConfigInfo.inspect}"
                 assert_equal(lCheckConfigFile.size, lConfigInfo.size)
-                lCheckConfigFile.each do |iProperty, iValue|
-                  if (iValue.kind_of?(String))
-                    assert_equal(replaceVars(iValue), lConfigInfo[iProperty])
-                  else
-                    assert_equal(iValue, lConfigInfo[iProperty])
-                  end
-                end
+                checkMap(lCheckConfigFile, lConfigInfo)
               end
             end
           else
