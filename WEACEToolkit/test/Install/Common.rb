@@ -388,6 +388,9 @@ module WEACE
                 logDebug "Installation file info: #{lInstallInfo.inspect}"
                 assert(lInstallInfo.kind_of?(Hash))
                 # + 1 is due to the :InstallationDate property that is not part of the regression map
+                if (lCheckInstallFile.size + 1 != lInstallInfo.size)
+                  logErr "Expected the install info to be #{lCheckInstallFile.inspect}, but received #{lInstallInfo.inspect}"
+                end
                 assert_equal(lCheckInstallFile.size + 1, lInstallInfo.size)
                 assert(lInstallInfo[:InstallationDate] != nil)
                 checkMap(lCheckInstallFile, lInstallInfo)
@@ -396,6 +399,9 @@ module WEACE
               if (lCheckConfigFile != nil)
                 lConfigInfo = getMapFromFile(lConfigFileName)
                 logDebug "Configuration file info: #{lConfigInfo.inspect}"
+                if (lCheckConfigFile.size != lConfigInfo.size)
+                  logErr "Expected the configuration info to be #{lCheckConfigFile.inspect}, but received #{lConfigInfo.inspect}"
+                end
                 assert_equal(lCheckConfigFile.size, lConfigInfo.size)
                 checkMap(lCheckConfigFile, lConfigInfo)
               end

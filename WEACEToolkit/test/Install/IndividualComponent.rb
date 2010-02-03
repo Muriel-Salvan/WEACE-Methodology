@@ -68,6 +68,7 @@ module WEACE
                 :ProductRepository => lProductRepository,
                 :ContextVars => {
                   'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
+                  'WEACESlaveInfoURL' => 'http://weacemethod.sourceforge.net',
                   'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
                 },
                 :Error => lExpectedError

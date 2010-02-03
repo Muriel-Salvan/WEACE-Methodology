@@ -23,7 +23,8 @@ require 'Install/Master/MasterProcess'
 require 'Install/Master/MasterProduct'
 require 'Install/Master/MasterProcesses'
 require 'Install/Master/MasterProducts'
-require 'Install/Slave/Listeners'
+require 'Install/Slave/SlaveListener'
+require 'Install/Slave/SlaveProduct'
 require 'Install/Slave/SlaveListeners'
 require 'Install/Slave/SlaveProducts'
 require 'Install/Slave/SlaveTools'
@@ -37,12 +38,13 @@ require 'Slave/Adapters/Common'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Server/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Providers/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Master/Adapters/**/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb")
-#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Providers/*.rb") +
-#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Providers/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb")
+
 #  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*/*.rb") +
-#  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Senders/*.rb") +
