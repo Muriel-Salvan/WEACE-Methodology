@@ -7,7 +7,7 @@ module WEACEInstall
 
   module Slave
 
-    module Products
+    module Adapters
 
       class Redmine
 

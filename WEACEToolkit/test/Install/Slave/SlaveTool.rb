@@ -11,8 +11,8 @@ module WEACE
 
       module Slave
 
-        # This module is meant to be included in any test suite on Slave Products
-        module SlaveProduct
+        # This module is meant to be included in any test suite on Slave Tools
+        module SlaveTool
 
           include WEACE::Test::Install::IndividualComponent
 
@@ -34,27 +34,24 @@ module WEACE
           # Return:
           # * <em>map<Symbol,Object></em>: The different properties
           def getIndividualComponentTestSpecs
-            lSpecs = replaceObjectVars(getSlaveProductTestSpecs)
+            lSpecs = replaceObjectVars(getSlaveToolTestSpecs)
             return {
               :InstallParameters => [
-                '--install', 'SlaveProduct',
-                '--product', @ProductID,
-                '--as', 'RegProduct'
+                '--install', 'SlaveTool',
+                '--tool', @ToolID,
+                '--on', 'RegProduct'
               ],
-              :InstallComponentParameters => lSpecs[:InstallSlaveProductParameters],
+              :InstallComponentParameters => lSpecs[:InstallSlaveToolParameters],
               :InstallParametersShort => [
-                '-i', 'SlaveProduct',
-                '-r', @ProductID,
-                '-s', 'RegProduct'
+                '-i', 'SlaveTool',
+                '-t', @ToolID,
+                '-o', 'RegProduct'
               ],
-              :InstallComponentParametersShort => lSpecs[:InstallSlaveProductParametersShort],
-              :Repository => 'Dummy/SlaveClientInstalled',
-              :ComponentName => 'RegProduct',
-              :ComponentInstallInfo => lSpecs[:SlaveProductInstallInfo].merge( {
-                  :Product => @ProductID,
-                  :Type => 'Slave'
-                } ),
-              :ComponentConfigInfo => lSpecs[:SlaveProductConfigInfo],
+              :InstallComponentParametersShort => lSpecs[:InstallSlaveToolParametersShort],
+              :Repository => lSpecs[:Repository],
+              :ComponentName => "RegProduct.#{@ToolID}",
+              :ComponentInstallInfo => lSpecs[:SlaveToolInstallInfo],
+              :ComponentConfigInfo => lSpecs[:SlaveToolConfigInfo],
               :ProductRepositoryVirgin => lSpecs[:ProductRepositoryVirgin],
               :ProductRepositoryInstalled => lSpecs[:ProductRepositoryInstalled],
               :ProductRepositoryInvalid => lSpecs[:ProductRepositoryInvalid],
