@@ -23,44 +23,35 @@ module WEACE
 
               include WEACE::Test::Install::Master::MasterProcess
 
-              # Test normal behaviour
-              def testNormal
-                executeInstallMasterProcess(
-                  [],
+              # Get the specificities of this test suite to be used by MasterProcess module.
+              # Here are the different properties to give:
+              # * :InstallMasterProcessParameters (<em>list<String></em>): The parameters to give WEACEInstall. Only the Master Process' specific ones.
+              # * :InstallMasterProcessParametersShort (<em>list<String></em>): The parameters to give WEACEInstall in short version. Only the Master Process' specific ones.
+              # * :Repository (_String_): Name of WEACE repository to use for these installations.
+              # * :MasterProcessInstallInfo (<em>map<Symbol,Object></em>): The install info the MasterProduct should register (without :InstallationDate, :InstallationParameters, :Product and :Type).
+              # * :MasterProcessConfigInfo (<em>map<Symbol,Object></em>): The config info the MasterProduct should register.
+              # * :ProductRepositoryVirgin (_String_): Name of the Product repository to use when this MasterProduct is not installed.
+              # * :ProductRepositoryInstalled (_String_): Name of the Product repository to use when this MasterProduct is installed.
+              # * :ProductRepositoryInvalid (_String_): Name of the Product repository to use when this MasterProduct cannot be installed [optional = nil].
+              # * :CheckErrorClass (_class_): Class of the Check error thrown when installing on :ProductRepositoryInvalid [optional = nil]
+              #
+              # Return:
+              # * <em>map<Symbol,Object></em>: The different properties
+              def getMasterProcessTestSpecs
+                return {
+                  :InstallMasterProcessParameters => [],
+                  :InstallMasterProcessParametersShort => [],
                   :Repository => 'MasterRedmineInstalled',
-                  :ProductRepository => 'Redmine/Master/Ticket_CloseDuplicate/Virgin',
-                  :ContextVars => {
-                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
-                    'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
-                  },
-                  :CheckInstallFile => {
+                  :MasterProcessInstallInfo => {
                     :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
                     :Author => 'murielsalvan@users.sourceforge.net'
                   },
-                  :CheckConfigFile => {}
-                ) do |iError|
-                  compareWithRepository('Redmine/Master/Ticket_CloseDuplicate/Normal')
-                end
-              end
-
-              # Test duplicate behaviour
-              def testDuplicate
-                executeInstallMasterProcess(
-                  [],
-                  :Repository => 'MasterRedmineInstalled',
-                  :ProductRepository => 'Redmine/Master/Ticket_CloseDuplicate/Normal',
-                  :ContextVars => {
-                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net',
-                    'WEACEExecuteCmd' => '/usr/bin/ruby -w WEACEExecute.rb'
-                  },
-                  :CheckInstallFile => {
-                    :Description => 'This adapter is triggered when a Ticket is marked as duplicating another one.',
-                    :Author => 'murielsalvan@users.sourceforge.net'
-                  },
-                  :CheckConfigFile => {}
-                ) do |iError|
-                  compareWithRepository('Redmine/Master/Ticket_CloseDuplicate/Normal')
-                end
+                  :MasterProductConfigInfo => {},
+                  :ProductRepositoryVirgin => 'Redmine/Master/Ticket_CloseDuplicate/Virgin',
+                  :ProductRepositoryInstalled => 'Redmine/Master/Ticket_CloseDuplicate/Normal',
+                  :ProductRepositoryInvalid => 'Empty',
+                  :CheckErrorClass => WEACE::MissingFileError
+                }
               end
 
             end

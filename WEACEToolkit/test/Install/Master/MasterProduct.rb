@@ -14,154 +14,52 @@ module WEACE
         # This module is meant to be included in any test suite on MasterProducts
         module MasterProduct
 
-          include WEACE::Test::Install::Common
+          include WEACE::Test::Install::IndividualComponent
 
-          # Execute the installation of a MasterProduct.
+          # Get the specificities of this test suite to be used by IndividualComponent
+          # Here are the different properties to give:
+          # * :InstallParameters (<em>list<String></em>): The parameters to give WEACEInstall.
+          # * :InstallComponentParameters (<em>list<String></em>): The parameters to give WEACEInstall specific to the Component.
+          # * :InstallParametersShort (<em>list<String></em>): The parameters to give WEACEInstall in short version.
+          # * :InstallComponentParametersShort (<em>list<String></em>): The parameters to give WEACEInstall specific to the Component in short version.
+          # * :ComponentName (_String_): Name of the Component to check
+          # * :ComponentInstallInfo (<em>map<Symbol,Object></em>): The install info the Component should register (without :InstallationDate and :InstallationParameters).
+          # * :ComponentConfigInfo (<em>map<Symbol,Object></em>): The config info the Component should register.
+          # * :Repository (_String_): Name of the repository to use when installing this Component.
+          # * :ProductRepositoryVirgin (_String_): Name of the Product repository to use when this Component is not installed.
+          # * :ProductRepositoryInstalled (_String_): Name of the Product repository to use when this Component is installed.
+          # * :ProductRepositoryInvalid (_String_): Name of the Product repository to use when this Component cannot be installed [optional = nil].
+          # * :CheckErrorClass (_class_): Class of the Check error thrown when installing on :ProductRepositoryInvalid [optional = nil]
           #
-          # Parameters:
-          # * *iParameters* (<em>list<String></em>): The parameters to give to the Component's installer
-          # * *iOptions* (<em>map<Symbol,Object></em>): Additional options:
-          # ** *:Error* (_Exception_): Expected error from the Installer [optional = nil]
-          # ** *:ProductRepository* (_String_): Name of the Product repository to use as a start [optional = 'Empty']
-          # ** *:ContextVars* (<em>map<Symbol,Object></em>): Additional context variables to add [optional = {}]
-          # ** *:CheckInstallFile* (<em>map<Symbol,String></em>): Installation file parameters to check, except :InstallationDate, :InstallationParameters, :Product and :Type [optional = {}]
-          # ** *:CheckConfigFile* (<em>map<Symbol,String></em>): Configuration file parameters to check [optional = {}]
-          # * *CodeBlock*: The code called to perform extra testing
-          # ** *iError* (_Exception_): The error returned by the installer
-          def executeInstallMasterProduct(iParameters, iOptions = {}, &iCheckCode)
-            lExpectedError = iOptions[:Error]
-            lProductRepository = iOptions[:ProductRepository]
-            if (lProductRepository == nil)
-              lProductRepository = 'Empty'
-            end
-            lContextVars = iOptions[:ContextVars]
-            if (lContextVars == nil)
-              lContextVars = {}
-            end
-            lCheckInstallFile = iOptions[:CheckInstallFile]
-            if (lCheckInstallFile == nil)
-              lCheckInstallFile = {}
-            end
-            lCheckConfigFile = iOptions[:CheckConfigFile]
-            if (lCheckConfigFile == nil)
-              lCheckConfigFile = {}
-            end
-
-            initTestCase do
-              lCheckSuccessAttributes = {}
-              if (lCheckInstallFile != nil)
-                lCheckSuccessAttributes[:CheckInstallFile] = lCheckInstallFile.merge(
-                  {
-                    :InstallationParameters => iParameters.join(' '),
-                    :Product => @ProductID,
-                    :Type => 'Master'
-                  } )
-              end
-              if (lCheckConfigFile != nil)
-                lCheckSuccessAttributes[:CheckConfigFile] = lCheckConfigFile
-              end
-              if (lExpectedError == nil)
-                lCheckSuccessAttributes[:CheckComponentName] = 'RegProduct'
-              end
-              executeInstall(
-                [
-                  '--install', 'MasterProduct',
-                  '--product', @ProductID,
-                  '--as', 'RegProduct',
-                  '--'
-                ] + iParameters,
-                lCheckSuccessAttributes.merge( {
-                  :AddRegressionMasterProviders => true,
-                  :Repository => 'Dummy/MasterServerInstalled',
-                  :ProductRepository => lProductRepository,
-                  :ContextVars => lContextVars,
-                  :Error => lExpectedError
-                } )
-              ) do |iError|
-                if (iCheckCode != nil)
-                  iCheckCode.call(iError)
-                end
-              end
-            end
-          end
-
-          # Initialize a test case for a generic Component
-          #
-          # Parameters:
-          # * *CodeBlock*: The code to call once it is initialized
-          def initMasterProductTest
-            initTestCase do
-              # Get test suite specificities
-              @Specs = replaceObjectVars(getMasterProductTestSpecs)
-              yield
-            end
-          end
-
-          # Test a normal run
-          def testNormal
-            initMasterProductTest do
-              executeInstallMasterProduct(@Specs[:InstallComponentParameters],
-                :ProductRepository => @Specs[:ProductRepositoryVirgin],
-                :ContextVars => {
-                  'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                },
-                :CheckInstallFile => @Specs[:ComponentInstallInfo],
-                :CheckConfigFile => @Specs[:ComponentConfigInfo]
-              ) do |iError|
-                compareWithRepository(@Specs[:ProductRepositoryInstalled])
-              end
-            end
-          end
-
-          # Test a normal run (short version)
-          def testNormalShort
-            initMasterProductTest do
-              executeInstallMasterProduct(@Specs[:InstallComponentParametersShort],
-                :ProductRepository => @Specs[:ProductRepositoryVirgin],
-                :ContextVars => {
-                  'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                },
-                :CheckInstallFile => @Specs[:ComponentInstallInfo],
-                :CheckConfigFile => @Specs[:ComponentConfigInfo]
-              ) do |iError|
-                compareWithRepository(@Specs[:ProductRepositoryInstalled])
-              end
-            end
-          end
-
-          # Test a duplicate run with a corrupted installation info.
-          # The Product has already the info, but the Component is not marked as installed.
-          def testDuplicate
-            initMasterProductTest do
-              executeInstallMasterProduct(@Specs[:InstallComponentParameters],
-                :ProductRepository => @Specs[:ProductRepositoryInstalled],
-                :ContextVars => {
-                  'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                },
-                :CheckInstallFile => @Specs[:ComponentInstallInfo],
-                :CheckConfigFile => @Specs[:ComponentConfigInfo]
-              ) do |iError|
-                compareWithRepository(@Specs[:ProductRepositoryInstalled])
-              end
-            end
-          end
-
-          # Test that checks return an error if the Product is not valid.
-          def testCheckInvalid
-            initMasterProductTest do
-              if (@Specs[:ProductRepositoryInvalid] != nil)
-                executeInstallMasterProduct(@Specs[:InstallComponentParameters],
-                  :ProductRepository => @Specs[:ProductRepositoryInvalid],
-                  :ContextVars => {
-                    'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                  },
-                  :Error => WEACEInstall::Installer::CheckError
-                ) do |iError|
-                  compareWithRepository(@Specs[:ProductRepositoryInvalid])
-                  assert(iError.CheckError.is_a?(@Specs[:CheckErrorClass]))
-                end
-              end
-            end
+          # Return:
+          # * <em>map<Symbol,Object></em>: The different properties
+          def getIndividualComponentTestSpecs
+            lSpecs = replaceObjectVars(getMasterProductTestSpecs)
+            return {
+              :InstallParameters => [
+                '--install', 'MasterProduct',
+                '--product', @ProductID,
+                '--as', 'RegProduct'
+              ],
+              :InstallComponentParameters => lSpecs[:InstallMasterProductParameters],
+              :InstallParametersShort => [
+                '-i', 'MasterProduct',
+                '-r', @ProductID,
+                '-s', 'RegProduct'
+              ],
+              :InstallComponentParametersShort => lSpecs[:InstallMasterProductParametersShort],
+              :Repository => 'Dummy/MasterServerInstalled',
+              :ComponentName => 'RegProduct',
+              :ComponentInstallInfo => lSpecs[:MasterProductInstallInfo].merge( {
+                  :Product => @ProductID,
+                  :Type => 'Master'
+                } ),
+              :ComponentConfigInfo => lSpecs[:MasterProductConfigInfo],
+              :ProductRepositoryVirgin => lSpecs[:ProductRepositoryVirgin],
+              :ProductRepositoryInstalled => lSpecs[:ProductRepositoryInstalled],
+              :ProductRepositoryInvalid => lSpecs[:ProductRepositoryInvalid],
+              :CheckErrorClass => lSpecs[:CheckErrorClass]
+            }
           end
 
         end
