@@ -53,7 +53,7 @@ module WEACE
             # Test installing the Slave Client twice
             def testSlaveClientTwice
               executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider'],
-                :Repository => 'SlaveClientInstalled',
+                :Repository => 'Dummy/SlaveClientInstalled',
                 :AddRegressionSlaveProviders => true,
                 :Error => WEACEInstall::Installer::AlreadyInstalledComponentError
               )
@@ -62,7 +62,7 @@ module WEACE
             # Test installing the Slave Client twice with force option
             def testSlaveClientTwiceForce
               executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider', '--force'],
-                :Repository => 'SlaveClientInstalled',
+                :Repository => 'Dummy/SlaveClientInstalled',
                 :AddRegressionSlaveProviders => true,
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
@@ -80,7 +80,7 @@ module WEACE
             # Test installing the Slave Client twice with force option (short version)
             def testSlaveClientTwiceForceShort
               executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider', '-f'],
-                :Repository => 'SlaveClientInstalled',
+                :Repository => 'Dummy/SlaveClientInstalled',
                 :AddRegressionSlaveProviders => true,
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
@@ -98,7 +98,7 @@ module WEACE
             # Test installing the Slave Client already configured
             def testSlaveClientAlreadyConfigured
               executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider', '-f'],
-                :Repository => 'SlaveClientConfigured',
+                :Repository => 'Dummy/SlaveClientConfigured',
                 :AddRegressionSlaveProviders => true,
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {

@@ -41,16 +41,16 @@ module WEACE
                 :Product => 'DummyProduct',
                 :Type => 'Master'
               },
-              :RepositoryNormal => 'MasterServerInstalled',
-              :RepositoryInstalled => 'MasterProductInstalled',
-              :RepositoryConfigured => 'MasterProductConfigured'
+              :RepositoryNormal => 'Dummy/MasterServerInstalled',
+              :RepositoryInstalled => 'Dummy/MasterProductInstalled',
+              :RepositoryConfigured => 'Dummy/MasterProductConfigured'
             }
           end
 
           # Test installing a Master Product without --product option
           def testMasterProductWithoutProduct
             executeInstall(['--install', 'MasterProduct', '--as', 'RegProduct'],
-              :Repository => 'MasterServerInstalled',
+              :Repository => 'Dummy/MasterServerInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
@@ -61,7 +61,7 @@ module WEACE
           # Test installing a Master Product without --product argument
           def testMasterProductWithoutProductArg
             executeInstall(['--install', 'MasterProduct', '--as', 'RegProduct', '--product'],
-              :Repository => 'MasterServerInstalled',
+              :Repository => 'Dummy/MasterServerInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => OptionParser::MissingArgument
             ) do |iError|
@@ -72,7 +72,7 @@ module WEACE
           # Test installing a Master Product without --as option
           def testMasterProductWithoutAs
             executeInstall(['--install', 'MasterProduct', '--product', 'DummyProduct'],
-              :Repository => 'MasterServerInstalled',
+              :Repository => 'Dummy/MasterServerInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
@@ -83,7 +83,7 @@ module WEACE
           # Test installing a Master Product without --as argument
           def testMasterProductWithoutAsArg
             executeInstall(['--install', 'MasterProduct', '--product', 'DummyProduct', '--as'],
-              :Repository => 'MasterServerInstalled',
+              :Repository => 'Dummy/MasterServerInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => OptionParser::MissingArgument
             ) do |iError|

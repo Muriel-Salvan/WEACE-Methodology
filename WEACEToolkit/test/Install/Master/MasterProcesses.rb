@@ -39,16 +39,16 @@ module WEACE
                 :Description => 'This Process is used for WEACE Regression only.',
                 :Author => 'murielsalvan@users.sourceforge.net'
               },
-              :RepositoryNormal => 'MasterProductInstalled',
-              :RepositoryInstalled => 'MasterProcessInstalled',
-              :RepositoryConfigured => 'MasterProcessConfigured'
+              :RepositoryNormal => 'Dummy/MasterProductInstalled',
+              :RepositoryInstalled => 'Dummy/MasterProcessInstalled',
+              :RepositoryConfigured => 'Dummy/MasterProcessConfigured'
             }
           end
 
           # Test installing a Master Process without the Master Product
           def testMasterProcessWithoutMasterProduct
             executeInstall(['--install', 'MasterProcess', '--process', 'DummyProcess', '--on', 'RegProduct'],
-              :Repository => 'MasterServerInstalled',
+              :Repository => 'Dummy/MasterServerInstalled',
               :Error => WEACEInstall::Installer::MissingMasterProductError,
               :AddRegressionMasterAdapters => true
             ) do |iError|
@@ -59,7 +59,7 @@ module WEACE
           # Test installing a Master Process without --process option
           def testMasterProcessWithoutProcess
             executeInstall(['--install', 'MasterProcess', '--on', 'RegProduct'],
-              :Repository => 'MasterProductInstalled',
+              :Repository => 'Dummy/MasterProductInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
@@ -70,7 +70,7 @@ module WEACE
           # Test installing a Master Process without --process argument
           def testMasterProcessWithoutProcessArg
             executeInstall(['--install', 'MasterProcess', '--on', 'RegProduct', '--process'],
-              :Repository => 'MasterProductInstalled',
+              :Repository => 'Dummy/MasterProductInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => OptionParser::MissingArgument
             ) do |iError|
@@ -81,7 +81,7 @@ module WEACE
           # Test installing a Master Process without --on option
           def testMasterProcessWithoutOn
             executeInstall(['--install', 'MasterProcess', '--process', 'DummyProcess'],
-              :Repository => 'MasterProductInstalled',
+              :Repository => 'Dummy/MasterProductInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
@@ -92,7 +92,7 @@ module WEACE
           # Test installing a Master Process without --on argument
           def testMasterProcessWithoutOnArg
             executeInstall(['--install', 'MasterProcess', '--process', 'DummyProcess', '--on'],
-              :Repository => 'MasterProductInstalled',
+              :Repository => 'Dummy/MasterProductInstalled',
               :AddRegressionMasterAdapters => true,
               :Error => OptionParser::MissingArgument
             ) do |iError|

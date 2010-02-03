@@ -11,8 +11,8 @@ module WEACE
 
       module Slave
 
-        # Test everything related to installing Slave Listeners.
-        class SlaveListeners < ::Test::Unit::TestCase
+        # Test everything related to installing Slave Tools.
+        class SlaveTools < ::Test::Unit::TestCase
 
           # Test basic Component installation workflow
           include WEACE::Test::Install::GenericComponent
@@ -31,16 +31,16 @@ module WEACE
           # * <em>map<Symbol,Object></em>: The different properties
           def getComponentTestSpecs
             return {
-              :InstallParameters => [ '--install', 'SlaveListener', '--listener', 'DummyListener' ],
-              :InstallParametersShort => [ '-i', 'SlaveListener', '-n', 'DummyListener' ],
-              :ComponentName => 'DummyListener',
+              :InstallParameters => [ '--install', 'SlaveTool', '--tool', 'DummyTool', '--on', 'RegProduct' ],
+              :InstallParametersShort => [ '-i', 'SlaveTool', '-t', 'DummyTool', '-o', 'RegProduct' ],
+              :ComponentName => 'RegProduct.DummyTool',
               :ComponentInstallInfo => {
-                :Description => 'This listener is used for regression purposes only.',
+                :Description => 'This Slave Tool is used for regression purposes only.',
                 :Author => 'murielsalvan@users.sourceforge.net'
               },
-              :RepositoryNormal => 'Dummy/SlaveClientInstalled',
-              :RepositoryInstalled => 'Dummy/SlaveListenerInstalled',
-              :RepositoryConfigured => 'Dummy/SlaveListenerConfigured'
+              :RepositoryNormal => 'Dummy/SlaveProductInstalled',
+              :RepositoryInstalled => 'Dummy/SlaveToolInstalled',
+              :RepositoryConfigured => 'Dummy/SlaveToolConfigured'
             }
           end
 

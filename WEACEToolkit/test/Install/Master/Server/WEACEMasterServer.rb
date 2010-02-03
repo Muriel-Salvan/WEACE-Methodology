@@ -54,7 +54,7 @@ module WEACE
             # Test installing the Master Server twice
             def testMasterServerTwice
               executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider'],
-                :Repository => 'MasterServerInstalled',
+                :Repository => 'Dummy/MasterServerInstalled',
                 :AddRegressionMasterProviders => true,
                 :Error => WEACEInstall::Installer::AlreadyInstalledComponentError
               )
@@ -63,7 +63,7 @@ module WEACE
             # Test installing the Master Server twice with force option
             def testMasterServerTwiceForce
               executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider', '--force'],
-                :Repository => 'MasterServerInstalled',
+                :Repository => 'Dummy/MasterServerInstalled',
                 :AddRegressionMasterProviders => true,
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
@@ -81,7 +81,7 @@ module WEACE
             # Test installing the Master Server twice with force option (short version)
             def testMasterServerTwiceForceShort
               executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider', '-f'],
-                :Repository => 'MasterServerInstalled',
+                :Repository => 'Dummy/MasterServerInstalled',
                 :AddRegressionMasterProviders => true,
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
@@ -99,7 +99,7 @@ module WEACE
             # Test installing the Master Server already configured
             def testMasterServerAlreadyConfigured
               executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider'],
-                :Repository => 'MasterServerConfigured',
+                :Repository => 'Dummy/MasterServerConfigured',
                 :AddRegressionMasterProviders => true,
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
