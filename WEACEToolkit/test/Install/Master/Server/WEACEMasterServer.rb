@@ -51,6 +51,70 @@ module WEACE
               )
             end
 
+            # Test installing the Master Server twice
+            def testMasterServerTwice
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider'],
+                :Repository => 'MasterServerInstalled',
+                :AddRegressionMasterProviders => true,
+                :Error => WEACEInstall::Installer::AlreadyInstalledComponentError
+              )
+            end
+
+            # Test installing the Master Server twice with force option
+            def testMasterServerTwiceForce
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider', '--force'],
+                :Repository => 'MasterServerInstalled',
+                :AddRegressionMasterProviders => true,
+                :CheckComponentName => 'MasterServer',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Master Server.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummyMasterProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveClients => []
+                }
+              )
+            end
+
+            # Test installing the Master Server twice with force option (short version)
+            def testMasterServerTwiceForceShort
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider', '-f'],
+                :Repository => 'MasterServerInstalled',
+                :AddRegressionMasterProviders => true,
+                :CheckComponentName => 'MasterServer',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Master Server.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummyMasterProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveClients => []
+                }
+              )
+            end
+
+            # Test installing the Master Server already configured
+            def testMasterServerAlreadyConfigured
+              executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProvider'],
+                :Repository => 'MasterServerConfigured',
+                :AddRegressionMasterProviders => true,
+                :CheckComponentName => 'MasterServer',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Master Server.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummyMasterProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveClients => [],
+                  :PersonalizedAttribute => 'PersonalizedValue'
+                }
+              )
+            end
+
             # Test installing the Master Server with a Provider missing some parameters
             def testMasterServerWithProviderMissingParameters
               executeInstall(['--install', 'MasterServer', '--provider', 'DummyMasterProviderWithParams'],

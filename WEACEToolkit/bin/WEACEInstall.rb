@@ -127,6 +127,7 @@ module WEACEInstall
       @OnProductName = nil
       @ActionID = nil
       @ProcessID = nil
+      @ListenerID = nil
       lOptions = getOptions
       if (iParameters.size == 0)
         puts lOptions
@@ -201,6 +202,12 @@ module WEACEInstall
                 rError = CommandLineError.new('Please specify a Tool, Action and a Product name using --tool, --action and --on options.')
               else
                 rError = installSlaveAction(@ToolID, @ActionID, @OnProductName, lAdditionalArgs)
+              end
+            when 'SlaveListener'
+              if (@ListenerID == nil)
+                rError = CommandLineError.new('Please specify a Listener using --listener option.')
+              else
+                rError = installSlaveListener(@ListenerID, lAdditionalArgs)
               end
             when 'MasterServer'
               if (@ProviderType == nil)
@@ -803,6 +810,25 @@ module WEACEInstall
       end
     end
 
+    # Install a Slave Listener
+    #
+    # Parameters:
+    # * *iListenerID* (_String_): The Listener ID
+    # * *iParameters* (<em>list<String></em>): The additional parameters given to this component's installation
+    # Return:
+    # * _Exception_: An error, or nil in case of success
+    def installSlaveListener(iListenerID, iParameters)
+      return checkInstalledServerClient('Slave') do |iProviderEnv|
+        next installComponent(
+          iListenerID,
+          'Slave/Listeners',
+          iListenerID,
+          iParameters,
+          iProviderEnv
+        )
+      end
+    end
+
     # Get options of this installer
     #
     # Return:
@@ -817,6 +843,7 @@ module WEACEInstall
 * SlaveProduct => -r|--product <ProductID> -s|--as <ProductName>
 * SlaveTool => -t|--tool <ToolID> -o|--on <ProductName>
 * SlaveAction => -t|--tool <ToolID> -a|--action <ActionID> -o|--on <ProductName>
+* SlaveListener => -n|--listener <ListenerID>
 * MasterServer => -p|--provider <MasterProviderType>
 * MasterProduct => -r|--product <ProductID> -s|--as <ProductName>
 * MasterProcess => -c|--process <ProcessID> -o|--on <ProductName>
@@ -877,7 +904,7 @@ module WEACEInstall
       end
       rOptions.on('-o', '--on <ProductName>', String,
         '<ProductName>: Alias given previously to a Product\'s installation.',
-        'Specify on wichi Product the installation applies.') do |iArg|
+        'Specify on which Product the installation applies.') do |iArg|
         @OnProductName = iArg
       end
       rOptions.on('-a', '--action <ActionID>', String,
@@ -889,6 +916,11 @@ module WEACEInstall
         '<ProcessID>: One of the possible Master Processes available. Please use --detailedlist to know possible values.',
         'Specify which Process to install on the given Product.') do |iArg|
         @ProcessID = iArg
+      end
+      rOptions.on('-n', '--listener <ListenerID>', String,
+        '<ListenerID>: One of the possible Slave Listeners available. Please use --detailedlist to know possible values.',
+        'Specify which Listener to install.') do |iArg|
+        @ListenerID = iArg
       end
       rOptions.on('--',
         'Following -- are the parameters specific to the installation of a given component (check each component\'s options with --detailedlist).')

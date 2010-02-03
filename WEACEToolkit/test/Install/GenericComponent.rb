@@ -12,6 +12,8 @@ module WEACE
       # This module is included by every test suite that wants to automatically add test cases validating the process flow of Component's installation
       module GenericComponent
 
+        include WEACE::Test::Install::Common
+
         # Initialize a test case for a generic Component
         #
         # Parameters:

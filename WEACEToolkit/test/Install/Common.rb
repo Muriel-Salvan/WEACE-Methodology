@@ -270,29 +270,19 @@ module WEACE
                   lOldWEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
                   @Installer.instance_variable_set(:@WEACELibDir, lNewWEACELibDir)
 
+                  # TODO: Find a way to dissociate parsing Adapters and Providers
                   if (lAddRegressionMasterAdapters or
                       lAddRegressionMasterProviders)
                     # Parse for the regression adapters
                     @Installer.send(:parseMasterPlugins)
                   end
 
-                  if (lAddRegressionSlaveAdapters)
-                    # Get the current adapters
-                    lCurrentAdapters = @Installer.instance_variable_get(:@SlaveAdapters)
-                    # Parse for the regression adapters
-                    @Installer.send(:parseAdapters, 'Slave', lCurrentAdapters)
-                    # Change the adapters with the newly parsed ones
-                    @Installer.instance_variable_set(:@SlaveAdapters, lCurrentAdapters)
-                  end
-
-                  if (lAddRegressionSlaveListeners)
-                    @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Listeners', "#{lNewWEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
-                  end
-
-                  if (lAddRegressionSlaveProviders or
-                      lAddRegressionSlaveAdapters or
+                  # TODO: Find a way to dissociate parsing Adapters, Listeners and Providers
+                  if (lAddRegressionSlaveAdapters or
+                      lAddRegressionSlaveProviders or
                       lAddRegressionSlaveListeners)
-                    @Installer.send(:parseWEACEPluginsFromDir, 'Slave/Providers', "#{lNewWEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
+                    # Parse for the regression adapters
+                    @Installer.send(:parseSlavePlugins)
                   end
 
                   # Restore back the WEACE lib dir

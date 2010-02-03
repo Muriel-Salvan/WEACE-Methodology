@@ -15,17 +15,7 @@ module WEACEInstall
   
       class DummyListener
           
-        # Execute the installation
-        #
-        # Parameters:
-        # * *iParameters* (<em>list<String></em>): Additional parameters to give the installer
-        # Return:
-        # * _Exception_: An error, or nil in case of success
-        def execute(iParameters)
-          $Variables[:DummyListenerInstall] = true
-
-          return nil
-        end
+        include WEACE::Test::Install::GenericComponentTestBody
         
       end
         

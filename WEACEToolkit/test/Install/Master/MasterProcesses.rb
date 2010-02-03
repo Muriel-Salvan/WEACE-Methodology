@@ -15,8 +15,6 @@ module WEACE
         # Don't test each Master Product here. Just the generic functionalities with Dummy MasterProcesses.
         class MasterProcesses < ::Test::Unit::TestCase
 
-          include WEACE::Test::Install::Common
-
           # Test basic Component installation workflow
           include WEACE::Test::Install::GenericComponent
 

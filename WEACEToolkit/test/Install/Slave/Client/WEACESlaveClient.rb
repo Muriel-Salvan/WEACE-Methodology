@@ -50,6 +50,70 @@ module WEACE
               )
             end
 
+            # Test installing the Slave Client twice
+            def testSlaveClientTwice
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider'],
+                :Repository => 'SlaveClientInstalled',
+                :AddRegressionSlaveProviders => true,
+                :Error => WEACEInstall::Installer::AlreadyInstalledComponentError
+              )
+            end
+
+            # Test installing the Slave Client twice with force option
+            def testSlaveClientTwiceForce
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider', '--force'],
+                :Repository => 'SlaveClientInstalled',
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummySlaveProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {}
+                }
+              )
+            end
+
+            # Test installing the Slave Client twice with force option (short version)
+            def testSlaveClientTwiceForceShort
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider', '-f'],
+                :Repository => 'SlaveClientInstalled',
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummySlaveProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {}
+                }
+              )
+            end
+
+            # Test installing the Slave Client already configured
+            def testSlaveClientAlreadyConfigured
+              executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProvider', '-f'],
+                :Repository => 'SlaveClientConfigured',
+                :AddRegressionSlaveProviders => true,
+                :CheckComponentName => 'SlaveClient',
+                :CheckInstallFile => {
+                  :Description => 'The WEACE Slave Client.',
+                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :InstallationParameters => '--',
+                  :ProviderID => 'DummySlaveProvider'
+                },
+                :CheckConfigFile => {
+                  :WEACESlaveAdapters => {},
+                  :PersonalizedAttribute => 'PersonalizedValue'
+                }
+              )
+            end
+
             # Test installing the Slave Client with a Provider missing some parameters
             def testSlaveClientWithProviderMissingParameters
               executeInstall(['--install', 'SlaveClient', '--provider', 'DummySlaveProviderWithParams'],
