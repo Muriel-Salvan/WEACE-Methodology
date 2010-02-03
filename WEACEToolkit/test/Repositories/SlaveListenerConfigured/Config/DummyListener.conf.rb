@@ -1,5 +1,0 @@
-
-{
-  :PersonalizedAttribute => 'PersonalizedValue'
-}
-
