@@ -44,6 +44,50 @@ module WEACE
             }
           end
 
+          # Test installing a Slave Tool without --tool option
+          def testSlaveToolWithoutTool
+            executeInstall(['--install', 'SlaveTool', '--on', 'RegProduct'],
+              :Repository => 'Dummy/SlaveProductInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Tool without --tool argument
+          def testSlaveToolWithoutToolArg
+            executeInstall(['--install', 'SlaveTool', '--on', 'RegProduct', '--tool'],
+              :Repository => 'Dummy/SlaveProductInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Tool without --on option
+          def testSlaveToolWithoutOn
+            executeInstall(['--install', 'SlaveTool', '--tool', 'DummyTool'],
+              :Repository => 'Dummy/SlaveProductInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Tool without --on argument
+          def testSlaveToolWithoutOnArg
+            executeInstall(['--install', 'SlaveTool', '--tool', 'DummyTool', '--on'],
+              :Repository => 'Dummy/SlaveProductInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
         end
 
       end

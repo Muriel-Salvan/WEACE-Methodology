@@ -29,6 +29,10 @@ module WEACE
   # Project Manager
   Tools_ProjectManager = 'ProjectManager'
 
+  # Exception thrown when we want to modify a missing file
+  class MissingFileError < RuntimeError
+  end
+
   # Exception raised when a variable is missing
   class MissingVariableError < RuntimeError
   end
@@ -393,141 +397,146 @@ module WEACE
         lCommitModifications = true
       end
 
-      logDebug "Modify file #{iFileName} ..."
-      if ((!lNoBackup) and
-          lCommitModifications)
-        # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
-        lBackupName = "#{iFileName}.WEACEBackup"
-        if (!File.exists?(lBackupName))
-          FileUtils.cp(iFileName, lBackupName)
+      # First check file's existence
+      if (!File.exists?(iFileName))
+        rError = MissingFileError.new("File #{iFileName} is missing.")
+      else
+        logDebug "Modify file #{iFileName} ..."
+        if ((!lNoBackup) and
+            lCommitModifications)
+          # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
+          lBackupName = "#{iFileName}.WEACEBackup"
+          if (!File.exists?(lBackupName))
+            FileUtils.cp(iFileName, lBackupName)
+          end
         end
-      end
-      # Read the file
-      lContent = nil
-      File.open(iFileName, 'r') do |iFile|
-        lContent = iFile.readlines
-      end
-      # Find the 2 markers among the file
-      lIdxBegin = nil
-      if (iBeginMarker == nil)
-        lIdxBegin = -1
-      end
-      lIdxEnd = nil
-      if (iEndMarker == nil)
-        lIdxEnd = lContent.size
-      end
-      lIdx = 0
-      lContent.each do |iLine|
-        if ((lIdxBegin == nil) and
-            (iLine.match(iBeginMarker) != nil))
-          # We found the beginning
-          lIdxBegin = lIdx
-          if (lIdxEnd != nil)
-            # We already know the end is at the end
+        # Read the file
+        lContent = nil
+        File.open(iFileName, 'r') do |iFile|
+          lContent = iFile.readlines
+        end
+        # Find the 2 markers among the file
+        lIdxBegin = nil
+        if (iBeginMarker == nil)
+          lIdxBegin = -1
+        end
+        lIdxEnd = nil
+        if (iEndMarker == nil)
+          lIdxEnd = lContent.size
+        end
+        lIdx = 0
+        lContent.each do |iLine|
+          if ((lIdxBegin == nil) and
+              (iLine.match(iBeginMarker) != nil))
+            # We found the beginning
+            lIdxBegin = lIdx
+            if (lIdxEnd != nil)
+              # We already know the end is at the end
+              break
+            end
+          elsif ((lIdxBegin != nil) and
+                 (lIdxEnd == nil) and
+                 (iLine.match(iEndMarker) != nil))
+            # We found the end
+            lIdxEnd = lIdx
             break
           end
-        elsif ((lIdxBegin != nil) and
-               (lIdxEnd == nil) and
-               (iLine.match(iEndMarker) != nil))
-          # We found the end
-          lIdxEnd = lIdx
-          break
+          lIdx += 1
         end
-        lIdx += 1
-      end
-      # If we didn't find both of them, stop it
-      if (lIdxBegin == nil)
-        rError = FileModificationError.new("Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification.")
-      elsif (lIdxEnd == nil)
-        rError = FileModificationError.new("Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification.")
-      else
-        # Ensure that new lines separate the content of iNewLines, and each line terminates with a \n
-        lNewLines = nil
-        if (iNewLines.is_a?(String))
-          lNewLines = iNewLines.split("\n")
+        # If we didn't find both of them, stop it
+        if (lIdxBegin == nil)
+          rError = FileModificationError.new("Unable to find beginning mark /#{iBeginMarker}/ in file #{iFileName}. Aborting modification.")
+        elsif (lIdxEnd == nil)
+          rError = FileModificationError.new("Unable to find ending mark /#{iEndMarker}/ in file #{iFileName}. Aborting modification.")
         else
-          lNewLines = iNewLines.join("\n").split("\n")
-        end
-        (0 .. lNewLines.size-1).each do |iIdx|
-          if (lNewLines[iIdx][-1..-1] != "\n")
-            lNewLines[iIdx] += "\n"
-          end
-        end
-        # Check if the new content is not already in lContent (starting from lIdxBegin)
-        lMatchLines = lNewLines
-        if (lCheckMatch != nil)
-          lMatchLines = lCheckMatch
-        end
-        lFound = false
-        if (lIdxBegin < lIdxEnd-lMatchLines.size)
-          if (lExtraLinesDuringMatch)
-            # Compare the lines one after the other, ignoring the ones that don't match.
-            # It is just required that every match is matched in its order.
-            lIdxNextLineToMatch = 0
-            (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
-              if (((lMatchLines[lIdxNextLineToMatch].is_a?(String)) and
-                   (lContent[iIdx] == lMatchLines[lIdxNextLineToMatch])) or
-                  ((lMatchLines[lIdxNextLineToMatch].is_a?(Regexp)) and 
-                   (lContent[iIdx].match(lMatchLines[lIdxNextLineToMatch]) != nil)))
-                # It matches
-                lIdxNextLineToMatch += 1
-                if (lIdxNextLineToMatch == lMatchLines.size)
-                  # They have all matched
-                  lFound = true
-                  break
-                end
-              end
-            end
+          # Ensure that new lines separate the content of iNewLines, and each line terminates with a \n
+          lNewLines = nil
+          if (iNewLines.is_a?(String))
+            lNewLines = iNewLines.split("\n")
           else
-            (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
-              # Validate that each line equals or matches
-              lFound = true
-              (0 .. lMatchLines.size-1).each do |iIdxMatch|
-                if (((lMatchLines[iIdxMatch].is_a?(String)) and
-                     (lContent[iIdx+iIdxMatch] != lMatchLines[iIdxMatch])) or
-                    ((lMatchLines[iIdxMatch].is_a?(Regexp)) and
-                     (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil)))
-                  # It differs
-                  lFound = false
+            lNewLines = iNewLines.join("\n").split("\n")
+          end
+          (0 .. lNewLines.size-1).each do |iIdx|
+            if (lNewLines[iIdx][-1..-1] != "\n")
+              lNewLines[iIdx] += "\n"
+            end
+          end
+          # Check if the new content is not already in lContent (starting from lIdxBegin)
+          lMatchLines = lNewLines
+          if (lCheckMatch != nil)
+            lMatchLines = lCheckMatch
+          end
+          lFound = false
+          if (lIdxBegin < lIdxEnd-lMatchLines.size)
+            if (lExtraLinesDuringMatch)
+              # Compare the lines one after the other, ignoring the ones that don't match.
+              # It is just required that every match is matched in its order.
+              lIdxNextLineToMatch = 0
+              (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
+                if (((lMatchLines[lIdxNextLineToMatch].is_a?(String)) and
+                     (lContent[iIdx] == lMatchLines[lIdxNextLineToMatch])) or
+                    ((lMatchLines[lIdxNextLineToMatch].is_a?(Regexp)) and
+                     (lContent[iIdx].match(lMatchLines[lIdxNextLineToMatch]) != nil)))
+                  # It matches
+                  lIdxNextLineToMatch += 1
+                  if (lIdxNextLineToMatch == lMatchLines.size)
+                    # They have all matched
+                    lFound = true
+                    break
+                  end
+                end
+              end
+            else
+              (lIdxBegin+1 .. lIdxEnd-lMatchLines.size).each do |iIdx|
+                # Validate that each line equals or matches
+                lFound = true
+                (0 .. lMatchLines.size-1).each do |iIdxMatch|
+                  if (((lMatchLines[iIdxMatch].is_a?(String)) and
+                       (lContent[iIdx+iIdxMatch] != lMatchLines[iIdxMatch])) or
+                      ((lMatchLines[iIdxMatch].is_a?(Regexp)) and
+                       (lContent[iIdx+iIdxMatch].match(lMatchLines[iIdxMatch]) == nil)))
+                    # It differs
+                    lFound = false
+                    break
+                  end
+                end
+                if (lFound)
                   break
                 end
               end
-              if (lFound)
-                break
+            end
+          end
+          if (lFound)
+            # Already here
+            if (lCommitModifications)
+              logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
+            end
+          elsif (lCommitModifications)
+            # Modify the content in memory
+            if (lReplace == true)
+              # Erase everything between markers
+              if (lIdxBegin == -1)
+                lContent = lContent[lIdxEnd..-1]
+              else
+                lContent = lContent[0..lIdxBegin] + lContent[lIdxEnd..-1]
               end
+              lIdxEnd = lIdxBegin + 1
             end
-          end
-        end
-        if (lFound)
-          # Already here
-          if (lCommitModifications)
-            logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
-          end
-        elsif (lCommitModifications)
-          # Modify the content in memory
-          if (lReplace == true)
-            # Erase everything between markers
-            if (lIdxBegin == -1)
-              lContent = lContent[lIdxEnd..-1]
-            else
-              lContent = lContent[0..lIdxBegin] + lContent[lIdxEnd..-1]
+            # Insert at lIdxEnd position
+            lContent.insert(lIdxEnd, lNewLines)
+            # Write the file
+            begin
+              File.open(iFileName, 'w') do |iFile|
+                iFile << lContent
+              end
+            rescue Exception
+              # Revert the file content
+              FileUtils.cp("#{iFileName}.WEACEBackup", iFileName)
+              logErr "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
+              raise RuntimeError, "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
             end
-            lIdxEnd = lIdxBegin + 1
+            logDebug "File #{iFileName} modified successfully."
           end
-          # Insert at lIdxEnd position
-          lContent.insert(lIdxEnd, lNewLines)
-          # Write the file
-          begin
-            File.open(iFileName, 'w') do |iFile|
-              iFile << lContent
-            end
-          rescue Exception
-            # Revert the file content
-            FileUtils.cp("#{iFileName}.WEACEBackup", iFileName)
-            logErr "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
-            raise RuntimeError, "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
-          end
-          logDebug "File #{iFileName} modified successfully."
         end
       end
 

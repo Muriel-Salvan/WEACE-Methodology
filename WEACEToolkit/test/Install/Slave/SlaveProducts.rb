@@ -46,6 +46,50 @@ module WEACE
             }
           end
 
+          # Test installing a Slave Product without --product option
+          def testSlaveProductWithoutProduct
+            executeInstall(['--install', 'SlaveProduct', '--as', 'RegProduct'],
+              :Repository => 'Dummy/SlaveClientInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Product without --product argument
+          def testSlaveProductWithoutProductArg
+            executeInstall(['--install', 'SlaveProduct', '--as', 'RegProduct', '--product'],
+              :Repository => 'Dummy/SlaveClientInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Product without --as option
+          def testSlaveProductWithoutAs
+            executeInstall(['--install', 'SlaveProduct', '--product', 'DummyProduct'],
+              :Repository => 'Dummy/SlaveClientInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Product without --as argument
+          def testSlaveProductWithoutAsArg
+            executeInstall(['--install', 'SlaveProduct', '--product', 'DummyProduct', '--as'],
+              :Repository => 'Dummy/SlaveClientInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
         end
 
       end

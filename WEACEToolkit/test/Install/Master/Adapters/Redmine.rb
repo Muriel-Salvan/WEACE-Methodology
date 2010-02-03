@@ -17,49 +17,35 @@ module WEACE
 
             include WEACE::Test::Install::Master::MasterProduct
 
-            # Test a normal run
-            def testNormal
-              executeInstallMasterProduct(
-                [
-                  '--redminedir', '%{ProductDir}/redmine-0.8.2'
-                ],
-                :ProductRepository => 'Redmine/Master/Virgin',
-                :ContextVars => {
-                  'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
-                },
-                :CheckInstallFile => {
+            # Get the specificities of this test suite to be used by MasterProduct module.
+            # Here are the different properties to give:
+            # * :InstallComponentParameters (<em>list<String></em>): The parameters to give WEACEInstall. Only the Component's specific ones.
+            # * :InstallComponentParametersShort (<em>list<String></em>): The parameters to give WEACEInstall in short version. Only the Component's specific ones.
+            # * :ComponentInstallInfo (<em>map<Symbol,Object></em>): The install info the Component should register (without :InstallationDate, :InstallationParameters, :Product and :Type).
+            # * :ComponentConfigInfo (<em>map<Symbol,Object></em>): The config info the Component should register.
+            # * :ProductRepositoryVirgin (_String_): Name of the Product repository to use when this Component is not installed.
+            # * :ProductRepositoryInstalled (_String_): Name of the Product repository to use when this Component is installed.
+            # * :ProductRepositoryInvalid (_String_): Name of the Product repository to use when this Component cannot be installed [optional = nil].
+            # * :CheckErrorClass (_class_): Class of the Check error thrown when installing on :ProductRepositoryInvalid [optional = nil]
+            #
+            # Return:
+            # * <em>map<Symbol,Object></em>: The different properties
+            def getMasterProductTestSpecs
+              return {
+                :InstallComponentParameters => [ '--redminedir', '%{ProductDir}/redmine-0.8.2' ],
+                :InstallComponentParametersShort => [ '-d', '%{ProductDir}/redmine-0.8.2' ],
+                :ComponentInstallInfo => {
                   :Description => 'Product Redmine adapted to WEACE Master.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'murielsalvan@users.sourceforge.net'
                 },
-                :CheckConfigFile => {
+                :ComponentConfigInfo => {
                   :RedmineDir => '%{ProductDir}/redmine-0.8.2'
-                }
-              ) do |iError|
-                compareWithRepository('Redmine/Master/Normal')
-              end
-            end
-
-            # Test a duplicate run with a corrupted installation info.
-            # The Product has already the info, but the Component is not marked as installed.
-            def testDuplicate
-              executeInstallMasterProduct(
-                [
-                  '--redminedir', '%{ProductDir}/redmine-0.8.2'
-                ],
-                :ProductRepository => 'Redmine/Master/Normal',
-                :ContextVars => {
-                  'WEACEMasterInfoURL' => 'http://weacemethod.sourceforge.net'
                 },
-                :CheckInstallFile => {
-                  :Description => 'Product Redmine adapted to WEACE Master.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
-                },
-                :CheckConfigFile => {
-                  :RedmineDir => '%{ProductDir}/redmine-0.8.2'
-                }
-              ) do |iError|
-                compareWithRepository('Redmine/Master/Normal')
-              end
+                :ProductRepositoryVirgin => 'Redmine/Master/Virgin',
+                :ProductRepositoryInstalled => 'Redmine/Master/Normal',
+                :ProductRepositoryInvalid => 'Empty',
+                :CheckErrorClass => WEACE::MissingFileError
+              }
             end
 
           end

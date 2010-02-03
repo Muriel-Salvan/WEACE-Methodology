@@ -44,6 +44,28 @@ module WEACE
             }
           end
 
+          # Test installing a Slave Listener without --listener option
+          def testSlaveListenerWithoutListener
+            executeInstall(['--install', 'SlaveListener'],
+              :Repository => 'Dummy/SlaveClientInstalled',
+              :AddRegressionSlaveListeners => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Listener without --listener argument
+          def testSlaveListenerWithoutListenerArg
+            executeInstall(['--install', 'SlaveListener', '--listener'],
+              :Repository => 'Dummy/SlaveClientInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
         end
 
       end

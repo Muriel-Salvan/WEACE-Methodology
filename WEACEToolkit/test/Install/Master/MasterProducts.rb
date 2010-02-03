@@ -54,7 +54,7 @@ module WEACE
               :AddRegressionMasterAdapters => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
-              assert_equal(nil, $Variables[:DummyProduct_Calls])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
 
@@ -65,7 +65,7 @@ module WEACE
               :AddRegressionMasterAdapters => true,
               :Error => OptionParser::MissingArgument
             ) do |iError|
-              assert_equal(nil, $Variables[:DummyProduct_Calls])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
 
@@ -76,7 +76,7 @@ module WEACE
               :AddRegressionMasterAdapters => true,
               :Error => WEACEInstall::CommandLineError
             ) do |iError|
-              assert_equal(nil, $Variables[:DummyProduct_Calls])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
 
@@ -87,7 +87,7 @@ module WEACE
               :AddRegressionMasterAdapters => true,
               :Error => OptionParser::MissingArgument
             ) do |iError|
-              assert_equal(nil, $Variables[:DummyProduct_Calls])
+              assert_equal(nil, $Variables[:ComponentInstall])
             end
           end
 

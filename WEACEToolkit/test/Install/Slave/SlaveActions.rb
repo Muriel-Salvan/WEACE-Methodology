@@ -44,6 +44,72 @@ module WEACE
             }
           end
 
+          # Test installing a Slave Action without --action option
+          def testSlaveActionWithoutAction
+            executeInstall(['--install', 'SlaveAction', '--on', 'RegProduct', '--tool', 'DummyTool'],
+              :Repository => 'Dummy/SlaveToolInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Action without --action argument
+          def testSlaveActionWithoutActionArg
+            executeInstall(['--install', 'SlaveAction', '--on', 'RegProduct', '--tool', 'DummyTool', '--action'],
+              :Repository => 'Dummy/SlaveToolInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Action without --tool option
+          def testSlaveActionWithoutTool
+            executeInstall(['--install', 'SlaveAction', '--action', 'DummyAction', '--on', 'RegProduct'],
+              :Repository => 'Dummy/SlaveToolInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Action without --tool argument
+          def testSlaveActionWithoutToolArg
+            executeInstall(['--install', 'SlaveAction', '--action', 'DummyAction', '--on', 'RegProduct', '--tool'],
+              :Repository => 'Dummy/SlaveToolInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Action without --on option
+          def testSlaveActionWithoutOn
+            executeInstall(['--install', 'SlaveAction', '--action', 'DummyAction', '--tool', 'DummyTool'],
+              :Repository => 'Dummy/SlaveToolInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
+          # Test installing a Slave Action without --on argument
+          def testSlaveActionWithoutOnArg
+            executeInstall(['--install', 'SlaveAction', '--action', 'DummyAction', '--tool', 'DummyTool', '--on'],
+              :Repository => 'Dummy/SlaveToolInstalled',
+              :AddRegressionSlaveAdapters => true,
+              :Error => OptionParser::MissingArgument
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+
         end
 
       end
