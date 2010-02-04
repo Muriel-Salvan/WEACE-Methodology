@@ -105,21 +105,32 @@ module WEACEInstall
     # Parameters:
     # * *ioPlugin* (_Object_): Plugin to initialize
     # * *iParameters* (<em>list<String></em>): Parameters to give to this plugin
+    # * *iExtraParametersAllowed* (_Boolean_): Are extra parameters allowed ? If true, extra parameters will be returned back with a '--' separator. [optional = false]
     # Return:
     # * _Exception_: An error, or nil in case of success
     # * <em>list<String></em>: Remaining arguments
-    def initPluginWithParameters(ioPlugin, iParameters)
+    def initPluginWithParameters(ioPlugin, iParameters, iExtraParametersAllowed = false)
       rError = nil
       rAdditionalArgs = []
 
-      lInstallerArgs, rAdditionalArgs = splitParameters(iParameters)
       lOptions = ioPlugin.pluginDescription[:Options]
-      if (lOptions != nil)
+      if (lOptions == nil)
+        if (iExtraParametersAllowed)
+          rAdditionalArgs = iParameters
+        else
+          lInstallerArgs, rAdditionalArgs = splitParameters(iParameters)
+        end
+      else
+        lInstallerArgs, rAdditionalArgs = splitParameters(iParameters)
         # Parse them
         begin
           lRemainingArgs = lOptions.parse(lInstallerArgs)
-          if (!lRemainingArgs.empty?)
+          if ((!lRemainingArgs.empty?) and
+              (!iExtraParametersAllowed))
             rError = CommandLineError.new("Remaining unknown arguments: #{lRemainingArgs.join(', ')}")
+          end
+          if (iExtraParametersAllowed)
+            rAdditionalArgs = lRemainingArgs + ['--'] + rAdditionalArgs
           end
         rescue
           rError = CommandLineError.new("Error while parsing arguments of the #{ioPlugin.pluginDescription[:PluginCategoryName]}/#{ioPlugin.pluginDescription[:PluginName]} installer: #{$!}.\n#{lOptions.summarize}.")

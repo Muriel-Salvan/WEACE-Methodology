@@ -543,13 +543,14 @@ module WEACEInstall
     # * *iPluginCategory* (_String_): Plugin category this component belongs to
     # * *iPluginName* (_String_): Plugin name of the component
     # * *iParameters* (<em>list<String></em>): The additional parameters given to this component's installation
+    # * *iExtraParametersAllowed* (_Boolean_): Are extra parameters allowed ? If true, extra parameters will be given to the @AdditionalParameters plugin variable, separated with '--'.
     # * *iProviderEnv* (<em>map<Symbol,Object></em>): The Provider's environment, or nil if not applicable
     # * *iAdditionalRegistrationInfo* (<em>map<Symbol,String></em>): Additional registration info to add to the installation info [optional = {}]
     # * *iProductConfig* (<em>map<Symbol,String></em>): Corresponding Product's configuration This is used to instantiate @ProductConfig variable in the installation plugin. [optional = nil]
     # * *iToolConfig* (<em>map<Symbol,String></em>): Corresponding Tool's configuration. This is used to instantiate @ToolConfig variable in the installation plugin. [optional = nil]
     # Return:
     # * _Exception_: An error, or nil in case of success
-    def installComponent(iComponentName, iPluginCategory, iPluginName, iParameters, iProviderEnv, iAdditionalRegistrationInfo = {}, iProductConfig = nil, iToolConfig = nil)
+    def installComponent(iComponentName, iPluginCategory, iPluginName, iParameters, iExtraParametersAllowed, iProviderEnv, iAdditionalRegistrationInfo = {}, iProductConfig = nil, iToolConfig = nil)
       rError = nil
 
       logDebug "Install Component #{iComponentName} from plugin #{iPluginCategory}/#{iPluginName} with parameters \"#{iParameters.join(' ')}\""
@@ -566,7 +567,7 @@ module WEACEInstall
         end
         @PluginsManager.accessPlugin(iPluginCategory, iPluginName) do |ioPlugin|
           # Get the description to parse options
-          rError, lAdditionalArgs = initPluginWithParameters(ioPlugin, iParameters)
+          rError, lAdditionalArgs = initPluginWithParameters(ioPlugin, iParameters, iExtraParametersAllowed)
           if (rError == nil)
             # Give some references for the plugins to use
             ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
@@ -711,8 +712,8 @@ module WEACEInstall
         'MasterServer',
         'Master/Server',
         'WEACEMasterServer',
-        # Options are to be given to the Provider, not the MasterServer installer. So add a -- in front of them.
-        ['--'] + iParameters,
+        iParameters,
+        true,
         nil,
         {
           :ProviderID => iProviderType
@@ -735,6 +736,7 @@ module WEACEInstall
           'Master/Products',
           iProductID,
           iParameters,
+          false,
           iProviderEnv,
           {
             :Type => 'Master',
@@ -760,6 +762,7 @@ module WEACEInstall
           "Master/Processes/#{iProductID}",
           iProcessID,
           iParameters,
+          false,
           iProviderEnv,
           {},
           lProductConfig
@@ -779,8 +782,8 @@ module WEACEInstall
         'SlaveClient',
         'Slave/Client',
         'WEACESlaveClient',
-        # Options are to be given to the Provider, not the SlaveClient installer. So add a -- in front of them.
-        ['--'] + iParameters,
+        iParameters,
+        true,
         nil,
         {
           :ProviderID => iProviderType
@@ -803,6 +806,7 @@ module WEACEInstall
           'Slave/Products',
           iProductID,
           iParameters,
+          false,
           iProviderEnv,
           {
             :Type => 'Slave',
@@ -828,6 +832,7 @@ module WEACEInstall
           "Slave/Tools/#{iProductID}",
           iToolID,
           iParameters,
+          false,
           iProviderEnv,
           {},
           lProductConfig
@@ -859,6 +864,7 @@ module WEACEInstall
             "Slave/Actions/#{iProductID}/#{iToolID}",
             iActionID,
             iParameters,
+            false,
             iProviderEnv,
             {},
             lProductConfig,
@@ -886,6 +892,7 @@ module WEACEInstall
           'Slave/Listeners',
           iListenerID,
           iParameters,
+          false,
           iProviderEnv
         )
       end

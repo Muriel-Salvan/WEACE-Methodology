@@ -41,7 +41,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
                 :CheckConfigFile => {
@@ -68,7 +68,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
                 :CheckConfigFile => {
@@ -86,7 +86,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
                 :CheckConfigFile => {
@@ -104,7 +104,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
                 :CheckConfigFile => {
@@ -142,7 +142,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '-- --flag',
+                  :InstallationParameters => '--flag',
                   :ProviderID => 'DummySlaveProviderWithParams'
                 },
                 :CheckConfigFile => {
@@ -161,7 +161,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '-- --dummyvar testvalue',
+                  :InstallationParameters => '--dummyvar testvalue',
                   :ProviderID => 'DummySlaveProviderWithParamsValues'
                 },
                 :CheckConfigFile => {
@@ -180,7 +180,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '-- --repository %{WEACERepositoryDir}/CGI',
+                  :InstallationParameters => '--repository %{WEACERepositoryDir}/CGI',
                   :ProviderID => 'DummySlaveProviderWithCGI'
                 },
                 :CheckConfigFile => {

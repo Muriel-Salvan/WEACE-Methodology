@@ -42,7 +42,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
                 :CheckConfigFile => {
@@ -69,7 +69,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
                 :CheckConfigFile => {
@@ -87,7 +87,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
                 :CheckConfigFile => {
@@ -105,7 +105,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '--',
+                  :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
                 :CheckConfigFile => {
@@ -143,7 +143,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '-- --flag',
+                  :InstallationParameters => '--flag',
                   :ProviderID => 'DummyMasterProviderWithParams'
                 },
                 :CheckConfigFile => {
@@ -162,7 +162,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => '-- --dummyvar testvalue',
+                  :InstallationParameters => '--dummyvar testvalue',
                   :ProviderID => 'DummyMasterProviderWithParamsValues'
                 },
                 :CheckConfigFile => {
@@ -181,7 +181,7 @@ module WEACE
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
                   :Author => 'murielsalvan@users.sourceforge.net',
-                  :InstallationParameters => "-- --repository %{WEACERepositoryDir}/CGI",
+                  :InstallationParameters => '--repository %{WEACERepositoryDir}/CGI',
                   :ProviderID => 'DummyMasterProviderWithCGI'
                 },
                 :CheckConfigFile => {

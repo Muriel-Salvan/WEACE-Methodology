@@ -3,7 +3,7 @@
 {
   :Type => 'Slave',
   :InstallationDate => '2010-01-29 16:29:24',
-  :InstallationParameters => '--',
+  :InstallationParameters => '',
   :Description => 'This Slave Product is used for regression purposes only.',
   :Product => 'DummyProduct',
   :Author => 'murielsalvan@users.sourceforge.net'

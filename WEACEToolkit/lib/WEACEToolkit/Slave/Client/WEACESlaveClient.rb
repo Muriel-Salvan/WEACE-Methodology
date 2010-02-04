@@ -19,9 +19,6 @@ module WEACE
 
   module Slave
   
-    Product_Mediawiki = 'Mediawiki'
-    Product_Redmine = 'Redmine'
-  
     class Client
       
       include WEACE::Toolbox
@@ -103,17 +100,14 @@ module WEACE
         @DefaultLogDir = "#{lWEACERepositoryDir}/Log"
         @ConfigFile = "#{lWEACERepositoryDir}/Config/SlaveClient.conf.rb"
         # Map of Actions
-        # map< String, map< String, [ list< [ String,    Boolean ] >, list< list< String > > ] > >
-        #      ToolID       ActionID          ProductID, Installed?               Parameter
+        # map< String, map< String, [ list< String >, list< list< String > > ] > >
+        #      ToolID       ActionID        ProductName           Parameter
         # map<
         #   ToolID,
         #   map<                              <- Set of Actions that are associated to this Tool
         #     ActionID,
-        #     [                               <- List of Products that are adapted to this Action
-        #       list< [
-        #         ProductID,
-        #         Installed?                  <- Has this Adapter been installed (or is it just among plugins) ?
-        #       ] >,
+        #     [
+        #       list< ProductName >,          <- List of Products that are adapted to this Action
         #       list< list< Parameter > >     <- List of parameters to apply with this Action
         #     ]
         #   >
