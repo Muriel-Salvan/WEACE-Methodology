@@ -101,14 +101,14 @@ module WEACE
 
           # Test that Processes are called correctly
           def testProcess
-            executeMaster( [ '-p', 'DummyProcess', '-u', 'DummyUser' ], :AddRegressionProcesses => true ) do |iError|
+            executeMaster( [ '--process', 'DummyProcess', '--user', 'DummyUser' ], :AddRegressionProcesses => true ) do |iError|
               assert_equal([], $Variables[:ProcessParameters])
             end
           end
 
           # Test that Processes are called correctly with parameters
           def testProcessWithParameters
-            executeMaster( [ '-p', 'DummyProcess', '-u', 'DummyUser', '--', 'Param1', 'Param2' ], :AddRegressionProcesses => true ) do |iError|
+            executeMaster( [ '--process', 'DummyProcess', '--user', 'DummyUser', '--', 'Param1', 'Param2' ], :AddRegressionProcesses => true ) do |iError|
               assert_equal([ 'Param1', 'Param2' ], $Variables[:ProcessParameters])
             end
           end

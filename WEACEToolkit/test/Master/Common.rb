@@ -114,14 +114,31 @@ module WEACE
               # Execute for real
               if (debugActivated?)
                 lError = lMasterServer.execute(['-d']+iParameters)
-                #p lError
               else
                 lError = lMasterServer.execute(iParameters)
               end
               # Check
               if (lExpectedErrorClass == nil)
+                if (lError != nil)
+                  logErr "Unexpected error: #{lError.class}: #{lError}"
+                  if (lError.backtrace == nil)
+                    logErr 'No backtrace'
+                  else
+                    logErr lError.backtrace.join("\n")
+                  end
+                end
                 assert_equal(nil, lError)
               else
+                if (lError == nil)
+                  logErr 'Unexpected success.'
+                elsif (!lError.kind_of?(lExpectedErrorClass))
+                  logErr "Unexpected error: #{lError.class}: #{lError}"
+                  if (lError.backtrace == nil)
+                    logErr 'No backtrace'
+                  else
+                    logErr lError.backtrace.join("\n")
+                  end
+                end
                 assert(lError.kind_of?(lExpectedErrorClass))
               end
               # Call additional checks from the test case itself

@@ -13,7 +13,7 @@ module WEACE
 
         class Local < ::Test::Unit::TestCase
 
-          include WEACE::Test::Master::Senders::Common
+          include WEACE::Test::Master::MasterSender
 
           # Give additional execution parameters to be given to executeSender method
           #

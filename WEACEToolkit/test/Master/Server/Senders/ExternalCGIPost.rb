@@ -39,7 +39,7 @@ module WEACE
 
         class ExternalCGIPost < ::Test::Unit::TestCase
 
-          include WEACE::Test::Master::Senders::Common
+          include WEACE::Test::Master::MasterSender
 
           # Class used to simulate an HTTP response
           class DummyHTTPAnswer
@@ -62,8 +62,6 @@ module WEACE
             end
 
           end
-
-          include WEACE::Test::Master::Senders::Common
 
           # Give additional execution parameters to be given to executeSender method
           #
