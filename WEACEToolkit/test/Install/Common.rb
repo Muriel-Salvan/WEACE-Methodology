@@ -18,7 +18,7 @@ module WEACE
         include WEACE::Toolbox
         include WEACE::Test::Common
 
-        # Setup a temporary repository as an image of a given repository.
+        # Setup a Product temporary repository as an image of a given repository.
         # The repository is then deleted once the code block finishes.
         #
         # Parameters:
@@ -38,7 +38,7 @@ module WEACE
           end
         end
 
-        # Compare the current repository with a reference repository
+        # Compare the current Product repository with a reference repository
         #
         # Parameters:
         # * *iRepositoryName* (_String_): Name of the repository to use as a reference.

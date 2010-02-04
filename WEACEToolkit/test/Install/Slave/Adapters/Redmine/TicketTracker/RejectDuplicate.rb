@@ -23,42 +23,36 @@ module WEACE
 
               class RejectDuplicate < ::Test::Unit::TestCase
 
-                include WEACE::Test::Install::Adapters
+                include WEACE::Test::Install::Slave::SlaveAction
 
-                # Test normal behaviour
-                def testNormal
-                  executeInstallAdapter(
-                    [
-                      '--redminedir', '%{ProductDir}/redmine-0.8.2',
-                      '--rubygemslib', '%{ProductDir}/rubygems/lib',
-                      '--gems', '%{ProductDir}/rubygems/gems',
-                      '--mysql', '%{ProductDir}/mysql/lib'
-                    ],
-                    :ProductRepository => 'Virgin',
-                    :ContextVars => {
-                      'WEACESlaveInfoURL' => 'http://weacemethod.sourceforge.net'
-                    }
-                  ) do |iError|
-                    compareWithRepository('Normal')
-                  end
-                end
-
-                # Test duplicate behaviour
-                def testDuplicate
-                  executeInstallAdapter(
-                    [
-                      '--redminedir', '%{ProductDir}/redmine-0.8.2',
-                      '--rubygemslib', '%{ProductDir}/rubygems/lib',
-                      '--gems', '%{ProductDir}/rubygems/gems',
-                      '--mysql', '%{ProductDir}/mysql/lib'
-                    ],
-                    :ProductRepository => 'Normal',
-                    :ContextVars => {
-                      'WEACESlaveInfoURL' => 'http://weacemethod.sourceforge.net'
-                    }
-                  ) do |iError|
-                    compareWithRepository('Normal')
-                  end
+                # Get the specificities of this test suite to be used by SlaveAction module.
+                # Here are the different properties to give:
+                # * :InstallSlaveActionParameters (<em>list<String></em>): The parameters to give WEACEInstall. Only the Slave Action's specific ones.
+                # * :InstallSlaveActionParametersShort (<em>list<String></em>): The parameters to give WEACEInstall in short version. Only the Slave Action's specific ones.
+                # * :Repository (_String_): Repository name to be used when installing this Slave Action.
+                # * :SlaveActionInstallInfo (<em>map<Symbol,Object></em>): The install info the SlaveAction should register (without :InstallationDate, :InstallationParameters).
+                # * :SlaveActionConfigInfo (<em>map<Symbol,Object></em>): The config info the SlaveProduct should register.
+                # * :ProductRepositoryVirgin (_String_): Name of the Product repository to use when this SlaveProduct is not installed.
+                # * :ProductRepositoryInstalled (_String_): Name of the Product repository to use when this SlaveProduct is installed.
+                # * :ProductRepositoryInvalid (_String_): Name of the Product repository to use when this SlaveProduct cannot be installed [optional = nil].
+                # * :CheckErrorClass (_class_): Class of the Check error thrown when installing on :ProductRepositoryInvalid [optional = nil]
+                #
+                # Return:
+                # * <em>map<Symbol,Object></em>: The different properties
+                def getSlaveActionTestSpecs
+                  return {
+                    :InstallSlaveActionParameters => [],
+                    :InstallSlaveActionParametersShort => [],
+                    :Repository => 'SlaveRedmineTicketTrackerInstalled',
+                    :SlaveActionInstallInfo => {
+                      :Description => 'This adapter creates a relation between a master and a slave tickets, and reject the slave as a duplicate of the master.',
+                      :Author => 'murielsalvan@users.sourceforge.net'
+                    },
+                    :SlaveProductConfigInfo => {},
+                    :ProductRepositoryVirgin => 'Empty',
+                    :ProductRepositoryInstalled => 'Empty',
+                    :CheckErrorClass => WEACE::MissingFileError
+                  }
                 end
 
               end

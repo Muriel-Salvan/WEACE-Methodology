@@ -375,6 +375,9 @@ module WEACE
       # * *iSrcDir* (_String_): Source directory
       # * *iDstDir* (_String_): Destination directory
       def copyDir(iSrcDir, iDstDir)
+        if (!File.exists?(iSrcDir))
+          raise RuntimeError.new("Directory #{iSrcDir} does not exist. Can't copy it into #{iDstDir}.")
+        end
         FileUtils.mkdir_p(iDstDir)
         Dir.glob("#{iSrcDir}/*").each do |iFileName|
           lBaseName = File.basename(iFileName)
