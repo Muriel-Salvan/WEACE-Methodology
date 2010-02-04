@@ -408,6 +408,123 @@ module WEACE
           end
         end
 
+        # Test installing the Component, adding invalid parameter among install parameters
+        def testComponentWithInvalidParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['Regression_InvalidParameter'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --provider option
+        def testComponentWithExtraProviderParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--provider', 'DummyProvider'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --product option
+        def testComponentWithExtraProductParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--product', 'DummyProduct'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --as option
+        def testComponentWithExtraAsParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--as', 'RegProduct'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --process option
+        def testComponentWithExtraProcessParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--process', 'DummyProcess'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --tool option
+        def testComponentWithExtraToolParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--tool', 'DummyTool'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --action option
+        def testComponentWithExtraActionParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--action', 'DummyAction'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --listener option
+        def testComponentWithExtraListenerParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--listener', 'DummyListener'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
+        # Test installing the Component, adding extra --on option
+        def testComponentWithExtraOnParam
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters] + ['--on', 'RegProduct'],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :Error => WEACEInstall::CommandLineError
+            ) do |iError|
+              assert_equal(nil, $Variables[:ComponentInstall])
+            end
+          end
+        end
+
       end
 
     end

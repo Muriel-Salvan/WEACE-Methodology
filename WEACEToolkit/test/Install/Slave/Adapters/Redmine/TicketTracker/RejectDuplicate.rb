@@ -17,9 +17,9 @@ module WEACE
 
         module Adapters
 
-          module Redmine
+          class Redmine
 
-            module TicketTracker
+            class TicketTracker
 
               class RejectDuplicate < ::Test::Unit::TestCase
 

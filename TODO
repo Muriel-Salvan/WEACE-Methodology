@@ -1,7 +1,6 @@
 * Regression:
 ** Create test framework for Slave/Listeners
 ** Create tests for configuration files
-** Add tests in GenericComponent of failure when installing with extra install options.
 ** Test that Provider, Product and Tool configurations are effectively given to the plugins during installation.
 
 * Development:

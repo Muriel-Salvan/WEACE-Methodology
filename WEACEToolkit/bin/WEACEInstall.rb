@@ -136,7 +136,11 @@ module WEACEInstall
         # Parse options
         lInstallerArgs, lAdditionalArgs = splitParameters(iParameters)
         begin
-          lOptions.parse(lInstallerArgs)
+          lRemainingInstallArgs = lOptions.parse(lInstallerArgs)
+          # Normally, no argument should remain
+          if (!lRemainingInstallArgs.empty?)
+            rError = CommandLineError.new("Invalid arguments remaining: #{lRemainingInstallArgs.join(' ')}")
+          end
         rescue Exception
           puts lOptions
           rError = $!
@@ -178,6 +182,14 @@ module WEACEInstall
             when 'SlaveClient'
               if (@ProviderType == nil)
                 rError = CommandLineError.new('Please specify a Provider type using --provider option.')
+              elsif ((@ProductID != nil) or
+                     (@AsProductName != nil) or
+                     (@OnProductName != nil) or
+                     (@ToolID != nil) or
+                     (@ActionID != nil) or
+                     (@ListenerID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Provider type using --provider option.')
               else
                 rError = installSlaveClient(@ProviderType, lAdditionalArgs)
               end
@@ -185,6 +197,13 @@ module WEACEInstall
               if ((@ProductID == nil) or
                   (@AsProductName == nil))
                 rError = CommandLineError.new('Please specify a Product and a name using --product and --as options.')
+              elsif ((@ProviderType != nil) or
+                     (@OnProductName != nil) or
+                     (@ToolID != nil) or
+                     (@ActionID != nil) or
+                     (@ListenerID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Product and its name using --product and --as options.')
               else
                 rError = installSlaveProduct(@ProductID, @AsProductName, lAdditionalArgs)
               end
@@ -192,6 +211,13 @@ module WEACEInstall
               if ((@ToolID == nil) or
                   (@OnProductName == nil))
                 rError = CommandLineError.new('Please specify a Tool and a Product name using --tool and --on options.')
+              elsif ((@ProviderType != nil) or
+                     (@ProductID != nil) or
+                     (@AsProductName != nil) or
+                     (@ActionID != nil) or
+                     (@ListenerID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Tool and Product name using --tool and --on options.')
               else
                 rError = installSlaveTool(@ToolID, @OnProductName, lAdditionalArgs)
               end
@@ -200,18 +226,40 @@ module WEACEInstall
                   (@ActionID == nil) or
                   (@OnProductName == nil))
                 rError = CommandLineError.new('Please specify a Tool, Action and a Product name using --tool, --action and --on options.')
+              elsif ((@ProviderType != nil) or
+                     (@ProductID != nil) or
+                     (@AsProductName != nil) or
+                     (@ListenerID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Tool, Action and Product name using --tool, --action and --on options.')
               else
                 rError = installSlaveAction(@ToolID, @ActionID, @OnProductName, lAdditionalArgs)
               end
             when 'SlaveListener'
               if (@ListenerID == nil)
                 rError = CommandLineError.new('Please specify a Listener using --listener option.')
+              elsif ((@ProviderType != nil) or
+                     (@ProductID != nil) or
+                     (@AsProductName != nil) or
+                     (@OnProductName != nil) or
+                     (@ToolID != nil) or
+                     (@ActionID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Listener using --listener option.')
               else
                 rError = installSlaveListener(@ListenerID, lAdditionalArgs)
               end
             when 'MasterServer'
               if (@ProviderType == nil)
                 rError = CommandLineError.new('Please specify a Provider type using --provider option.')
+              elsif ((@ProductID != nil) or
+                     (@AsProductName != nil) or
+                     (@OnProductName != nil) or
+                     (@ToolID != nil) or
+                     (@ActionID != nil) or
+                     (@ListenerID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Provider type using --provider option.')
               else
                 rError = installMasterServer(@ProviderType, lAdditionalArgs)
               end
@@ -219,6 +267,13 @@ module WEACEInstall
               if ((@ProductID == nil) or
                   (@AsProductName == nil))
                 rError = CommandLineError.new('Please specify a Product and a name using --product and --as options.')
+              elsif ((@ProviderType != nil) or
+                     (@OnProductName != nil) or
+                     (@ToolID != nil) or
+                     (@ActionID != nil) or
+                     (@ListenerID != nil) or
+                     (@ProcessID != nil))
+                rError = CommandLineError.new('Please specify only the Product and its name using --product and --as options.')
               else
                 rError = installMasterProduct(@ProductID, @AsProductName, lAdditionalArgs)
               end
@@ -226,6 +281,13 @@ module WEACEInstall
               if ((@ProcessID == nil) or
                   (@OnProductName == nil))
                 rError = CommandLineError.new('Please specify a Process and a Product name using --process and --on options.')
+              elsif ((@ProviderType != nil) or
+                     (@ProductID != nil) or
+                     (@AsProductName != nil) or
+                     (@ToolID != nil) or
+                     (@ActionID != nil) or
+                     (@ListenerID != nil))
+                rError = CommandLineError.new('Please specify only the Process and Product name using --process and --on options.')
               else
                 rError = installMasterProcess(@ProcessID, @OnProductName, lAdditionalArgs)
               end
@@ -876,6 +938,9 @@ module WEACEInstall
       rOptions.on('-i', '--install <Component>', String,
         '<Component>: One of the following values: SlaveClient, SlaveProduct, SlaveTool, SlaveAction, MasterServer, MasterProduct, MasterProcess.',
         'Install a given component.') do |iArg|
+        if (@ComponentToInstall != nil)
+          raise CommandLineError.new('Please specify only one --install option.')
+        end
         @ComponentToInstall = iArg
       end
       rOptions.on('-f', '--force',
@@ -885,41 +950,65 @@ module WEACEInstall
       rOptions.on('-p', '--provider <ProviderType>', String,
         '<ProviderType>: One of the possible Provider types available. Please use --detailedlist to know possible values.',
         'Specify the Provider to install the SlaveClient or MasterServer.') do |iArg|
+        if (@ProviderType != nil)
+          raise CommandLineError.new('Please specify only one --provider option.')
+        end
         @ProviderType = iArg
       end
       rOptions.on('-r', '--product <ProductID>', String,
         '<ProductID>: One of the possible Products available. Please use --detailedlist to know possible values.',
         'Specify the Product to install.') do |iArg|
+        if (@ProductID != nil)
+          raise CommandLineError.new('Please specify only one --product option.')
+        end
         @ProductID = iArg
       end
       rOptions.on('-s', '--as <ProductName>', String,
         '<ProductName>: Alias to give the Product\'s installation. This alias will then be used to install further Adapters on this Product.',
         'Specify the name of this Product\'s installation to be referenced later.') do |iArg|
+        if (@AsProductName != nil)
+          raise CommandLineError.new('Please specify only one --as option.')
+        end
         @AsProductName = iArg
       end
       rOptions.on('-t', '--tool <ToolID>', String,
         '<ToolID>: One of the possible Tools available. Please use --detailedlist to know possible values.',
         'Specify the Tool on which this installation will apply.') do |iArg|
+        if (@ToolID != nil)
+          raise CommandLineError.new('Please specify only one --tool option.')
+        end
         @ToolID = iArg
       end
       rOptions.on('-o', '--on <ProductName>', String,
         '<ProductName>: Alias given previously to a Product\'s installation.',
         'Specify on which Product the installation applies.') do |iArg|
+        if (@OnProductName != nil)
+          raise CommandLineError.new('Please specify only one --on option.')
+        end
         @OnProductName = iArg
       end
       rOptions.on('-a', '--action <ActionID>', String,
         '<ActionID>: One of the possible Actions available. Please use --detailedlist to know possible values.',
         'Specify which Action to install on the given Product/Tool.') do |iArg|
+        if (@ActionID != nil)
+          raise CommandLineError.new("Please specify only one --action option.")
+        end
         @ActionID = iArg
       end
       rOptions.on('-c', '--process <ProcessID>', String,
         '<ProcessID>: One of the possible Master Processes available. Please use --detailedlist to know possible values.',
         'Specify which Process to install on the given Product.') do |iArg|
+        if (@ProcessID != nil)
+          raise CommandLineError.new('Please specify only one --process option.')
+        end
         @ProcessID = iArg
       end
       rOptions.on('-n', '--listener <ListenerID>', String,
         '<ListenerID>: One of the possible Slave Listeners available. Please use --detailedlist to know possible values.',
         'Specify which Listener to install.') do |iArg|
+        if (@ListenerID != nil)
+          raise CommandLineError.new('Please specify only one --listener option.')
+        end
         @ListenerID = iArg
       end
       rOptions.on('--',
