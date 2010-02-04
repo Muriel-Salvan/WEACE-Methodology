@@ -12,6 +12,7 @@ module WEACE
       module Slave
 
         # Test everything related to installing Slave Tools.
+        # Don't test each Slave Tool here. Just the generic functionalities with Dummy MasterProcesses.
         class SlaveTools < ::Test::Unit::TestCase
 
           # Test basic Component installation workflow
@@ -26,6 +27,11 @@ module WEACE
           # * :RepositoryNormal (_String_): Name of the repository to use when installing this Component.
           # * :RepositoryInstalled (_String_): Name of the repository to use when this Component should already be installed.
           # * :RepositoryConfigured (_String_): Name of the repository to use when this Component should already be configured.
+          # * :ProviderEnv (<em>map<Symbol,Object></em>): The Provider's environment that should be given the plugin
+          # * :ProductConfig (<em>map<Symbol,Object></em>): The Product's configuration that should be given the plugin if applicable [optional = nil]
+          # * :ToolConfig (<em>map<Symbol,Object></em>): The Tool's configuration that should be given the plugin if applicable [optional = nil]
+          # * :RepositoryProductConfig (_String_): Name of the repository to use when testing Product config, if :ProductConfig is specified [optional = nil]
+          # * :RepositoryToolConfig (_String_): Name of the repository to use when testing Tool config, if :ToolConfig is specified [optional = nil]
           #
           # Return:
           # * <em>map<Symbol,Object></em>: The different properties
@@ -40,7 +46,14 @@ module WEACE
               },
               :RepositoryNormal => 'Dummy/SlaveProductInstalled',
               :RepositoryInstalled => 'Dummy/SlaveToolInstalled',
-              :RepositoryConfigured => 'Dummy/SlaveToolConfigured'
+              :RepositoryConfigured => 'Dummy/SlaveToolConfigured',
+              :ProviderEnv => {
+                :WEACESlaveInfoURL => 'http://weacemethod.sourceforge.net'
+              },
+              :ProductConfig => {
+                :SlaveProductConfAttr => 'SlaveProductConfValue'
+              },
+              :RepositoryProductConfig => 'Dummy/SlaveProductInstalledWithProductConfig'
             }
           end
 

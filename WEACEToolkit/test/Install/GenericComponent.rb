@@ -525,6 +525,85 @@ module WEACE
           end
         end
 
+        # Test that the Component has the Provider environment correctly set
+        def testComponentProviderEnv
+          initComponentTest do
+            executeInstall(@Specs[:InstallParameters],
+              :Repository => @Specs[:RepositoryNormal],
+              @Specs[:AddRegressionAdaptersVar] => true,
+              :CheckComponentName => @Specs[:ComponentName],
+              :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
+                :InstallationParameters => ''
+               } ),
+              :CheckConfigFile => {}
+            ) do |iError|
+              assert_equal(
+                [
+                  [ 'check', [] ],
+                  [ 'execute', [] ],
+                  [ 'getDefaultConfig', [] ]
+                ],
+                $Variables[:ComponentInstall][:Calls]
+              )
+              assert_equal(@Specs[:ProviderEnv], $Variables[:ComponentInstall][:ProviderEnv])
+            end
+          end
+        end
+
+        # Test that the Component has the Product Config correctly set
+        def testComponentProductConfig
+          initComponentTest do
+            if (@Specs[:ProductConfig] != nil)
+              executeInstall(@Specs[:InstallParameters],
+                :Repository => @Specs[:RepositoryProductConfig],
+                @Specs[:AddRegressionAdaptersVar] => true,
+                :CheckComponentName => @Specs[:ComponentName],
+                :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
+                  :InstallationParameters => ''
+                 } ),
+                :CheckConfigFile => {}
+              ) do |iError|
+                assert_equal(
+                  [
+                    [ 'check', [] ],
+                    [ 'execute', [] ],
+                    [ 'getDefaultConfig', [] ]
+                  ],
+                  $Variables[:ComponentInstall][:Calls]
+                )
+                assert_equal(@Specs[:ProductConfig], $Variables[:ComponentInstall][:ProductConfig])
+              end
+            end
+          end
+        end
+
+        # Test that the Component has the Tool Config correctly set
+        def testComponentToolConfig
+          initComponentTest do
+            if (@Specs[:ToolConfig] != nil)
+              executeInstall(@Specs[:InstallParameters],
+                :Repository => @Specs[:RepositoryToolConfig],
+                @Specs[:AddRegressionAdaptersVar] => true,
+                :CheckComponentName => @Specs[:ComponentName],
+                :CheckInstallFile => @Specs[:ComponentInstallInfo].merge( {
+                  :InstallationParameters => ''
+                 } ),
+                :CheckConfigFile => {}
+              ) do |iError|
+                assert_equal(
+                  [
+                    [ 'check', [] ],
+                    [ 'execute', [] ],
+                    [ 'getDefaultConfig', [] ]
+                  ],
+                  $Variables[:ComponentInstall][:Calls]
+                )
+                assert_equal(@Specs[:ToolConfig], $Variables[:ComponentInstall][:ToolConfig])
+              end
+            end
+          end
+        end
+
       end
 
     end

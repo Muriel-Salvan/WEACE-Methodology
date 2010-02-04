@@ -1,0 +1,5 @@
+
+{
+  :SlaveProductConfAttr => 'SlaveProductConfValue'
+}
+

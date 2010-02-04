@@ -1,0 +1,5 @@
+
+{
+  :SlaveToolConfAttr => 'SlaveToolConfValue'
+}
+

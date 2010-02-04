@@ -109,6 +109,13 @@ module WEACE
           if (defined?(@DummyVar))
             $Variables[:ComponentInstall][:DummyVar] = @DummyVar
           end
+          $Variables[:ComponentInstall][:ProviderEnv] = @ProviderEnv
+          if (defined?(@ProductConfig))
+            $Variables[:ComponentInstall][:ProductConfig] = @ProductConfig
+          end
+          if (defined?(@ToolConfig))
+            $Variables[:ComponentInstall][:ToolConfig] = @ToolConfig
+          end
 
           if (($Context[:ComponentInstall] != nil) and
               ($Context[:ComponentInstall][:CheckFail]))
