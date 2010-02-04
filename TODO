@@ -5,7 +5,6 @@
 * Development:
 ** Implement in-code TODOs
 ** Implement Product verification (version...) before installing
-** Implement an installation step that checks if the product is genuine before patching it + Regression
 ** Check WEACEShowMaster/SlaveInfo relevance
 ** Big code review to remove useless functions
 ** When WEACE Slave Client does not execute Actions due to uninstalled or unconfigured Adapters, we have to know it.

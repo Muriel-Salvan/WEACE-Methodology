@@ -48,9 +48,7 @@ require 'Install/Slave/SlaveActions'
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Client/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Providers/*.rb") +
   Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Listeners/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/*/*.rb") +
-  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/Redmine/*/*.rb")
+  Dir.glob("#{File.dirname(__FILE__)}/Install/Slave/Adapters/**/*.rb")
 #  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Processes/*.rb") +
 #  Dir.glob("#{File.dirname(__FILE__)}/Master/Server/Senders/*.rb") +
