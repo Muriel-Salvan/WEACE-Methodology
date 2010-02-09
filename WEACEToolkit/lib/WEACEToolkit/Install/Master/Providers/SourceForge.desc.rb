@@ -17,5 +17,6 @@
       '<ProjectUnixName>: SourceForge.net\'s project name.',
       'Example: myproject'
     ]
-  ]
+  ],
+  :OptionsExample => '--project myproject'
 }

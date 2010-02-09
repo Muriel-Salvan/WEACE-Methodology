@@ -563,7 +563,7 @@ Check http://weacemethod.sourceforge.net for details."
                 if (!lNames.empty?)
                   lNames.each do |iActionID|
                     # Check if this Adapter has been installed
-                    lInstalledDesc = getInstalledComponentDescription("Slave/Adapters/#{lProductID}/#{lToolID}/#{iActionID}")
+                    lInstalledDesc = getComponentInstallInfo("Slave/Adapters/#{lProductID}/#{lToolID}/#{iActionID}")
                     registerAction(lToolID, iActionID, lProductID, (lInstalledDesc != nil))
                   end
                 end

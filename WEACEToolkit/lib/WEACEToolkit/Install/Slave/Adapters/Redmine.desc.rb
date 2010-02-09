@@ -23,5 +23,6 @@
       '<MySQLLibPath>: Path to the directory containing the MySQL (C-Connector) library.',
       'Example: /home/groups/m/my/myproject/mysql/lib'
     ]
-  ]
+  ],
+  :OptionsExample => '--redminedir /home/redmine --mysql /home/groups/m/my/myproject/mysql/lib'
 }

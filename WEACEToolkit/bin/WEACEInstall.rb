@@ -355,118 +355,460 @@ module WEACEInstall
       parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
     end
 
-    # Output information of a component
+    # Display several lines of text given a prefix to apply to every line and a maximal width to respect.
+    # Lines longer than maximal width will be split on to next line.
+    # The maximal width is taken from @MaxPFWidth.
     #
     # Parameters:
-    # * *iComponentName* (_String_): Component name
-    # * *iComponentDescription* (<em>map<Symbol,Object></em>): The component description
-    def outputComponent(iComponentName, iComponentDescription)
+    # * *iPrefix* (_String_): The prefix to apply to every line printed
+    # * *iMessage* (_String_): The message to display (can be several lines)
+    def pf(iPrefix, iMessage)
+      lMaxLineSize = @MaxPFWidth - iPrefix.size
+      # Check if the terminal is not too small
+      if (lMaxLineSize > 0)
+        # Split the message in as many lines as needed.
+        lLstLines = []
+        iMessage.split("\n").each do |iLine|
+          if (iLine.size > lMaxLineSize)
+            lRemainingLine = iLine.clone
+            while ((lRemainingLine != nil) and
+                   (!lRemainingLine.empty?))
+              lLstLines << lRemainingLine[0..lMaxLineSize-1]
+              lRemainingLine = lRemainingLine[lMaxLineSize..-1]
+            end
+          else
+            lLstLines << iLine
+          end
+        end
+        # Now we dump each line with the prefix
+        lLstLines.each do |iLine|
+          puts "#{iPrefix}#{iLine}"
+        end
+      else
+        # Terminal too small. Don't try anything: just put as we can.
+        puts "#{iPrefix}#{iMessage}"
+      end
+    end
+
+    # Output a Component's information
+    #
+    # Parameters:
+    # * *iPrefix* (_String_): Prefix to add to each line output
+    # * *iComponentInfo* (<em>map<Symbol,Object></em>): The component description
+    # * *iExamplePrefix* (_String_): The example command line prefix
+    def pfComponent(iPrefix, iComponentInfo, iExamplePrefix)
       if (@OutputDetails)
-        puts "* Component: #{iComponentName}"
-        # TODO: Check if we can use Version
-        #puts "  * Version: #{iComponentDescription[:Version]}"
-        puts "  * Description: #{iComponentDescription[:Description]}"
-        puts "  * Author: #{iComponentDescription[:Author]}"
-        # Display info about its installed version
-        lInstalledComponentDescription = getInstalledComponentDescription(iComponentName)
-        if (lInstalledComponentDescription != nil)
-          # TODO: Maybe also use version here ?
-          puts "  * Installed on #{lInstalledComponentDescription[:InstallationDate]}"
+        pf iPrefix, "Signature: #{iComponentInfo[:Options].to_s}"
+        if (iComponentInfo[:OptionsExample] == nil)
+          pf iPrefix, "Example: WEACEInstall.rb --install #{iExamplePrefix}"
         else
-          puts "  * Not installed"
+          pf iPrefix, "Example: WEACEInstall.rb --install #{iExamplePrefix} -- #{iComponentInfo[:OptionsExample]}"
         end
-        if (iComponentDescription[:Options] != nil)
-          puts '  * Options:'
-          puts iComponentDescription[:Options].summarize
-        end
-        puts ''
-      else
-        puts "* #{iComponentName}"
       end
     end
 
-    # Output information of a Provider
+    # Get the list of installed Slave Products.
+    # Here is the return type:
+    # map< ProductName,
+    #   [ ProductInstallInfo,
+    #     map< ToolID,
+    #       [ ToolInstallInfo,
+    #         map< ActionID,
+    #           [ ActionInstallInfo, Active? ]
+    #         >
+    #       ]
+    #     >
+    #   ]
+    # >
     #
-    # Parameters:
-    # * *iComponentName* (_String_): Component name
-    # * *iComponentDescription* (<em>map<Symbol,Object></em>): The component description
-    def outputProvider(iComponentName, iComponentDescription)
-      if (@OutputDetails)
-        puts "* Provider type: #{iComponentName}"
-        # TODO: Check if we can use Version
-        #puts "  * Version: #{iComponentDescription[:Version]}"
-        puts "  * Description: #{iComponentDescription[:Description]}"
-        puts "  * Author: #{iComponentDescription[:Author]}"
-        if (iComponentDescription[:Options] != nil)
-          puts '  * Options:'
-          puts iComponentDescription[:Options].summarize
+    # Return:
+    # <em>map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,Boolean]>]>]></em>: The list of Slave Products, along with their information
+    def getInstalledSlaveProducts
+      rInstalledProducts = {}
+
+      # We will need to have SlaveClient configuration to know which installed Action is active.
+      # It can be nil.
+      lSlaveClientConfig = getComponentConfigInfo('SlaveClient')
+      # Parse installation files and get Products only
+      Dir.glob("#{@WEACEInstallDir}/InstalledComponents/*.inst.rb").each do |iProductFileName|
+        lProductName = File.basename(iProductFileName)[0..-9]
+        lProductInstallInfo = getComponentInstallInfo(lProductName)
+        if ((lProductInstallInfo[:Product] != nil) and
+            (lProductInstallInfo[:Type] == 'Slave'))
+          # We have got one
+          # Find its installed Tools
+          #     map< ToolID,
+          #       [ ToolInstallInfo,
+          #         map< ActionID,
+          #           [ ActionInstallInfo, Active? ]
+          #         >
+          #       ]
+          #     >
+          lInstalledTools = {}
+          Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iToolFileName|
+            lComponentName = File.basename(iToolFileName)[0..-9]
+            lMatchData = lComponentName.match(/^#{lProductName}\.([^\.]*)$/)
+            if (lMatchData != nil)
+              # We have got one
+              lToolID = lMatchData[1]
+              # Find its installed Actions
+              #         map< ActionID,
+              #           [ ActionInstallInfo, Active? ]
+              #         >
+              lInstalledActions = {}
+              Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.#{lToolID}.*.inst.rb").each do |iActionFileName|
+                lActionID = lComponentName.match(/^#{lProductName}\.#{lToolID}\.([^\.]*)$/)[1]
+                # Check if this Action is active
+                lInstalledActions[lActionID] = [
+                  getComponentInstallInfo("#{lProductName}.#{lToolID}.#{lActionID}"),
+                  ((lSlaveClientConfig != nil) and
+                   (lSlaveClientConfig[lProductName] != nil) and
+                   (lSlaveClientConfig[lProductName][lToolID] != nil) and
+                   (lSlaveClientConfig[lProductName][lToolID].include?(lActionID)))
+                 ]
+              end
+              lInstalledTools[lToolID] = [ getComponentInstallInfo("#{lProductName}.#{lToolID}"), lInstalledActions ]
+            end
+          end
+          rInstalledProducts[lProductName] = [ lProductInstallInfo, lInstalledTools ]
         end
-        puts ''
-      else
-        puts "* #{iComponentName}"
       end
+
+      return rInstalledProducts
     end
 
-    # Iterate over the components whose name match a given reg exp
+    # Get the list of installed Master Products.
+    # Here is the return type:
+    # map< ProductName,
+    #   [ ProductInstallInfo,
+    #     map< ProcessID, ProcessInstallInfo >
+    #   ]
+    # >
     #
-    # Parameters:
-    # * *iRegExp* (_RegExp_): The filter
-    # * *CodeBlock*: The code called for each iteration:
-    # ** *iComponentName* (_String_): The component name
-    # ** *iCategoryName* (_String_): The corresponding plugin category name
-    # ** *iPluginName* (_String_): The corresponding plugin name
-    def forEachFilteredComponent(iRegExp)
-      @InstallableComponents.each do |iComponentName, iComponentInfo|
-        if (iComponentName.match(iRegExp) != nil)
-          iCategoryName, iPluginName = iComponentInfo
-          yield(iComponentName, iCategoryName, iPluginName)
+    # Return:
+    # <em>map<String,[map<Symbol,Object>,map<String,map<Symbol,Object>>]></em>: The list of Master Products, along with their information
+    def getInstalledMasterProducts
+      rInstalledProducts = {}
+
+      # Parse installation files and get Products only
+      Dir.glob("#{@WEACEInstallDir}/InstalledComponents/*.inst.rb").each do |iProductFileName|
+        lProductName = File.basename(iProductFileName)[0..-9]
+        lProductInstallInfo = getComponentInstallInfo(lProductName)
+        if ((lProductInstallInfo[:Product] != nil) and
+            (lProductInstallInfo[:Type] == 'Master'))
+          # We have got one
+          # Find its installed Processes
+          #     map< ProcessID, ProcessInstallInfo >
+          lInstalledProcesses = {}
+          Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iProcessFileName|
+            lProcessID = File.basename(iProcessFileName)[0..-9].match(/^#{lProductName}\.([^\.]*)$/)[1]
+            lInstalledProcesses[lProcessID] = getComponentInstallInfo("#{lProductName}.#{lProcessID}")
+          end
+          rInstalledProducts[lProductName] = [ lProductInstallInfo, lInstalledProcesses ]
         end
       end
+
+      return rInstalledProducts
     end
 
     # Outputs the list of components
     def outputComponents
-      puts ''
-      puts '== Installable WEACE Master Server:'
-      puts '' if (@OutputDetails)
-      forEachFilteredComponent(/^Master\/Server/) do |iComponentName, iCategoryName, iPluginName|
-        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      # Set the maximal width for pf
+      @MaxPFWidth = WEACE::TerminalSize::terminal_size[0]-1
+
+      # Dump Slave info
+      # Get the installation info of the SlaveClient
+      lSlaveClientInstallInfo = getComponentInstallInfo('SlaveClient')
+      pf '', ''
+      pf '', '==== << Slave Components >> ===='
+      pf '', '|'
+      pf '', '+=== << SlaveClient >> ==='
+      if (@OutputDetails)
+        pf '| ', 'Signature: --install SlaveClient --provider <SlaveProviderType> -- <ProviderParameters>'
+        pf '| ', 'Example: WEACEInstall.rb --install SlaveClient --provider SourceForge -- --project myproject'
+      end
+      if (lSlaveClientInstallInfo == nil)
+        pf '| ','Not installed'
+      else
+        pf '| ', "Installed on #{lSlaveClientInstallInfo[:InstallationDate]} as a Provider of type #{lSlaveClientInstallInfo[:Provider]} with parameters \"#{lSlaveClientInstallInfo[:InstallationParameters]}\""
+        if (@OutputDetails)
+          pf '| ', "Configuration file: #{getConfigFileName('SlaveClient')}"
+        end
+      end
+      pf '', '|'
+      pf '', '|'
+      # Get the list of Slave Providers
+      lSlaveProviders = @PluginsManager.getPluginsDescriptions('Slave/Providers')
+      pf '', "+=== << #{lSlaveProviders.size} possible Slave Providers >> ==="
+      lIdx = 0
+      lSlaveProviders.each do |iProviderID, iInfo|
+        pf '| ', '|'
+        pf '| ', "+=== << #{iProviderID} >> ==="
+        lSubPrefix = nil
+        if (lIdx == lSlaveProviders.size-1)
+          lSubPrefix = '|   '
+        else
+          lSubPrefix = '| | '
+        end
+        pfComponent(lSubPrefix, iInfo, "SlaveClient --provider #{iProviderID}")
+        lIdx += 1
+      end
+      pf '', '|'
+      pf '', '|'
+      # Get the list of installable Slave Products
+      lSlaveProducts = @PluginsManager.getPluginsDescriptions('Slave/Products')
+      pf '', "+=== << #{lSlaveProducts.size} installable Slave Products >> ==="
+      lIdxProduct = 0
+      lSlaveProducts.each do |iProductID, iProductInfo|
+        pf '| ', '|'
+        pf '| ', "+=== [P] << #{iProductID} >> ==="
+        lProductPrefix = nil
+        if (lIdxProduct == lSlaveProducts.size-1)
+          lProductPrefix = '|   '
+        else
+          lProductPrefix = '| | '
+        end
+        pfComponent(lProductPrefix, iProductInfo, "SlaveProduct --product #{iProductID} --as MyProduct")
+        # Get the list of Slave Tools
+        lSlaveTools = @PluginsManager.getPluginsDescriptions("Slave/Tools/#{iProductID}")
+        pf lProductPrefix, "#{lSlaveTools.size} installable Slave Tools for #{iProductID}:"
+        lIdxTool = 0
+        lSlaveTools.each do |iToolID, iToolInfo|
+          pf lProductPrefix, '|'
+          pf lProductPrefix, "+=== [T] << #{iToolID} >> ==="
+          lToolPrefix = nil
+          if (lIdxTool == lSlaveTools.size-1)
+            lToolPrefix = "#{lProductPrefix}  "
+          else
+            lToolPrefix = "#{lProductPrefix}| "
+          end
+          pfComponent(lToolPrefix, iToolInfo, "SlaveTool --on MyProduct --tool #{iToolID}")
+          # Get the list of Slave Actions
+          lSlaveActions = @PluginsManager.getPluginsDescriptions("Slave/Actions/#{iProductID}/#{iToolID}")
+          pf lToolPrefix, "#{lSlaveActions.size} installable Slave Actions for #{iProductID}/#{iToolID}:"
+          lIdxAction = 0
+          lSlaveActions.each do |iActionID, iActionInfo|
+            pf lToolPrefix, '|'
+            pf lToolPrefix, "+=== [A] << #{iActionID} >> ==="
+            lActionPrefix = nil
+            if (lIdxAction == lSlaveActions.size-1)
+              lActionPrefix = "#{lToolPrefix}  "
+            else
+              lActionPrefix = "#{lToolPrefix}| "
+            end
+            pfComponent(lActionPrefix, iActionInfo, "SlaveAction --on MyProduct --tool #{iToolID} --action #{iActionID}")
+            lIdxAction += 1
+          end
+          lIdxTool += 1
+        end
+        lIdxProduct += 1
+      end
+      pf '', '|'
+      pf '', '|'
+      # Get the list of installed Slave Products
+      lInstalledSlaveProducts = getInstalledSlaveProducts
+      pf '', "+=== << #{lInstalledSlaveProducts.size} installed Slave Products >> ==="
+      lIdxProduct = 0
+      lInstalledSlaveProducts.each do |iProductName, iProductInfo|
+        iProductInstallInfo, iTools = iProductInfo
+        pf '| ', '|'
+        pf '| ', "+=== [P] << #{iProductName} >> (#{iProductInstallInfo[:Product]}) ==="
+        lProductPrefix = nil
+        if (lIdxProduct == lInstalledSlaveProducts.size-1)
+          lProductPrefix = '|   '
+        else
+          lProductPrefix = '| | '
+        end
+        pf lProductPrefix, "Installed on #{iProductInstallInfo[:InstallationDate]} with parameters \"#{iProductInstallInfo[:InstallationParameters]}\""
+        if (@OutputDetails)
+          pf lProductPrefix, "Configuration file: #{getConfigFileName(iProductName)}"
+        end
+        # Display installed Tools on this Product
+        pf lProductPrefix, "#{iTools.size} installed Slave Tools for #{iProductName}"
+        lIdxTool = 0
+        iTools.each do |iToolID, iToolInfo|
+          iToolInstallInfo, iActions = iToolInfo
+          pf lProductPrefix, '|'
+          pf lProductPrefix, "+=== [T] << #{iToolID} >> ==="
+          lToolPrefix = nil
+          if (lIdxTool == iTools.size-1)
+            lToolPrefix = "#{lProductPrefix}  "
+          else
+            lToolPrefix = "#{lProductPrefix}| "
+          end
+          pf lToolPrefix, "Installed on #{iToolInstallInfo[:InstallationDate]} with parameters \"#{iToolInstallInfo[:InstallationParameters]}\""
+          if (@OutputDetails)
+            pf lToolPrefix, "Configuration file: #{getConfigFileName("#{iProductName}.#{iToolID}")}"
+          end
+          # Display installed Actions on this Tool
+          pf lToolPrefix, "#{iActions.size} installed Slave Actions for #{iProductName}/#{iToolID}"
+          lIdxAction = 0
+          iActions.each do |iActionID, iActionInfo|
+            iActionInstallInfo, iActive = iActionInfo
+            pf lToolPrefix, '|'
+            lStrActive = nil
+            if (iActive)
+              lStrActive = 'Active'
+            else
+              lStrActive = 'Inactive'
+            end
+            pf lToolPrefix, "+=== [A] << #{iActionID} >> (#{lStrActive}) ==="
+            lActionPrefix = nil
+            if (lIdxAction == iActions.size-1)
+              lActionPrefix = "#{lToolPrefix}  "
+            else
+              lActionPrefix = "#{lToolPrefix}| "
+            end
+            pf lActionPrefix, "Installed on #{iActionInstallInfo[:InstallationDate]} with parameters \"#{iActionInstallInfo[:InstallationParameters]}\""
+            if (@OutputDetails)
+              pf lActionPrefix, "Configuration file: #{getConfigFileName("#{iProductName}.#{iToolID}.#{iActionID}")}"
+            end
+            lIdxAction += 1
+          end
+          lIdxTool += 1
+        end
+        lIdxProduct += 1
+      end
+      pf '', '|'
+      pf '', '|'
+      # Get the list of Slave Listeners
+      lSlaveListeners = @PluginsManager.getPluginsDescriptions('Slave/Listeners')
+      pf '', "+=== << #{lSlaveListeners.size} Slave Listeners >> ==="
+      lIdxListener = 0
+      lSlaveListeners.each do |iListenerID, iListenerInfo|
+        pf '  ', '|'
+        pf '  ', "+=== [L] << #{iListenerID} >> ==="
+        lListenerPrefix = nil
+        if (lIdxListener == lSlaveListeners.size-1)
+          lListenerPrefix = '    '
+        else
+          lListenerPrefix = '  | '
+        end
+        pfComponent(lListenerPrefix, iListenerInfo, "SlaveListener --listener #{iListenerID}")
+        # Get the install information
+        lListenerInstallInfo = getComponentInstallInfo(iListenerID)
+        if (lListenerInstallInfo == nil)
+          pf lListenerPrefix,'Not installed'
+        else
+          pf lListenerPrefix, "Installed on #{lListenerInstallInfo[:InstallationDate]} with parameters \"#{lListenerInstallInfo[:InstallationParameters]}\""
+          if (@OutputDetails)
+            pf lListenerPrefix, "Configuration file: #{getConfigFileName(iListenerID)}"
+          end
+        end
+        lIdxListener += 1
       end
       puts ''
-      puts '== Installable WEACE Master Adapters (please install Server first):'
-      puts '' if (@OutputDetails)
-      forEachFilteredComponent(/^Master\/Adapters/) do |iComponentName, iCategoryName, iPluginName|
-        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
-      end
       puts ''
-      puts '== Possible WEACE Master Providers:'
-      puts '' if (@OutputDetails)
-      @PluginsManager.getPluginsDescriptions('Master/Providers').each do |iPluginName, iPluginDescription|
-        outputProvider(iPluginName, iPluginDescription)
+      # Dump Master info
+      # Get the installation info of the SlaveClient
+      lMasterServerInstallInfo = getComponentInstallInfo('MasterServer')
+      pf '', ''
+      pf '', '==== << Master Components >> ===='
+      pf '', '|'
+      pf '', '+=== << MasterServer >> ==='
+      if (@OutputDetails)
+        pf '| ', 'Signature: --install MasterServer --provider <MasterProviderType> -- <ProviderParameters>'
+        pf '| ', 'Example: WEACEInstall.rb --install MasterServer --provider SourceForge -- --project myproject'
       end
-      puts ''
-      puts '== Installable WEACE Slave Client:'
-      puts '' if (@OutputDetails)
-      forEachFilteredComponent(/^Slave\/Client/) do |iComponentName, iCategoryName, iPluginName|
-        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      if (lMasterServerInstallInfo == nil)
+        pf '| ','Not installed'
+      else
+        pf '| ', "Installed on #{lMasterServerInstallInfo[:InstallationDate]} as a Provider of type #{lMasterServerInstallInfo[:Provider]} with parameters \"#{lMasterServerInstallInfo[:InstallationParameters]}\""
+        if (@OutputDetails)
+          pf '| ', "Configuration file: #{getConfigFileName('MasterServer')}"
+        end
       end
-      puts ''
-      puts '== Installable WEACE Slave Adapters (please install Client first):'
-      puts '' if (@OutputDetails)
-      forEachFilteredComponent(/^Slave\/Adapters/) do |iComponentName, iCategoryName, iPluginName|
-        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      pf '', '|'
+      pf '', '|'
+      # Get the list of Master Providers
+      lMasterProviders = @PluginsManager.getPluginsDescriptions('Master/Providers')
+      pf '', "+=== << #{lMasterProviders.size} possible Master Providers >> ==="
+      lIdx = 0
+      lMasterProviders.each do |iProviderID, iInfo|
+        pf '| ', '|'
+        pf '| ', "+=== << #{iProviderID} >> ==="
+        lSubPrefix = nil
+        if (lIdx == lMasterProviders.size-1)
+          lSubPrefix = '|   '
+        else
+          lSubPrefix = '| | '
+        end
+        pfComponent(lSubPrefix, iInfo, "MasterServer --provider #{iProviderID}")
+        lIdx += 1
       end
-      puts ''
-      puts '== Installable WEACE Slave Listeners:'
-      puts '' if (@OutputDetails)
-      forEachFilteredComponent(/^Slave\/Listeners/) do |iComponentName, iCategoryName, iPluginName|
-        outputComponent(iComponentName, @PluginsManager.getPluginDescription(iCategoryName, iPluginName))
+      pf '', '|'
+      pf '', '|'
+      # Get the list of installable Master Products
+      lMasterProducts = @PluginsManager.getPluginsDescriptions('Master/Products')
+      pf '', "+=== << #{lMasterProducts.size} installable Master Products >> ==="
+      lIdxProduct = 0
+      lMasterProducts.each do |iProductID, iProductInfo|
+        pf '| ', '|'
+        pf '| ', "+=== [P] << #{iProductID} >> ==="
+        lProductPrefix = nil
+        if (lIdxProduct == lMasterProducts.size-1)
+          lProductPrefix = '|   '
+        else
+          lProductPrefix = '| | '
+        end
+        pfComponent(lProductPrefix, iProductInfo, "MasterProduct --product #{iProductID} --as MyProduct")
+        # Get the list of Master Processes
+        lMasterProcesses = @PluginsManager.getPluginsDescriptions("Master/Processes/#{iProductID}")
+        pf lProductPrefix, "#{lMasterProcesses.size} installable Master Processes for #{iProductID}:"
+        lIdxProcess = 0
+        lMasterProcesses.each do |iProcessID, iProcessInfo|
+          pf lProductPrefix, '|'
+          pf lProductPrefix, "+=== [C] << #{iProcessID} >> ==="
+          lProcessPrefix = nil
+          if (lIdxProcess == lMasterProcesses.size-1)
+            lProcessPrefix = "#{lProductPrefix}  "
+          else
+            lProcessPrefix = "#{lProductPrefix}| "
+          end
+          pfComponent(lProcessPrefix, iProcessInfo, "SlaveProcess --on MyProduct --process #{iProcessID}")
+          lIdxProcess += 1
+        end
+        lIdxProduct += 1
       end
-      puts ''
-      puts '== Possible WEACE Slave Providers:'
-      puts '' if (@OutputDetails)
-      @PluginsManager.getPluginsDescriptions('Slave/Providers').each do |iPluginName, iPluginDescription|
-        outputProvider(iPluginName, iPluginDescription)
+      pf '', '|'
+      pf '', '|'
+      # Get the list of installed Master Products
+      lInstalledMasterProducts = getInstalledMasterProducts
+      pf '', "+=== << #{lInstalledMasterProducts.size} installed Master Products >> ==="
+      lIdxProduct = 0
+      lInstalledMasterProducts.each do |iProductName, iProductInfo|
+        iProductInstallInfo, iProcesses = iProductInfo
+        pf '| ', '|'
+        pf '| ', "+=== [P] << #{iProductName} >> (#{iProductInstallInfo[:Product]}) ==="
+        lProductPrefix = nil
+        if (lIdxProduct == lInstalledMasterProducts.size-1)
+          lProductPrefix = '|   '
+        else
+          lProductPrefix = '| | '
+        end
+        pf lProductPrefix, "Installed on #{iProductInstallInfo[:InstallationDate]} with parameters \"#{iProductInstallInfo[:InstallationParameters]}\""
+        if (@OutputDetails)
+          pf lProductPrefix, "Configuration file: #{getConfigFileName(iProductName)}"
+        end
+        # Display installed Processes on this Product
+        pf lProductPrefix, "#{iProcesses.size} installed Master Processes for #{iProductName}"
+        lIdxProcess = 0
+        iProcesss.each do |iProcessID, iProcessInstallInfo|
+          pf lProductPrefix, '|'
+          pf lProductPrefix, "+=== [C] << #{iProcessID} >> ==="
+          lProcessPrefix = nil
+          if (lIdxProcess == iProcesses.size-1)
+            lProcessPrefix = "#{lProductPrefix}  "
+          else
+            lProcessPrefix = "#{lProductPrefix}| "
+          end
+          pf lProcessPrefix, "Installed on #{iProcessInstallInfo[:InstallationDate]} with parameters \"#{iProcessInstallInfo[:InstallationParameters]}\""
+          if (@OutputDetails)
+            pf lProcessPrefix, "Configuration file: #{getConfigFileName("#{iProductName}.#{iProcessID}")}"
+          end
+          lIdxProcess += 1
+        end
+        lIdxProduct += 1
       end
     end
 
@@ -559,7 +901,7 @@ module WEACEInstall
       logDebug "Product configuration: #{iProductConfig.inspect}"
       logDebug "Tool configuration: #{iToolConfig.inspect}"
       # Check that such a component does not exist yet
-      lComponentInstallInfo = getInstalledComponentDescription(iComponentName)
+      lComponentInstallInfo = getComponentInstallInfo(iComponentName)
       if ((@ForceMode) or
           (lComponentInstallInfo == nil))
         if (lComponentInstallInfo != nil)
@@ -654,7 +996,7 @@ module WEACEInstall
         lErrorClass = MissingWEACESlaveClientError
       end
       # First, check that SlaveClient is installed
-      lSlaveClientInstallInfo = getInstalledComponentDescription(lComponentName)
+      lSlaveClientInstallInfo = getComponentInstallInfo(lComponentName)
       if (lSlaveClientInstallInfo != nil)
         # Read the Slave Provider config
         rError, lProviderEnv = getProviderEnv(iType, lSlaveClientInstallInfo[:ProviderID], lSlaveClientInstallInfo[:InstallationParameters].split(' '))
@@ -685,7 +1027,7 @@ module WEACEInstall
         lError = nil
 
         # Then, check that the Product is installed
-        lProductInstallInfo = getInstalledComponentDescription(iProductName)
+        lProductInstallInfo = getComponentInstallInfo(iProductName)
         if (lProductInstallInfo != nil)
           lError = yield(iProviderEnv, lProductInstallInfo[:Product])
         else
@@ -756,7 +1098,7 @@ module WEACEInstall
     # * _Exception_: An error, or nil in case of success
     def installMasterProcess(iProcessID, iProductName, iParameters)
       return checkInstalledProduct('Master', iProductName) do |iProviderEnv, iProductID|
-        lProductConfig = getInstalledComponentConfiguration(iProductName)
+        lProductConfig = getComponentConfigInfo(iProductName)
         next installComponent(
           "#{iProductName}.#{iProcessID}",
           "Master/Processes/#{iProductID}",
@@ -826,7 +1168,7 @@ module WEACEInstall
     # * _Exception_: An error, or nil in case of success
     def installSlaveTool(iToolID, iProductName, iParameters)
       return checkInstalledProduct('Slave', iProductName) do |iProviderEnv, iProductID|
-        lProductConfig = getInstalledComponentConfiguration(iProductName)
+        lProductConfig = getComponentConfigInfo(iProductName)
         next installComponent(
           "#{iProductName}.#{iToolID}",
           "Slave/Tools/#{iProductID}",
@@ -853,11 +1195,11 @@ module WEACEInstall
       return checkInstalledProduct('Slave', iProductName) do |iProviderEnv, iProductID|
         lError = nil
 
-        lProductConfig = getInstalledComponentConfiguration(iProductName)
-        lToolConfig = getInstalledComponentConfiguration("#{iProductName}.#{iToolID}")
+        lProductConfig = getComponentConfigInfo(iProductName)
+        lToolConfig = getComponentConfigInfo("#{iProductName}.#{iToolID}")
         # Then, check that the Tool is installed
         lComponentName = "#{iProductName}.#{iToolID}"
-        lToolInstallInfo = getInstalledComponentDescription(lComponentName)
+        lToolInstallInfo = getComponentInstallInfo(lComponentName)
         if (lToolInstallInfo != nil)
           lError = installComponent(
             "#{iProductName}.#{iToolID}.#{iActionID}",

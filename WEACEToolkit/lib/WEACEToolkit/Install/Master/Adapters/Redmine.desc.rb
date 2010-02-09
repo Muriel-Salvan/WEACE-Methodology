@@ -17,5 +17,6 @@
       '<RedmineDir>: Redmine\'s installation directory.',
       'Example: /home/groups/m/my/myproject/redmine'
     ]
-  ]
+  ],
+  :OptionsExample => '--redminedir /home/redmine'
 }

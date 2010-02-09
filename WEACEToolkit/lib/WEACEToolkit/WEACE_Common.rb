@@ -10,6 +10,8 @@
 require 'date'
 require 'fileutils'
 
+require 'WEACEToolkit/TerminalSize'
+
 module WEACE
 
   # Actions to be performed by Slave Clients
@@ -101,7 +103,7 @@ module WEACE
     # * *iComponentName* (_String_): Component name
     # Return:
     # * <em>map<Symbol, Object></em>: The description, or nil if not installed
-    def getInstalledComponentDescription(iComponentName)
+    def getComponentInstallInfo(iComponentName)
       return getMapFromFile(getInstallFileName(iComponentName))
     end
 
@@ -111,7 +113,7 @@ module WEACE
     # * *iComponentName* (_String_): Component name
     # Return:
     # * <em>map<Symbol, Object></em>: The configuration, or nil if not installed
-    def getInstalledComponentConfiguration(iComponentName)
+    def getComponentConfigInfo(iComponentName)
       return getMapFromFile(getConfigFileName(iComponentName))
     end
 

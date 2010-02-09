@@ -17,5 +17,6 @@
       '<MediawikiDir>: Mediawiki\'s installation directory.',
       'Example: /home/groups/m/my/myproject/htdocs/wiki'
     ]
-  ]
+  ],
+  :OptionsExample => '--mediawikidir /home/mediawiki'
 }
