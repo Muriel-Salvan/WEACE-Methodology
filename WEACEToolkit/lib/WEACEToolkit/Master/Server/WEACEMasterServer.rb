@@ -61,9 +61,9 @@ module WEACE
       # Constructor
       def initialize
         # Read the directories locations
-        lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
-        @DefaultLogDir = "#{lWEACERepositoryDir}/Log"
-        @ConfigFile = "#{lWEACERepositoryDir}/Config/MasterServer.conf.rb"
+        setupWEACEDirs
+        @DefaultLogDir = "#{@WEACERepositoryDir}/Log"
+        @ConfigFile = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
 
         # Parse for plugins
         require 'rUtilAnts/Plugins'

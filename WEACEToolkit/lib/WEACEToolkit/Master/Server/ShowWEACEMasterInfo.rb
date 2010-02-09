@@ -2,14 +2,7 @@
 # ruby -w ShowWEACEMasterInfo.rb
 # Dumps WEACE Master info in an HTML page
 
-# Get WEACE base directory, and add it to the LOAD_PATH
-lOldDir = Dir.getwd
-Dir.chdir("#{File.dirname(__FILE__)}/../..")
-lWEACEToolkitDir = Dir.getwd
-Dir.chdir(lOldDir)
-$LOAD_PATH << lWEACEToolkitDir
-
-require 'WEACE_Common.rb'
+require 'WEACEToolkit/WEACE_Common.rb'
 
 module WEACE
 

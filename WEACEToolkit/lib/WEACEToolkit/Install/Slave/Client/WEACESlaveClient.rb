@@ -41,7 +41,7 @@ puts ''
 puts ''
 begin
   \# Add WEACE Toolkit path to Ruby's path
-  $LOAD_PATH << '#{File.expand_path(@WEACELibDir)}'
+  $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
   require 'WEACEToolkit/Slave/Client/ShowWEACESlaveInfo'
   WEACE::Slave::Dump_HTML.new.dumpWEACESlaveInfo_HTML
 rescue Exception

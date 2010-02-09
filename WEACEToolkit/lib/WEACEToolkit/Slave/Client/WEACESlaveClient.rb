@@ -95,10 +95,9 @@ module WEACE
       # Constructor
       def initialize
         # Read the directories locations
-        lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
-        @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
-        @DefaultLogDir = "#{lWEACERepositoryDir}/Log"
-        @ConfigFile = "#{lWEACERepositoryDir}/Config/SlaveClient.conf.rb"
+        setupWEACEDirs
+        @DefaultLogDir = "#{@WEACERepositoryDir}/Log"
+        @ConfigFile = "#{@WEACERepositoryDir}/Config/SlaveClient.conf.rb"
         # Map of Actions
         # map< String, map< String, [ list< String >, list< list< String > > ] > >
         #      ToolID       ActionID        ProductName           Parameter

@@ -257,7 +257,6 @@ module WEACE
                 # Change the installer repository location internally
                 @Installer.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
                 @Installer.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
-                @Installer.instance_variable_set(:@WEACEInstalledComponentsDir, "#{@WEACERepositoryDir}/Install/InstalledComponents")
 
                 # Add additional components for the regression here
                 if (lAddRegressionMasterAdapters or

@@ -79,11 +79,8 @@ module WEACEInstall
     # Constructor
     def initialize
 
-        # Read the directories locations
-      lWEACERepositoryDir, @WEACELibDir = getWEACERepositoryDirs
-      @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
-      @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
-      @WEACEInstalledComponentsDir = "#{@WEACEInstallDir}/InstalledComponents"
+      # Read the directories locations
+      setupWEACEDirs
 
       # Registered installable master and slave adapters
       # map< String,    nil >
@@ -407,110 +404,6 @@ module WEACEInstall
       end
     end
 
-    # Get the list of installed Slave Products.
-    # Here is the return type:
-    # map< ProductName,
-    #   [ ProductInstallInfo,
-    #     map< ToolID,
-    #       [ ToolInstallInfo,
-    #         map< ActionID,
-    #           [ ActionInstallInfo, Active? ]
-    #         >
-    #       ]
-    #     >
-    #   ]
-    # >
-    #
-    # Return:
-    # <em>map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,Boolean]>]>]></em>: The list of Slave Products, along with their information
-    def getInstalledSlaveProducts
-      rInstalledProducts = {}
-
-      # We will need to have SlaveClient configuration to know which installed Action is active.
-      # It can be nil.
-      lSlaveClientConfig = getComponentConfigInfo('SlaveClient')
-      # Parse installation files and get Products only
-      Dir.glob("#{@WEACEInstallDir}/InstalledComponents/*.inst.rb").each do |iProductFileName|
-        lProductName = File.basename(iProductFileName)[0..-9]
-        lProductInstallInfo = getComponentInstallInfo(lProductName)
-        if ((lProductInstallInfo[:Product] != nil) and
-            (lProductInstallInfo[:Type] == 'Slave'))
-          # We have got one
-          # Find its installed Tools
-          #     map< ToolID,
-          #       [ ToolInstallInfo,
-          #         map< ActionID,
-          #           [ ActionInstallInfo, Active? ]
-          #         >
-          #       ]
-          #     >
-          lInstalledTools = {}
-          Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iToolFileName|
-            lComponentName = File.basename(iToolFileName)[0..-9]
-            lMatchData = lComponentName.match(/^#{lProductName}\.([^\.]*)$/)
-            if (lMatchData != nil)
-              # We have got one
-              lToolID = lMatchData[1]
-              # Find its installed Actions
-              #         map< ActionID,
-              #           [ ActionInstallInfo, Active? ]
-              #         >
-              lInstalledActions = {}
-              Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.#{lToolID}.*.inst.rb").each do |iActionFileName|
-                lActionID = lComponentName.match(/^#{lProductName}\.#{lToolID}\.([^\.]*)$/)[1]
-                # Check if this Action is active
-                lInstalledActions[lActionID] = [
-                  getComponentInstallInfo("#{lProductName}.#{lToolID}.#{lActionID}"),
-                  ((lSlaveClientConfig != nil) and
-                   (lSlaveClientConfig[lProductName] != nil) and
-                   (lSlaveClientConfig[lProductName][lToolID] != nil) and
-                   (lSlaveClientConfig[lProductName][lToolID].include?(lActionID)))
-                 ]
-              end
-              lInstalledTools[lToolID] = [ getComponentInstallInfo("#{lProductName}.#{lToolID}"), lInstalledActions ]
-            end
-          end
-          rInstalledProducts[lProductName] = [ lProductInstallInfo, lInstalledTools ]
-        end
-      end
-
-      return rInstalledProducts
-    end
-
-    # Get the list of installed Master Products.
-    # Here is the return type:
-    # map< ProductName,
-    #   [ ProductInstallInfo,
-    #     map< ProcessID, ProcessInstallInfo >
-    #   ]
-    # >
-    #
-    # Return:
-    # <em>map<String,[map<Symbol,Object>,map<String,map<Symbol,Object>>]></em>: The list of Master Products, along with their information
-    def getInstalledMasterProducts
-      rInstalledProducts = {}
-
-      # Parse installation files and get Products only
-      Dir.glob("#{@WEACEInstallDir}/InstalledComponents/*.inst.rb").each do |iProductFileName|
-        lProductName = File.basename(iProductFileName)[0..-9]
-        lProductInstallInfo = getComponentInstallInfo(lProductName)
-        if ((lProductInstallInfo[:Product] != nil) and
-            (lProductInstallInfo[:Type] == 'Master'))
-          # We have got one
-          # Find its installed Processes
-          #     map< ProcessID, ProcessInstallInfo >
-          lInstalledProcesses = {}
-          Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iProcessFileName|
-            lProcessID = File.basename(iProcessFileName)[0..-9].match(/^#{lProductName}\.([^\.]*)$/)[1]
-            lInstalledProcesses[lProcessID] = getComponentInstallInfo("#{lProductName}.#{lProcessID}")
-          end
-          rInstalledProducts[lProductName] = [ lProductInstallInfo, lInstalledProcesses ]
-        end
-      end
-
-      return rInstalledProducts
-    end
-
     # Outputs the list of components
     def outputComponents
       # Set the maximal width for pf
@@ -530,7 +423,7 @@ module WEACEInstall
       if (lSlaveClientInstallInfo == nil)
         pf '| ','Not installed'
       else
-        pf '| ', "Installed on #{lSlaveClientInstallInfo[:InstallationDate]} as a Provider of type #{lSlaveClientInstallInfo[:Provider]} with parameters \"#{lSlaveClientInstallInfo[:InstallationParameters]}\""
+        pf '| ', "Installed on #{lSlaveClientInstallInfo[:InstallationDate]} as a Provider of type #{lSlaveClientInstallInfo[:ProviderID]} with parameters \"#{lSlaveClientInstallInfo[:InstallationParameters]}\""
         if (@OutputDetails)
           pf '| ', "Configuration file: #{getConfigFileName('SlaveClient')}"
         end
@@ -713,7 +606,7 @@ module WEACEInstall
       if (lMasterServerInstallInfo == nil)
         pf '| ','Not installed'
       else
-        pf '| ', "Installed on #{lMasterServerInstallInfo[:InstallationDate]} as a Provider of type #{lMasterServerInstallInfo[:Provider]} with parameters \"#{lMasterServerInstallInfo[:InstallationParameters]}\""
+        pf '| ', "Installed on #{lMasterServerInstallInfo[:InstallationDate]} as a Provider of type #{lMasterServerInstallInfo[:ProviderID]} with parameters \"#{lMasterServerInstallInfo[:InstallationParameters]}\""
         if (@OutputDetails)
           pf '| ', "Configuration file: #{getConfigFileName('MasterServer')}"
         end

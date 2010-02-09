@@ -41,7 +41,7 @@ puts ''
 puts ''
 begin
   \# Add WEACE Toolkit path to Ruby's path
-  $LOAD_PATH << '#{File.expand_path(@WEACELibDir)}'
+  $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
   require 'WEACEToolkit/Master/Server/ShowWEACEMasterInfo'
   WEACE::Master::Dump_HTML.new.dumpWEACEMasterInfo_HTML
 rescue Exception

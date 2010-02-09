@@ -2,13 +2,6 @@
 # ruby -w ShowWEACESlaveInfo.rb
 # Dumps WEACE Slave info in an HTML page
 
-# Get WEACE base directory, and add it to the LOAD_PATH
-lOldDir = Dir.getwd
-Dir.chdir("#{File.dirname(__FILE__)}/../..")
-lWEACEToolkitDir = Dir.getwd
-Dir.chdir(lOldDir)
-$LOAD_PATH << lWEACEToolkitDir
-
 require 'WEACEToolkit/WEACE_Common'
 
 module WEACE
@@ -105,6 +98,9 @@ module WEACE
       
       # Dump every info
       def dumpWEACESlaveInfo_HTML
+        # First, get necessary variables for information to be retrieved
+        setupWEACEDirs
+
         dumpHeader_HTML('WEACE Slave information of this provider')
         # Exception protected
         begin

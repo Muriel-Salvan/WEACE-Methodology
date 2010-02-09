@@ -135,21 +135,126 @@ module WEACE
       return rMap
     end
 
-    # Get WEACE directories.
+    # Get the list of installed Slave Products.
+    # Here is the return type:
+    # map< ProductName,
+    #   [ ProductInstallInfo,
+    #     map< ToolID,
+    #       [ ToolInstallInfo,
+    #         map< ActionID,
+    #           [ ActionInstallInfo, Active? ]
+    #         >
+    #       ]
+    #     >
+    #   ]
+    # >
     #
     # Return:
-    # * _String_: The directory where the repository lies
-    # * _String_: The directory where the WEACE Toolkit library lies
-    def getWEACERepositoryDirs
-      rRepDir = ENV['WEACE_CONFIG_PATH']
-      rLibDir = File.expand_path(File.dirname(__FILE__))
+    # <em>map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,Boolean]>]>]></em>: The list of Slave Products, along with their information
+    def getInstalledSlaveProducts
+      rInstalledProducts = {}
 
-      if (rRepDir == nil)
-        rRepDir = "#{File.dirname(__FILE__)}/../../config"
+      # We will need to have SlaveClient configuration to know which installed Action is active.
+      # It can be nil.
+      lSlaveClientConfig = getComponentConfigInfo('SlaveClient')
+      # Parse installation files and get Products only
+      Dir.glob("#{@WEACEInstallDir}/InstalledComponents/*.inst.rb").each do |iProductFileName|
+        lProductName = File.basename(iProductFileName)[0..-9]
+        lProductInstallInfo = getComponentInstallInfo(lProductName)
+        if ((lProductInstallInfo[:Product] != nil) and
+            (lProductInstallInfo[:Type] == 'Slave'))
+          # We have got one
+          # Find its installed Tools
+          #     map< ToolID,
+          #       [ ToolInstallInfo,
+          #         map< ActionID,
+          #           [ ActionInstallInfo, Active? ]
+          #         >
+          #       ]
+          #     >
+          lInstalledTools = {}
+          Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iToolFileName|
+            lComponentName = File.basename(iToolFileName)[0..-9]
+            lMatchData = lComponentName.match(/^#{lProductName}\.([^\.]*)$/)
+            if (lMatchData != nil)
+              # We have got one
+              lToolID = lMatchData[1]
+              # Find its installed Actions
+              #         map< ActionID,
+              #           [ ActionInstallInfo, Active? ]
+              #         >
+              lInstalledActions = {}
+              Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.#{lToolID}.*.inst.rb").each do |iActionFileName|
+                lActionID = lComponentName.match(/^#{lProductName}\.#{lToolID}\.([^\.]*)$/)[1]
+                # Check if this Action is active
+                lInstalledActions[lActionID] = [
+                  getComponentInstallInfo("#{lProductName}.#{lToolID}.#{lActionID}"),
+                  ((lSlaveClientConfig != nil) and
+                   (lSlaveClientConfig[lProductName] != nil) and
+                   (lSlaveClientConfig[lProductName][lToolID] != nil) and
+                   (lSlaveClientConfig[lProductName][lToolID].include?(lActionID)))
+                 ]
+              end
+              lInstalledTools[lToolID] = [ getComponentInstallInfo("#{lProductName}.#{lToolID}"), lInstalledActions ]
+            end
+          end
+          rInstalledProducts[lProductName] = [ lProductInstallInfo, lInstalledTools ]
+        end
       end
-      rRepDir = File.expand_path(rRepDir)
 
-      return rRepDir, rLibDir
+      return rInstalledProducts
+    end
+
+    # Get the list of installed Master Products.
+    # Here is the return type:
+    # map< ProductName,
+    #   [ ProductInstallInfo,
+    #     map< ProcessID, ProcessInstallInfo >
+    #   ]
+    # >
+    #
+    # Return:
+    # <em>map<String,[map<Symbol,Object>,map<String,map<Symbol,Object>>]></em>: The list of Master Products, along with their information
+    def getInstalledMasterProducts
+      rInstalledProducts = {}
+
+      # Parse installation files and get Products only
+      Dir.glob("#{@WEACEInstallDir}/InstalledComponents/*.inst.rb").each do |iProductFileName|
+        lProductName = File.basename(iProductFileName)[0..-9]
+        lProductInstallInfo = getComponentInstallInfo(lProductName)
+        if ((lProductInstallInfo[:Product] != nil) and
+            (lProductInstallInfo[:Type] == 'Master'))
+          # We have got one
+          # Find its installed Processes
+          #     map< ProcessID, ProcessInstallInfo >
+          lInstalledProcesses = {}
+          Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iProcessFileName|
+            lProcessID = File.basename(iProcessFileName)[0..-9].match(/^#{lProductName}\.([^\.]*)$/)[1]
+            lInstalledProcesses[lProcessID] = getComponentInstallInfo("#{lProductName}.#{lProcessID}")
+          end
+          rInstalledProducts[lProductName] = [ lProductInstallInfo, lInstalledProcesses ]
+        end
+      end
+
+      return rInstalledProducts
+    end
+
+    # Setup WEACE directories in instance variables.
+    # Here are the instance variables begin set:
+    # * @WEACELibDir: The directory where the WEACE Toolkit library lies
+    # * @WEACERepositoryDir: The directory base of the WEACE repository
+    # * @WEACEInstallDir: The directory where Install related files lie
+    # * @WEACEConfigDir: The directory where Configuration files lie
+    def setupWEACEDirs
+      lWEACERepositoryDir = ENV['WEACE_CONFIG_PATH']
+      @WEACELibDir = File.expand_path(File.dirname(__FILE__))
+
+      if (lWEACERepositoryDir == nil)
+        lWEACERepositoryDir = "#{File.dirname(__FILE__)}/../../config"
+      end
+      @WEACERepositoryDir = File.expand_path(lWEACERepositoryDir)
+      @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
+      @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
     end
 
     # Iterate through installed Adapters in the filesystem
