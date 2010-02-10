@@ -14,84 +14,97 @@ module WEACE
   
       # Dump Client info
       def dumpSlaveClient_HTML
-        # Require the file containing WEACE Slave Info
-        require 'WEACEToolkit/Master/Server/InstalledWEACESlaveComponents'
-        # Get the info
-        lDescription = WEACE::Master::getInstallationDescription
+        # Get the installation info of the SlaveClient
+        lSlaveClientInstallInfo = getComponentInstallInfo('SlaveClient')
         puts '<h1>WEACE Slave Client installed:</h1>'
         puts '<ul>'
-        puts "  <li>Installed on #{lDescription.Date}.</li>"
-        puts "  <li>Version: #{lDescription.Version}.</li>"
-        puts "  <li>#{lDescription.Description}</li>"
-        puts "  <li>Author: #{lDescription.Author}.</li>"
+        puts "  <li>Installed on #{lSlaveClientInstallInfo[:InstallationDate]}.</li>"
+        # TODO: Check if version is useful
+        #puts "  <li>Version: #{lDescription.Version}.</li>"
+        puts "  <li>#{lSlaveClientInstallInfo[:Description]}</li>"
+        puts "  <li>Author: #{lSlaveClientInstallInfo[:Author]}.</li>"
         puts '</ul>'
       end
 
       # Dump Adapters info
       def dumpInstalledSlaveAdapters_HTML
-        # Require the file registering WEACE Slave Components
-        require 'WEACEToolkit/Slave/Client/InstalledWEACESlaveComponents'
-        # Get the Adapters list
-        lInstalledAdapters = WEACE::Slave::getInstalledAdapters
-        puts "<h1>#{lInstalledAdapters.size} products have installed WEACE Slave Adapters:</h1>"
+        # Get the list of installed Slave Products
+        lInstalledSlaveProducts = getInstalledSlaveProducts
+        # Get also SlaveClient configuration to know which one is active
+        lSlaveClientConfigInfo = getComponentConfigInfo('SlaveClient')
+        puts "<h1>#{lInstalledSlaveProducts.size} Products have been installed:</h1>"
         puts '<ul>'
-        lIdxProduct = 0
-        lInstalledAdapters.each do |iProductID, iAdaptersForProduct|
-          puts "  <li>Product n.#{lIdxProduct}:"
-          puts "    <a name=\"Adapters.#{iProductID}\"><h2>#{iProductID}</h2></a>"
-          puts "    #{iAdaptersForProduct.size} tools of this product have some adapters:"
+        lInstalledSlaveProducts.each do |iProductName, iProductInfo|
+          iProductInstallInfo, iTools = iProductInfo
+          puts '  <li>Product:'
+          puts "    <a name=\"Products.#{iProductName}\"><h2>#{iProductName}</h2></a>"
           puts '    <ul>'
-          lIdxTool = 0
-          iAdaptersForProduct.each do |iToolID, iAdaptersForTool|
-            puts "      <li>Tool n.#{lIdxProduct}.#{lIdxTool}:"
-            puts "        <a name=\"Adapters.#{iProductID}.#{iToolID}\"><h3>#{iProductID}.#{iToolID}</h3></a>"
-            puts "        #{iAdaptersForTool.size} Slave Adapters installed:"
+          puts "      <li>Product type: #{iProductInstallInfo[:Product]}</li>"
+          puts "      <li>Installed on #{iProductInstallInfo[:InstallationDate]}</li>"
+          puts "      <li>Parameters: #{iProductInstallInfo[:InstallationParameters]}</li>"
+          puts "      <li>#{iProductInstallInfo[:Description]}</li>"
+          puts "      <li>Author: #{iProductInstallInfo[:Author]}</li>"
+          puts '    </ul>'
+          puts "    #{iTools.size} Tools for Product #{iProductName} have been installed:"
+          puts '    <ul>'
+          iTools.each do |iToolID, iToolInfo|
+            iToolInstallInfo, iActions = iToolInfo
+            puts '      <li>Tool:'
+            puts "        <a name=\"Tools.#{iProductName}.#{iToolID}\"><h3>#{iProductName}.#{iToolID}</h3></a>"
             puts '        <ul>'
-            lIdxAdapter = 0
-            iAdaptersForTool.each do |iScriptID, iDescription|
-              puts "          <li>Adapter n.#{lIdxProduct}.#{lIdxTool}.#{lIdxAdapter}:"
-              puts "            <a name=\"Adapters.#{iProductID}.#{iToolID}.#{iScriptID}\"><h4>#{iProductID}.#{iToolID}.#{iScriptID}</h4></a>"
+            puts "          <li>Installed on #{iToolInstallInfo[:InstallationDate]}</li>"
+            puts "          <li>Parameters: #{iToolInstallInfo[:InstallationParameters]}</li>"
+            puts "          <li>#{iToolInstallInfo[:Description]}</li>"
+            puts "          <li>Author: #{iToolInstallInfo[:Author]}</li>"
+            puts '        </ul>'
+            puts "        #{iActions.size} Actions for Tool #{iProductName}.#{iToolID} installed:"
+            puts '        <ul>'
+            iActions.each do |iActionID, iActionInfo|
+              iActionInstallInfo, iActive = iActionInfo
+              puts '          <li>Action:'
+              puts "            <a name=\"Actions.#{iProductName}.#{iToolID}.#{iActionID}\"><h4>#{iProductName}.#{iToolID}.#{iActionID}</h4></a>"
               puts '            <ul>'
-              puts "              <li>Script: #{iScriptID}.</li>"
-              puts "              <li>Installed on #{iDescription.Date}.</li>"
-              puts "              <li>Version: #{iDescription.Version}.</li>"
-              puts "              <li>#{iDescription.Description}</li>"
-              puts "              <li>Author: #{iDescription.Author}.</li>"
+              puts "              <li>Installed on #{iActionInstallInfo[:InstallationDate]}</li>"
+              puts "              <li>Parameters: #{iActionInstallInfo[:InstallationParameters]}</li>"
+              puts "              <li>#{iActionInstallInfo[:Description]}</li>"
+              puts "              <li>Author: #{iActionInstallInfo[:Author]}.</li>"
+              if ((lSlaveClientConfigInfo != nil) and
+                  (lSlaveClientConfigInfo[iProductName] != nil) and
+                  (lSlaveClientConfigInfo[iProductName][iToolID] != nil) and
+                  (lSlaveClientConfigInfo[iProductName][iToolID].include?(iActionID)))
+                puts '              <li>Active.</li>'
+              else
+                puts '              <li>Inactive.</li>'
+              end
               puts '            </ul>'
               puts '          </li>'
-              lIdxAdapter += 1
             end
             puts '        </ul>'
             puts '      </li>'
-            lIdxTool += 1
           end
           puts '    </ul>'
           puts '  </li>'
         end
         puts '</ul>'
       end
-        
+
       # Dump Listeners info
       def dumpInstalledSlaveListeners_HTML
-        # Require the file registering WEACE Slave Components
-        require 'WEACEToolkit/Slave/Client/InstalledWEACESlaveComponents'
         # Get the Listeners list
-        lInstalledListeners = WEACE::Slave::getInstalledListeners
-        puts "<h1>#{lInstalledListeners.size} listeners are installed on this WEACE Slave Client:</h1>"
+        lSlaveListeners = @PluginsManager.getPluginsDescriptions('Slave/Listeners')
+        puts "<h1>#{lSlaveListeners.size} listeners are installed on this WEACE Slave Client:</h1>"
         puts '<ul>'
-        lIdxListener = 0
-        lInstalledListeners.each do |iListenerID, iDescription|
-          puts "  <li>Listener n.#{lIdxListener}:"
+        lSlaveListeners.each do |iListenerID, iListenerInfo|
+          puts '  <li>Listener:'
           puts "    <a name=\"Listeners.#{iListenerID}\"><h4>#{iListenerID}</h4></a>"
           puts '    <ul>'
           puts "      <li>Listener: #{iListenerID}.</li>"
-          puts "      <li>Installed on #{iDescription.Date}.</li>"
-          puts "      <li>Version: #{iDescription.Version}.</li>"
-          puts "      <li>#{iDescription.Description}</li>"
-          puts "      <li>Author: #{iDescription.Author}.</li>"
+          puts "      <li>Installed on #{iListenerInfo[:InstallationDate]}.</li>"
+          puts "      <li>Parameters: #{iListenerInfo[:InstallationParameters]}</li>"
+          puts "      <li>#{iListenerInfo[:Description]}</li>"
+          puts "      <li>Author: #{iListenerInfo[:Author]}.</li>"
           puts '    </ul>'
           puts '  </li>'
-          lIdxListener += 1
         end
         puts '</ul>'
       end
