@@ -15,6 +15,8 @@ require 'WEACEToolkit/TerminalSize'
 module WEACE
 
   # Actions to be performed by Slave Clients
+  # For the Tester:
+  Action_Test_Ping = 'Ping'
   # For the Tickets Manager:
   Action_Ticket_AddLinkToTask = 'AddLinkToTask'
   Action_Ticket_RejectDuplicate = 'RejectDuplicate'
@@ -33,6 +35,10 @@ module WEACE
 
   # Exception thrown when we want to modify a missing file
   class MissingFileError < RuntimeError
+  end
+
+  # Exception thrown when we want to use a missing directory
+  class MissingDirError < RuntimeError
   end
 
   # Exception raised when a variable is missing

@@ -21,7 +21,7 @@ module WEACE
 
             class Wiki
 
-              class AddCommitComment < ::Test::Unit::TestCase
+              class Ping < ::Test::Unit::TestCase
 
                 include WEACE::Test::Install::Slave::SlaveAction
 
@@ -45,7 +45,7 @@ module WEACE
                     :InstallSlaveActionParametersShort => [],
                     :Repository => 'SlaveMediawikiWikiInstalled',
                     :SlaveActionInstallInfo => {
-                      :Description => 'This adapter creates a relation between a master and a slave tickets, and reject the slave as a duplicate of the master.',
+                      :Description => 'Ping Mediawiki as a Wiki. This is used by Testers.',
                       :Author => 'murielsalvan@users.sourceforge.net'
                     },
                     :SlaveProductConfigInfo => {},

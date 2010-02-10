@@ -183,7 +183,12 @@ module WEACE
           initTestCase do
 
             accessProcessPlugin do |iProcessPlugin|
-              lProcessOptions = iProcessPlugin.getOptions
+              lProcessOptions = nil
+              if (iProcessPlugin.respond_to?(:getOptions))
+                lProcessOptions = iProcessPlugin.getOptions
+              else
+                lProcessOptions = OptionParser.new
+              end
               begin
                 lAdditionalArgs = lProcessOptions.parse(iParameters)
               rescue Exception
