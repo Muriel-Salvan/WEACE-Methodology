@@ -3,6 +3,11 @@
 # Dumps WEACE Slave info in an HTML page
 
 require 'WEACEToolkit/WEACE_Common'
+# Load the Platform dependent extensions
+require 'rUtilAnts/Platform'
+RUtilAnts::Platform::initializePlatform
+require 'rUtilAnts/Misc'
+RUtilAnts::Platform::initializeMisc
 
 module WEACE
 
@@ -113,6 +118,8 @@ module WEACE
       def dumpWEACESlaveInfo_HTML
         # First, get necessary variables for information to be retrieved
         setupWEACEDirs
+        # Then, initialize the plugins
+        setupInstallPlugins
 
         dumpHeader_HTML('WEACE Slave information of this provider')
         # Exception protected
@@ -124,11 +131,21 @@ module WEACE
           dumpInstalledSlaveListeners_HTML
           puts '<table align=center><tr><td><img src="http://weacemethod.sourceforge.net/wiki/images/9/95/WEACESlave.png"/></td></tr></table>'
         rescue Exception
-          puts "<p>Exception encountered while reading installed WEACE Slave information: #{$!}</p>"
-          puts '<p>Callstack:</p>'
-          puts '<p>'
-          puts $!.backtrace.join("\n</p><p>")
-          puts '</p>'
+          begin
+            lStrException = "Exception encountered while reading installed WEACE Slave information: #{$!}
+Callstack:
+#{$!.backtrace.join("\n")}
+"
+            require 'cgi'
+            puts "<pre>#{CGI.escapeHTML(lStrException)}</pre>"
+          rescue Exception
+            # Handle the Exception without CGI
+            puts "<p>Exception encountered while reading installed WEACE Slave information: #{$!}</p>"
+            puts '<p>Callstack:</p>'
+            puts '<p>'
+            puts $!.backtrace.join("\n</p><p>")
+            puts '</p>'
+          end
         end
         dumpFooter_HTML
       end
@@ -137,9 +154,4 @@ module WEACE
 
   end
   
-end
-
-# If we were invoked directly
-if (__FILE__ == $0)
-  WEACE::Slave::Dump_HTML.new.dumpWEACESlaveInfo_HTML
 end

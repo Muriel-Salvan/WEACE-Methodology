@@ -78,27 +78,10 @@ module WEACEInstall
 
     # Constructor
     def initialize
-
       # Read the directories locations
       setupWEACEDirs
-
-      # Registered installable master and slave adapters
-      # map< String,    nil >
-      # map< ProductID, nil >
-      @MasterAdapters = {}
-      # map< String,    map< String, nil > >
-      # map< ProductID, map< ToolID, nil > >
-      @SlaveAdapters = {}
-      # The set of installable components, as written by the user on the command line, and the corresponding plugin
-      # map< String, [ String, String ] >
-      # map< ComponentFullName, [ iCategoryName, iPluginName ] >
-      @InstallableComponents = {}
-
       # Read plugins
-      require 'rUtilAnts/Plugins'
-      @PluginsManager = RUtilAnts::Plugins::PluginsManager.new
-      parseMasterPlugins
-      parseSlavePlugins
+      setupInstallPlugins
     end
 
     # Execute the installer
@@ -300,58 +283,6 @@ module WEACEInstall
 
     private
     
-    # Parse Master plugins
-    def parseMasterPlugins
-      # Master Providers
-      parseWEACEPluginsFromDir('Master/Providers', "#{@WEACELibDir}/Install/Master/Providers", 'WEACEInstall::Master::Providers', false)
-      # Master Server
-      parseWEACEPluginsFromDir('Master/Server', "#{@WEACELibDir}/Install/Master/Server", 'WEACEInstall::Master')
-      # Master Adapters
-      # Master Products
-      parseWEACEPluginsFromDir('Master/Products', "#{@WEACELibDir}/Install/Master/Adapters", 'WEACEInstall::Master::Adapters', false)
-      Dir.glob("#{@WEACELibDir}/Install/Master/Adapters/*").each do |iProductDirName|
-        if (File.directory?(iProductDirName))
-          lProductID = File.basename(iProductDirName)
-          # Master Processes
-          parseWEACEPluginsFromDir("Master/Processes/#{lProductID}", "#{@WEACELibDir}/Install/Master/Adapters/#{lProductID}", "WEACEInstall::Master::Adapters::#{lProductID}")
-          # Register this product/tool category
-          @MasterAdapters[lProductID] = nil
-        end
-      end
-    end
-
-    # Parse Slave plugins
-    def parseSlavePlugins
-      # Slave Providers
-      parseWEACEPluginsFromDir('Slave/Providers', "#{@WEACELibDir}/Install/Slave/Providers", 'WEACEInstall::Slave::Providers', false)
-      # Slave Client
-      parseWEACEPluginsFromDir('Slave/Client', "#{@WEACELibDir}/Install/Slave/Client", 'WEACEInstall::Slave')
-      # Slave Adapters
-      # Slave Products
-      parseWEACEPluginsFromDir('Slave/Products', "#{@WEACELibDir}/Install/Slave/Adapters", 'WEACEInstall::Slave::Adapters', false)
-      Dir.glob("#{@WEACELibDir}/Install/Slave/Adapters/*").each do |iProductDirName|
-        if (File.directory?(iProductDirName))
-          lProductID = File.basename(iProductDirName)
-          # Slave Tools
-          parseWEACEPluginsFromDir("Slave/Tools/#{lProductID}", "#{@WEACELibDir}/Install/Slave/Adapters/#{lProductID}", "WEACEInstall::Slave::Adapters::#{lProductID}", false)
-          Dir.glob("#{iProductDirName}/*").each do |iToolDirName|
-            if (File.directory?(iToolDirName))
-              lToolID = File.basename(iToolDirName)
-              # Slave Actions
-              parseWEACEPluginsFromDir("Slave/Actions/#{lProductID}/#{lToolID}", "#{@WEACELibDir}/Install/Slave/Adapters/#{lProductID}/#{lToolID}", "WEACEInstall::Slave::Adapters::#{lProductID}::#{lToolID}")
-              # Register this product/tool category
-              if (@SlaveAdapters[lProductID] == nil)
-                @SlaveAdapters[lProductID] = {}
-              end
-              @SlaveAdapters[lProductID][lToolID] = nil
-            end
-          end
-        end
-      end
-      # Slave Listeners
-      parseWEACEPluginsFromDir('Slave/Listeners', "#{@WEACELibDir}/Install/Slave/Listeners", 'WEACEInstall::Slave::Listeners')
-    end
-
     # Display several lines of text given a prefix to apply to every line and a maximal width to respect.
     # Lines longer than maximal width will be split on to next line.
     # The maximal width is taken from @MaxPFWidth.
@@ -1257,59 +1188,6 @@ module WEACEInstall
         'Following -- are the parameters specific to the installation of a given component (check each component\'s options with --detailedlist).')
 
       return rOptions
-    end
-
-    # Initialize a freshly read plugin description
-    # This is used to set additional variables among the description already created by the plugins manager.
-    #
-    # Parameters:
-    # * *ioDescription* (<em>map<Symbol,Object></em>): The description to complete
-    def initializePluginDescription(ioDescription)
-      if (ioDescription[:VarOptions] != nil)
-        ioDescription[:Options] = OptionParser.new
-        # The map of mandatory variables, along with their description and value once affected
-        # map< Symbol,       [ OptionParser, String ] >
-        # map< VariableName, [ Description,  Value  ] >
-        ioDescription[:MandatoryVariables] = {}
-        ioDescription[:VarOptions].each do |iVarOption|
-          iVariable = iVarOption[0]
-          iParameters = iVarOption[1..-1]
-          # Avoid duplicates
-          if (ioDescription[:MandatoryVariables][iVariable] == nil)
-            # Create a little OptionParser to format the parameters correctly
-            lSingleOption = OptionParser.new
-            lSingleOption.on(*iParameters)
-            ioDescription[:MandatoryVariables][iVariable] = [ lSingleOption, nil ]
-          else
-            # Add this option to the variable help: 2 options can define the same variable
-            ioDescription[:MandatoryVariables][iVariable][0].on(*iParameters)
-          end
-          # Set the variable correctly when the option is encountered
-          ioDescription[:Options].on(*iParameters) do |iArg|
-            ioDescription[:MandatoryVariables][iVariable][1] = iArg
-          end
-        end
-      end
-    end
-
-    # Register WEACE plugins read from a directory.
-    # This reads the plugins descriptions the same parsePluginsFromDir does, but it completes the description with WEACE specific attributes.
-    #
-    # Parameters:
-    # * *iCategoryName* (_String_): The category name of the plugins
-    # * *iDir* (_String_): Directory containing plugins
-    # * *iBaseClassName* (_String_): Name of the base class of every plugin in this directory
-    # * *iInstallable* (_Boolean_): Are the parsed plugins installable ? [optional = true]
-    def parseWEACEPluginsFromDir(iCategoryName, iDir, iBaseClassName, iInstallable = true)
-      # Get plugins from there
-      @PluginsManager.parsePluginsFromDir(iCategoryName, iDir, iBaseClassName)
-      # Create the corresponding OptionsParser object, and complete the current description with it
-      @PluginsManager.getPluginsDescriptions(iCategoryName).each do |iScriptID, ioDescription|
-        initializePluginDescription(ioDescription)
-        if (iInstallable)
-          @InstallableComponents["#{iCategoryName}/#{iScriptID}"] = [ iCategoryName, iScriptID ]
-        end
-      end
     end
 
   end
