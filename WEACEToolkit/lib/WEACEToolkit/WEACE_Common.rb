@@ -155,6 +155,7 @@ module WEACE
     # * *ioDescription* (<em>map<Symbol,Object></em>): The description to complete
     def initializePluginDescription(ioDescription)
       if (ioDescription[:VarOptions] != nil)
+        require 'optparse'
         ioDescription[:Options] = OptionParser.new
         # The map of mandatory variables, along with their description and value once affected
         # map< Symbol,       [ OptionParser, String ] >

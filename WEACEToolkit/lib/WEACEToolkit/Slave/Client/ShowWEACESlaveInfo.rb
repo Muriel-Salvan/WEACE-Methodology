@@ -7,7 +7,7 @@ require 'WEACEToolkit/WEACE_Common'
 require 'rUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
 require 'rUtilAnts/Misc'
-RUtilAnts::Platform::initializeMisc
+RUtilAnts::Misc::initializeMisc
 
 module WEACE
 
@@ -97,13 +97,21 @@ module WEACE
       def dumpInstalledSlaveListeners_HTML
         # Get the Listeners list
         lSlaveListeners = @PluginsManager.getPluginsDescriptions('Slave/Listeners')
-        puts "<h1>#{lSlaveListeners.size} listeners are installed on this WEACE Slave Client:</h1>"
-        puts '<ul>'
+        # Consider only the installed ones
+        # map< String, map< Symbol, Object > >
+        lInstalledListeners = {}
         lSlaveListeners.each do |iListenerID, iListenerInfo|
+          lInstallInfo = getComponentInstallInfo(iListenerID)
+          if (lInstallInfo != nil)
+            lInstalledListeners[iListenerID] = lInstallInfo
+          end
+        end
+        puts "<h1>#{lInstalledListeners.size} listeners are installed on this WEACE Slave Client:</h1>"
+        puts '<ul>'
+        lInstalledListeners.each do |iListenerID, iListenerInfo|
           puts '  <li>Listener:'
           puts "    <a name=\"Listeners.#{iListenerID}\"><h4>#{iListenerID}</h4></a>"
           puts '    <ul>'
-          puts "      <li>Listener: #{iListenerID}.</li>"
           puts "      <li>Installed on #{iListenerInfo[:InstallationDate]}.</li>"
           puts "      <li>Parameters: #{iListenerInfo[:InstallationParameters]}</li>"
           puts "      <li>#{iListenerInfo[:Description]}</li>"
