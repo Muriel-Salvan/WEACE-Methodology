@@ -8,6 +8,8 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
+require 'optparse'
+
 require 'fileutils'
 
 module WEACE

@@ -285,8 +285,7 @@ module WEACE
           #     >
           lInstalledTools = {}
           Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.*.inst.rb").each do |iToolFileName|
-            lComponentName = File.basename(iToolFileName)[0..-9]
-            lMatchData = lComponentName.match(/^#{lProductName}\.([^\.]*)$/)
+            lMatchData = (File.basename(iToolFileName)[0..-9]).match(/^#{lProductName}\.([^\.]*)$/)
             if (lMatchData != nil)
               # We have got one
               lToolID = lMatchData[1]
@@ -296,7 +295,7 @@ module WEACE
               #         >
               lInstalledActions = {}
               Dir.glob("#{@WEACEInstallDir}/InstalledComponents/#{lProductName}.#{lToolID}.*.inst.rb").each do |iActionFileName|
-                lActionID = lComponentName.match(/^#{lProductName}\.#{lToolID}\.([^\.]*)$/)[1]
+                lActionID = (File.basename(iActionFileName)[0..-9]).match(/^#{lProductName}\.#{lToolID}\.([^\.]*)$/)[1]
                 # Check if this Action is active
                 lInstalledActions[lActionID] = [
                   getComponentInstallInfo("#{lProductName}.#{lToolID}.#{lActionID}"),
