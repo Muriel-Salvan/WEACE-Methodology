@@ -17,6 +17,17 @@ module WEACE
 
             include WEACE::Test::Install::Providers
 
+            # Get the variables to instantiate in the Provider plugin.
+            # This method can not be implemented if useless.
+            #
+            # Return:
+            # * <em>map<Symbol,Object></em>: Variables to instantiate
+            def getVariablesToInstantiate
+              return {
+                :ShellDir => '/home/WEACETools'
+              }
+            end
+
             # Check the environment returned by the plugin.
             # Use normal assertions to check it.
             #
@@ -25,7 +36,10 @@ module WEACE
             def checkEnvironment(iProviderEnv)
               assert_equal(
                 {
-                  :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb'
+                  :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb',
+                  :Shell => {
+                    :InternalDirectory => '/home/WEACETools'
+                  }
                 },
                 iProviderEnv
               )

@@ -9,11 +9,11 @@
 
 module WEACEInstall
 
-  module Master
+  module Slave
 
     module Providers
 
-      class SourceForge
+      class DummySlaveProviderWithShell
 
         # Get the environment specifics to this provider type.
         # Please check http://weacemethod.sourceforge.net to know every possible value.
@@ -21,17 +21,9 @@ module WEACEInstall
         # Return:
         # * <em>map<Symbol,Object></em>: The map of options
         def getProviderEnvironment
-          lProjectDir = "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}"
-
           return {
-            # TODO: Check Ruby's Path
-            :WEACEExecuteCmd => '/usr/bin/ruby -w WEACEExecute.rb',
-            :CGI => {
-              :InternalDirectory => "#{lProjectDir}/cgi-bin",
-              :URL => "http://#{@ProjectUnixName}.sourceforge.net/cgi-bin"
-            },
             :Shell => {
-              :InternalDirectory => "#{lProjectDir}/WEACETools/Master"
+              :InternalDirectory => @ShellDir
             }
           }
         end

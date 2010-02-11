@@ -26,8 +26,10 @@ module WEACEInstall
           def check
             rError = nil
 
-            if (!File.exists?(@ProductConfig[:InstallDir]))
-              rError = WEACE::MissingDirError.new("Missing directory: #{@ProductConfig[:InstallDir]}")
+            if (@ProviderEnv[:Shell] == nil)
+              rError = RuntimeError.new('This Provider does not accept Shell directories.')
+            elsif (!File.exists?(@ProviderEnv[:Shell][:InternalDirectory]))
+              rError = WEACE::MissingDirError.new("Missing directory: #{@ProviderEnv[:Shell][:InternalDirectory]}")
             end
 
             return rError
@@ -40,9 +42,9 @@ module WEACEInstall
           # * _Exception_: An error, or nil in case of success
           def execute
             # Generate the shell script that will run WEACEExecute.
-            File.open("#{@ProductConfig[:InstallDir]}/Test_Broadcast.sh", 'w') do |oFile|
+            File.open("#{@ProviderEnv[:Shell][:InternalDirectory]}/Test_Broadcast.sh", 'w') do |oFile|
               oFile << "\#!/usr/bin/env ruby
-#{@ProviderEnv[:WEACEExecuteCmd]} MasterServer Scripts_Tester Test_Broadcast
+#{@ProviderEnv[:WEACEExecuteCmd]} MasterServer Scripts_Tester Test_Broadcast ARGV[0]
 "
             end
 

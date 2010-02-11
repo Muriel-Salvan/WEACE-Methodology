@@ -28,20 +28,16 @@ module WEACE
             #
             # Parameters:
             # * *iUserID* (_String_): User ID of the script adding this info
-            # * *iTicketID* (_String_): The Ticket ID
-            # * *iBranchName* (_String_): Name of the branch receiving the commit
-            # * *iCommitID* (_String_): The commit ID
-            # * *iCommitUser* (_String_): The commit user
-            # * *iCommitComment* (_String_): The commit comment
+            # * *iComment* (_String_): The Comment to associate to this Ping
             # Return:
             # * _Exception_: An error, or nil in case of success
-            def execute(iUserID)
+            def execute(iUserID, iComment)
               checkVar(:MediaWikiInstallationDir, 'The directory where Mediawiki is installed')
 
               # Get the existing text
               lContent = `php ../Mediawiki_getContent.php #{@MediaWikiInstallationDir} Tester_Log`.split("\n")
               # Add a new entry at the end of the Tester Log
-              lContent << "* [#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - Ping Mediawiki/Wiki."
+              lContent << "* [#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - Ping Mediawiki/Wiki: #{iComment}"
               # Set the new text
               `echo '#{lContent.join("\n").gsub(/'/,'\\\\\'')}' | php #{@MediaWikiInstallationDir}/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon ping' Tester_Log`
 

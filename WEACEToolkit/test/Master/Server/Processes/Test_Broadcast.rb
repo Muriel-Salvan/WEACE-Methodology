@@ -18,18 +18,19 @@ module WEACE
           # Test that getOptions return something correct
           def testGetOptions
             accessProcessPlugin do |iProcessPlugin|
-              assert(!iProcessPlugin.respond_to?(:getOptions))
+              lProcessOptions = iProcessPlugin.getOptions
+              assert(lProcessOptions.kind_of?(OptionParser))
             end
           end
-
+          
           # Test a nominal case
           def testNominal
-            executeProcess([]) do |iError, iSlaveActions|
+            executeProcess(['--comment', 'DummyComment']) do |iError, iSlaveActions|
               assert_equal(
                 {
                   Tools_All => {
                     Action_Test_Ping => [
-                      []
+                      [ 'DummyComment' ]
                     ]
                   }
                 },

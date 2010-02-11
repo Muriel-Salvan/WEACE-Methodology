@@ -9,14 +9,5 @@
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
   :Description => 'WEACE Master processes that are accessible from a terminal.',
-  :Author => 'murielsalvan@users.sourceforge.net',
-  :VarOptions => [
-    [
-      :InstallDir,
-      '-i', '--installdir <InstallDir>', String,
-      '<InstallDir>: Directory where Processes accessible from command line will be installed.',
-      'Example: /home/WEACETools'
-    ]
-  ],
-  :OptionsExample => '--installdir /home/WEACETools'
+  :Author => 'murielsalvan@users.sourceforge.net'
 }

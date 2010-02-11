@@ -12,15 +12,21 @@ module WEACEInstall
       class CommandLine
 
         include WEACE::Toolbox
-        
+
         # Check if we can install
         #
         # Return:
         # * _Exception_: An error, or nil in case of success
         def check
-          checkVar(:InstallDir, '--installdir')
+          rError = nil
 
-          return nil
+          if (@ProviderEnv[:Shell] == nil)
+            rError = RuntimeError.new('This Provider does not accept Shell directories.')
+          elsif (!File.exists?(@ProviderEnv[:Shell][:InternalDirectory]))
+            rError = WEACE::MissingDirError.new("Missing directory: #{@ProviderEnv[:Shell][:InternalDirectory]}")
+          end
+
+          return rError
         end
 
         # Install for real.
@@ -29,24 +35,7 @@ module WEACEInstall
         # Return:
         # * _Exception_: An error, or nil in case of success
         def execute
-          # Create the directory if it does not exist
-          require 'fileutils'
-          FileUtils::mkdir_p(@InstallDir)
-
           return nil
-        end
-
-        # Get the default configuration
-        #
-        # Return:
-        # * _String_: The default configuration text to put in the configuration file.
-        def getDefaultConfig
-          return "
-{
-  \# Directory where Tools are installed
-  :InstallDir => '#{@InstallDir}'
-}
-"
         end
 
       end

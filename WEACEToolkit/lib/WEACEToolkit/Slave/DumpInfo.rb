@@ -13,7 +13,7 @@ module WEACE
 
   module Slave
   
-    class Dump_HTML
+    class DumpInfo
     
       include WEACE::Toolbox
   
@@ -123,7 +123,7 @@ module WEACE
       end
       
       # Dump every info
-      def dumpWEACESlaveInfo_HTML
+      def dumpHTML
         # First, get necessary variables for information to be retrieved
         setupWEACEDirs
         # Then, initialize the plugins

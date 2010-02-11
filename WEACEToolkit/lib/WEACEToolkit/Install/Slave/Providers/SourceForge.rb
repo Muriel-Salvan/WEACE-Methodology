@@ -21,10 +21,15 @@ module WEACEInstall
         # Return:
         # * <em>map<Symbol,Object></em>: The map of options
         def getProviderEnvironment
+          lProjectDir = "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}"
+
           return {
             :CGI => {
-              :InternalDirectory => "/home/groups/#{@ProjectUnixName[0..0]}/#{@ProjectUnixName[0..1]}/#{@ProjectUnixName}/cgi-bin",
+              :InternalDirectory => "#{lProjectDir}/cgi-bin",
               :URL => "http://#{@ProjectUnixName}.sourceforge.net/cgi-bin"
+            },
+            :Shell => {
+              :InternalDirectory => "#{lProjectDir}/WEACETools/Slave"
             }
           }
         end

@@ -8,15 +8,13 @@
 # ** :Description (_String_): Quick description
 # ** :VarOptions (<em>list<[Symbol,list<Object>]></em>): List of variables bound to parameters on command line options
 {
-  :Description => 'The local environment specifics for WEACE Master Server/Adapters. This is the simplest environment.',
+  :Description => 'A dummy Slave Provider using Shell for regression purposes only.',
   :Author => 'murielsalvan@users.sourceforge.net',
   :VarOptions => [
     [
       :ShellDir,
-      '-d', '--shelldir <Directory>', String,
-      '<Directory>: Directory where the WEACE Toolkit will generate Shell scripts.',
-      'Example: /home/WEACETools'
+      '-d', '--shelldir <ShellDir>', String,
+      'Shell directory'
     ]
-  ],
-  :OptionsExample => '--shelldir /home/WEACETools'
+  ]
 }

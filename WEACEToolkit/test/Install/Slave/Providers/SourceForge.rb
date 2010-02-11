@@ -39,6 +39,9 @@ module WEACE
                   :CGI => {
                     :InternalDirectory => "/home/groups/m/my/myproject/cgi-bin",
                     :URL => "http://myproject.sourceforge.net/cgi-bin"
+                  },
+                  :Shell => {
+                    :InternalDirectory => '/home/groups/m/my/myproject/WEACETools/Slave'
                   }
                 },
                 iProviderEnv

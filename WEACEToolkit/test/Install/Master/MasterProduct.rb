@@ -35,6 +35,10 @@ module WEACE
           # * <em>map<Symbol,Object></em>: The different properties
           def getIndividualComponentTestSpecs
             lSpecs = replaceObjectVars(getMasterProductTestSpecs)
+            lRepository = lSpecs[:Repository]
+            if (lRepository == nil)
+              lRepository = 'Dummy/MasterServerInstalled'
+            end
             return {
               :InstallParameters => [
                 '--install', 'MasterProduct',
@@ -48,7 +52,7 @@ module WEACE
                 '-s', 'RegProduct'
               ],
               :InstallComponentParametersShort => lSpecs[:InstallMasterProductParametersShort],
-              :Repository => 'Dummy/MasterServerInstalled',
+              :Repository => lRepository,
               :ComponentName => 'RegProduct',
               :ComponentInstallInfo => lSpecs[:MasterProductInstallInfo].merge( {
                   :Product => @ProductID,

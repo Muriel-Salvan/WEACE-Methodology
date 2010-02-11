@@ -32,7 +32,7 @@ module WEACE
                   {
                     :MediaWikiInstallationDir => '/home/groups/m/my/myproject/mediawiki'
                   },
-                  [],
+                  [ 'DummyComment' ],
                   :OSExecAnswers => [
                     '',
                     ''
@@ -41,7 +41,7 @@ module WEACE
                   checkCallsMatch(
                     [
                       [ 'query', 'php ../Mediawiki_getContent.php /home/groups/m/my/myproject/mediawiki Tester_Log' ],
-                      [ 'query', /^echo '\* \[....-..-.. ..:..:..\] - Ping Mediawiki\/Wiki.' \| php \/home\/groups\/m\/my\/myproject\/mediawiki\/maintenance\/edit\.php -u DummyUser -s 'Automatic addition upon ping' Tester_Log$/]
+                      [ 'query', /^echo '\* \[....-..-.. ..:..:..\] - Ping Mediawiki\/Wiki: DummyComment' \| php \/home\/groups\/m\/my\/myproject\/mediawiki\/maintenance\/edit\.php -u DummyUser -s 'Automatic addition upon ping' Tester_Log$/]
                     ],
                     $Variables[:OS_Exec]
                   )
@@ -54,7 +54,7 @@ module WEACE
                   {
                     :MediaWikiInstallationDir => '/home/groups/m/my/myproject/mediawiki'
                   },
-                  [],
+                  [ 'DummyComment' ],
                   :OSExecAnswers => [
                     "Content - Line 1\nContent - Line 2",
                     ''
@@ -63,7 +63,7 @@ module WEACE
                   checkCallsMatch(
                     [
                       [ 'query', 'php ../Mediawiki_getContent.php /home/groups/m/my/myproject/mediawiki Tester_Log' ],
-                      [ 'query', /^echo 'Content - Line 1\nContent - Line 2\n\* \[....-..-.. ..:..:..\] - Ping Mediawiki\/Wiki.' \| php \/home\/groups\/m\/my\/myproject\/mediawiki\/maintenance\/edit\.php -u DummyUser -s 'Automatic addition upon commit ping' Tester_Log$/]
+                      [ 'query', /^echo 'Content - Line 1\nContent - Line 2\n\* \[....-..-.. ..:..:..\] - Ping Mediawiki\/Wiki: DummyComment' \| php \/home\/groups\/m\/my\/myproject\/mediawiki\/maintenance\/edit\.php -u DummyUser -s 'Automatic addition upon commit ping' Tester_Log$/]
                     ],
                     $Variables[:OS_Exec]
                   )

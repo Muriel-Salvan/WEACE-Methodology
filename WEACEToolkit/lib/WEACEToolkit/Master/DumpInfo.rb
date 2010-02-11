@@ -8,15 +8,15 @@ module WEACE
 
   module Master
   
-    class Dump_HTML
+    class DumpInfo
     
       include WEACE::Toolbox
   
-       Dump Server info
+      # Dump Server info
       def dumpMasterServer_HTML
-         Require the file containing WEACE Master Info
+        # Require the file containing WEACE Master Info
         require 'WEACEToolkit/Master/Server/InstalledWEACEMasterComponents'
-         Get the info
+        # Get the info
         lDescription = WEACE::Master::getInstallationDescription
         puts '<h1>WEACE Master Server installed:</h1>'
         puts '<ul>'
@@ -130,9 +130,4 @@ module WEACE
     
   end
   
-end
-
-# If we were invoked directly
-if (__FILE__ == $0)
-  WEACE::Master::Dump_HTML.new.dumpWEACEMasterInfo_HTML
 end

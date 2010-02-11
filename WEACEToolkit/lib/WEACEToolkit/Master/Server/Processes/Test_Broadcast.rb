@@ -28,11 +28,30 @@ module WEACE
           # Return:
           # * _Exception_: An error, or nil in case of success
           def processScript(ioSlaveActions, iAdditionalParameters)
+            checkVar(:Comment, 'Comment to send with the Ping')
+
             ioSlaveActions.addSlaveAction(
-              Tools_All, Action_Test_Ping
+              Tools_All, Action_Test_Ping,
+              @Comment
             )
 
             return nil
+          end
+
+          # Get the command line options for this Process
+          #
+          # Return:
+          # * _OptionParser_: The corresponding options
+          def getOptions
+            rOptions = OptionParser.new
+
+            rOptions.banner = '-c|--comment <Comment>'
+            rOptions.on('-c', '--comment <Comment>', String,
+              '<Comment>: Comment to send with th Ping.') do |iArg|
+              @Comment = iArg
+            end
+
+            return rOptions
           end
 
         end

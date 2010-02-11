@@ -13,7 +13,7 @@ module WEACE
 
         module Adapters
 
-          class Redmine < ::Test::Unit::TestCase
+          class Mediawiki < ::Test::Unit::TestCase
 
             include WEACE::Test::Install::Slave::SlaveProduct
 
@@ -33,21 +33,17 @@ module WEACE
             # * <em>map<Symbol,Object></em>: The different properties
             def getSlaveProductTestSpecs
               return {
-                :InstallSlaveProductParameters => [ '--redminedir', '%{ProductDir}/redmine-0.8.2', '--mysql', '/usr/lib/mysql/lib' ],
-                :InstallSlaveProductParametersShort => [ '-d', '%{ProductDir}/redmine-0.8.2', '-m', '/usr/lib/mysql/lib' ],
+                :InstallSlaveProductParameters => [ '--mediawikidir', '%{ProductDir}/wiki' ],
+                :InstallSlaveProductParametersShort => [ '-d', '%{ProductDir}/wiki' ],
                 :SlaveProductInstallInfo => {
-                  :Description => 'Redmine adapted to WEACE Slave.',
+                  :Description => 'Mediawiki adapted to WEACE Slave.',
                   :Author => 'murielsalvan@users.sourceforge.net'
                 },
                 :SlaveProductConfigInfo => {
-                  :RedmineDir => '%{ProductDir}/redmine-0.8.2',
-                  :DBHost => 'mysql',
-                  :DBUser => 'm12345_admin',
-                  :DBPassword => 'Pass',
-                  :DBName => 'm12345_redmine'
+                  :MediawikiDir => '%{ProductDir}/wiki'
                 },
-                :ProductRepositoryVirgin => 'Redmine/Slave/Virgin',
-                :ProductRepositoryInstalled => 'Redmine/Slave/Normal',
+                :ProductRepositoryVirgin => 'Mediawiki/Slave/Virgin',
+                :ProductRepositoryInstalled => 'Mediawiki/Slave/Normal',
                 :ProductRepositoryInvalid => 'Empty',
                 :CheckErrorClass => WEACE::MissingFileError
               }

@@ -12,3 +12,4 @@
 ** Check if CmdOtherSession framework can be removed.
 ** Adapt ShowWEACE{Master|Slave}Info.rb so they display information correctly.
 ** Implement uninstall (generic) function on WEACEInstall.rb.
+** Ensure that Master Processes and Slave Actions respect the signature they should have.

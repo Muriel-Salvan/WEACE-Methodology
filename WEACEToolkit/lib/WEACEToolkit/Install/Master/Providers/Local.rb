@@ -22,7 +22,10 @@ module WEACEInstall
         # * <em>map<Symbol,Object></em>: The map of options
         def getProviderEnvironment
           return {
-            :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb'
+            :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb',
+            :Shell => {
+              :InternalDirectory => @ShellDir
+            }
           }
         end
 

@@ -21,6 +21,7 @@ module WEACE
             # Here are the different properties to give:
             # * :InstallMasterProductParameters (<em>list<String></em>): The parameters to give WEACEInstall. Only the Master Product's specific ones.
             # * :InstallMasterProductParametersShort (<em>list<String></em>): The parameters to give WEACEInstall in short version. Only the Master Product's specific ones.
+            # * :Repository (_String_): Name of the repository to use when installing this Component. [optional = 'Dummy/MasterServerInstalled']
             # * :MasterProductInstallInfo (<em>map<Symbol,Object></em>): The install info the MasterProduct should register (without :InstallationDate, :InstallationParameters, :Product and :Type).
             # * :MasterProductConfigInfo (<em>map<Symbol,Object></em>): The config info the MasterProduct should register.
             # * :ProductRepositoryVirgin (_String_): Name of the Product repository to use when this MasterProduct is not installed.
@@ -32,17 +33,18 @@ module WEACE
             # * <em>map<Symbol,Object></em>: The different properties
             def getMasterProductTestSpecs
               return {
-                :InstallMasterProductParameters => [ '--installdir', '%{ProductDir}/WEACETools' ],
-                :InstallMasterProductParametersShort => [ '-i', '%{ProductDir}/WEACETools' ],
+                :InstallMasterProductParameters => [],
+                :InstallMasterProductParametersShort => [],
+                :Repository => 'Dummy/MasterServerInstalledWithShell',
                 :MasterProductInstallInfo => {
                   :Description => 'WEACE Master processes that are accessible from a terminal.',
                   :Author => 'murielsalvan@users.sourceforge.net'
                 },
-                :MasterProductConfigInfo => {
-                  :InstallDir => '%{ProductDir}/WEACETools'
-                },
-                :ProductRepositoryVirgin => 'Empty',
-                :ProductRepositoryInstalled => 'CommandLine/Master/Normal'
+                :MasterProductConfigInfo => {},
+                :ProductRepositoryVirgin => 'CommandLine/Master/Normal',
+                :ProductRepositoryInstalled => 'CommandLine/Master/Normal',
+                :ProductRepositoryInvalid => 'Empty',
+                :CheckErrorClass => WEACE::MissingDirError
               }
             end
 
