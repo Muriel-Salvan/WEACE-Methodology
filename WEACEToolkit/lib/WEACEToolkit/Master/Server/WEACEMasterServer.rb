@@ -7,7 +7,6 @@
 #++
 
 require 'WEACEToolkit/WEACE_Common'
-require 'WEACEToolkit/Master/Server/Common'
 
 module WEACE
 
@@ -234,7 +233,8 @@ module WEACE
                           lSlaveActionsForClient = {}
                           lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
                             if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
-                                (iSlaveClientInfo[:Tools].include?(Tools_All)))
+                                (iSlaveClientInfo[:Tools].include?(Tools_All)) or
+                                (iToolID == Tools_All))
                               lSlaveActionsForClient[iToolID] = iSlaveActionsList
                             end
                           end
@@ -244,16 +244,16 @@ module WEACE
                             @PluginsManager.accessPlugin('Senders', iSlaveClientInfo[:Type]) do |ioSenderPlugin|
                               # Create the map of parameters to give the Sender
                               lParameters = iSlaveClientInfo.dup
-                              lParameters.delete!(:Type)
-                              lParameters.delete!(:Tools)
+                              lParameters.delete(:Type)
+                              lParameters.delete(:Tools)
                               logDebug "Send update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect} ..."
                               instantiateVars(ioSenderPlugin, lParameters)
                               lError = ioSenderPlugin.sendMessage(@UserID, lSlaveActionsForClient)
                               if (lError == nil)
                                 logDebug "... Update sent successfully to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}"
                               else
-                                lErrors << "Unable to send the update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}"
-                                logDebug "... Failure to send update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}"
+                                lErrors << "Unable to send the update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}: #{lError}"
+                                logDebug "... Failure to send update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}: #{lError}"
                               end
                             end
                           end

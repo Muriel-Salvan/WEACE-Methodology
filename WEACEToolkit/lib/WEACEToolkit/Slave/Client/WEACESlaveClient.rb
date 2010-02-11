@@ -134,8 +134,9 @@ module WEACE
           puts $!.backtrace.join("\n")
           raise
         end
-        
-        return execute(iUserScriptID, lActions)
+
+        # Convert Actions back to command line parameters
+        return execute(getSlaveClientParamsFromActions(iUserScriptID, lActions))
       end
     
       # Execute the server for a given configuration
