@@ -438,6 +438,23 @@ Check http://weacemethod.sourceforge.net for details."
             end
           end
         end
+        # And now, if Tools::All was included, we search all Actions that were not part of @ActionsToExecute and that can also be executed
+        if (@ActionsToExecute[Tools::All] != nil)
+          @SlaveClientConfig[:WEACESlaveAdapters].each do |iProductName, iToolsSet|
+            iToolsSet.each do |iToolID, iActionsList|
+              iActionsList.each do |iActionID|
+                # Check that we want to execute it and that we didn't execute this Action already
+                if ((@ActionsToExecute[Tools::All][iActionID] != nil) and
+                    ((@ActionsToExecute[iToolID] == nil) or
+                     (@ActionsToExecute[iToolID][iActionID] == nil)))
+                  lEmptyProductsList, lAskedParameters = @ActionsToExecute[iToolID][iActionID]
+                  # OK, we can execute it for iProductName
+                  lErrors += executeActionsForProductsList(iUserID, [iProductName], iToolID, iActionID, lAskedParameters)
+                end
+              end
+            end
+          end
+        end
         if (!lErrors.empty?)
           rError = ActionExecutionsError.new(lErrors)
         end
