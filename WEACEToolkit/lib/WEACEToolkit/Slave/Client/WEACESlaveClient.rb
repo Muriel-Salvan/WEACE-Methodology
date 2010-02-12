@@ -99,11 +99,6 @@ module WEACE
         RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
-        # Read SlaveClient conf
-        @SlaveClientConfig = getComponentConfigInfo('SlaveClient')
-        if (@SlaveClientConfig == nil)
-          logErr 'SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.'
-        end
         # Map of Actions
         # map< String, map< String, [ list< String >, list< list< String > > ] > >
         #      ToolID       ActionID        ProductName           Parameter
@@ -154,6 +149,8 @@ module WEACE
       def execute(iParameters)
         rError = nil
 
+        # Read SlaveClient conf
+        @SlaveClientConfig = getComponentConfigInfo('SlaveClient')
         if (@SlaveClientConfig == nil)
           rError = RuntimeError.new('SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.')
         else
@@ -226,7 +223,7 @@ Check http://weacemethod.sourceforge.net for details."
                 if (lBeginNewTool)
                   # Name of the tool
                   if (@Actions[iArg] == nil)
-                    if (iArg == Tools::All)
+                    if (iArg == WEACE::Tools::All)
                       # Create a new place in @Actions for it
                       @Actions[iArg] = {}
                       lCurrentTool = iArg
@@ -244,7 +241,7 @@ Check http://weacemethod.sourceforge.net for details."
                   # Name of an action
                   if ((@Actions[lCurrentTool] == nil) or
                       (@Actions[lCurrentTool][iArg] == nil))
-                    if (lCurrentTool == Tools::All)
+                    if (lCurrentTool == WEACE::Tools::All)
                       # Add this Action
                       @Actions[lCurrentTool][iArg] = [ [], [ [] ] ]
                       lIdxCurrentAction = 0
@@ -409,16 +406,16 @@ Check http://weacemethod.sourceforge.net for details."
         # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
         lErrors = []
         @Actions.each do |iToolID, iToolInfo|
-          # Don't look at Tools::All here.
-          if (iToolID != Tools::All)
+          # Don't look at WEACE::Tools::All here.
+          if (iToolID != WEACE::Tools::All)
             # For each Action adapted in iToolID
             iToolInfo.each do |iActionID, iActionInfo|
               iProductsList, iAskedParameters = iActionInfo
               # Check out if their are additional parameters listed for All Tools
-              if ((@Actions[Tools::All] != nil) and
-                  (@Actions[Tools::All][iActionID] != nil))
+              if ((@Actions[WEACE::Tools::All] != nil) and
+                  (@Actions[WEACE::Tools::All][iActionID] != nil))
                 # Yes, we have extra parameters here
-                lEmptyProductsList, lAllToolsAskedParameters = @Actions[Tools::All][iActionID]
+                lEmptyProductsList, lAllToolsAskedParameters = @Actions[WEACE::Tools::All][iActionID]
                 lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters + lAllToolsAskedParameters)
               else
                 lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)

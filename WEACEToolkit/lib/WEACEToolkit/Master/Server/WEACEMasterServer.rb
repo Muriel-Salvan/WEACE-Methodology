@@ -64,11 +64,6 @@ module WEACE
         RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
-        # Read SlaveClient conf
-        @MasterServerConfig = getComponentConfigInfo('MasterServer')
-        if (@MasterServerConfig == nil)
-          logErr 'MasterServer has not been installed correctly. Please use WEACEInstall.rb to install it.'
-        end
 
         # Parse for plugins
         require 'rUtilAnts/Plugins'
@@ -131,6 +126,8 @@ module WEACE
       def execute(iParameters)
         rError = nil
 
+        # Read SlaveClient conf
+        @MasterServerConfig = getComponentConfigInfo('MasterServer')
         if (@MasterServerConfig == nil)
           rError = RuntimeError.new('MasterServer has not been installed correctly. Please use WEACEInstall.rb to install it.')
         else
