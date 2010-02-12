@@ -32,16 +32,21 @@ module WEACE
             # Return:
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iComment)
-              checkVar(:MediaWikiInstallationDir, 'The directory where Mediawiki is installed')
+              rError = nil
 
-              # Get the existing text
-              lContent = `php ../Mediawiki_getContent.php #{@MediaWikiInstallationDir} Tester_Log`.split("\n")
-              # Add a new entry at the end of the Tester Log
-              lContent << "* [#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - Ping Mediawiki/Wiki: #{iComment}"
-              # Set the new text
-              `echo '#{lContent.join("\n").gsub(/'/,'\\\\\'')}' | php #{@MediaWikiInstallationDir}/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon ping' Tester_Log`
+              lMediawikiDir = @ProductConfig[:MediawikiDir]
+              if (lMediawikiDir == nil)
+                rError = RuntimeError.new('Mediawiki Product\'s configuration is corrupted. Missing :MediawikiDir attribute.')
+              else
+                # Get the existing text
+                lContent = `php ../Mediawiki_getContent.php #{lMediawikiDir} Tester_Log`.split("\n")
+                # Add a new entry at the end of the Tester Log
+                lContent << "* [#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - Ping Mediawiki/Wiki: #{iComment}"
+                # Set the new text
+                `echo '#{lContent.join("\n").gsub(/'/,'\\\\\'')}' | php #{lMediawikiDir}/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon ping' Tester_Log`
+              end
 
-              return nil
+              return rError
             end
 
           end

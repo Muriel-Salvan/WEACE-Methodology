@@ -99,7 +99,7 @@ module WEACE
         RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
-        # Map of Actions
+        # Map of Actions to be executed
         # map< String, map< String, [ list< String >, list< list< String > > ] > >
         #      ToolID       ActionID        ProductName           Parameter
         # map<
@@ -112,7 +112,7 @@ module WEACE
         #     ]
         #   >
         # >
-        @Actions = {}
+        @ActionsToExecute = {}
 
         # Parse for plugins
         require 'rUtilAnts/Plugins'
@@ -222,10 +222,10 @@ Check http://weacemethod.sourceforge.net for details."
               else
                 if (lBeginNewTool)
                   # Name of the tool
-                  if (@Actions[iArg] == nil)
+                  if (@ActionsToExecute[iArg] == nil)
                     if (iArg == Tools::All)
-                      # Create a new place in @Actions for it
-                      @Actions[iArg] = {}
+                      # Create a new place in @ActionsToExecute for it
+                      @ActionsToExecute[iArg] = {}
                       lCurrentTool = iArg
                       lCurrentAction = nil
                     else
@@ -239,11 +239,11 @@ Check http://weacemethod.sourceforge.net for details."
                   lBeginNewTool = false
                 elsif (lBeginNewAction)
                   # Name of an action
-                  if ((@Actions[lCurrentTool] == nil) or
-                      (@Actions[lCurrentTool][iArg] == nil))
+                  if ((@ActionsToExecute[lCurrentTool] == nil) or
+                      (@ActionsToExecute[lCurrentTool][iArg] == nil))
                     if (lCurrentTool == Tools::All)
                       # Add this Action
-                      @Actions[lCurrentTool][iArg] = [ [], [ [] ] ]
+                      @ActionsToExecute[lCurrentTool][iArg] = [ [], [ [] ] ]
                       lIdxCurrentAction = 0
                       lCurrentAction = iArg
                     else
@@ -251,14 +251,14 @@ Check http://weacemethod.sourceforge.net for details."
                       lInvalid = true
                     end
                   else
-                    @Actions[lCurrentTool][iArg][1] << []
-                    lIdxCurrentAction = @Actions[lCurrentTool][iArg][1].size - 1
+                    @ActionsToExecute[lCurrentTool][iArg][1] << []
+                    lIdxCurrentAction = @ActionsToExecute[lCurrentTool][iArg][1].size - 1
                     lCurrentAction = iArg
                   end
                   lBeginNewAction = false
                 elsif (lIdxCurrentAction != nil)
                   # Name of a parameter
-                  @Actions[lCurrentTool][lCurrentAction][1][lIdxCurrentAction] << iArg
+                  @ActionsToExecute[lCurrentTool][lCurrentAction][1][lIdxCurrentAction] << iArg
                 else
                   # Can be other switches
                   case iArg
@@ -353,34 +353,49 @@ Check http://weacemethod.sourceforge.net for details."
       # * *iUserID* (_String_): The User ID
       # * *iActionID* (_String_): The Action ID
       # * *iActionParameters* (<em>list<String></em>): The parameters to give to the Action
-      # * *iProductID* (_String_): The Product ID
+      # * *iProductName* (_String_): The Product name
       # * *iToolID* (_String_): The Tool ID
-      # * *iProductConfig* (<em>map<Symbol,Object></em>): The Product configuration
       # Return:
       # * _Exception_: An error, or ni in case of success
-      def executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, iProductConfig)
+      def executeAction(iUserID, iActionID, iActionParameters, iProductName, iToolID)
         rError = nil
 
-        logDebug 'Executing action on a product using an adapter:'
-        logDebug "* Action: #{iActionID}"
-        logDebug "* Action parameters: #{iActionParameters.inspect}"
-        logDebug "* Product: #{iProductID}"
-        logDebug "* Product config: #{iProductConfig.inspect}"
-        logDebug "* Tool: #{iToolID}"
-        # Access the correct plugin
-        @PluginsManager.accessPlugin("Adapters/#{iProductID}/#{iToolID}", iActionID) do |ioAdapterPlugin|
-          instantiateVars(ioAdapterPlugin, iProductConfig)
-          begin
-            rError = ioAdapterPlugin.execute(iUserID, *iActionParameters)
-          rescue ArgumentError
-            rError = AdapterArgumentError.new("Adapter #{iProductID}/#{iToolID}/#{iActionID} did not get valid arguments. Check parameters or the Adapter's signature: #{$!}.")
-          rescue Exception
-            rError = AdapterError.new(iProductID, iToolID, iActionID, $!)
-          end
-          if (rError == nil)
-            logDebug 'Adapter completed action without error.'
-          else
-            logDebug "Adapter completed with an error: #{rError}."
+        # Get the ProductID
+        lProductInstallInfo = getComponentInstallInfo(iProductName)
+        if (lProductInstallInfo == nil)
+          rError = RuntimeError.new("Product #{iProductName} is not installed but referenced among the SlaveClient's configuration.")
+        elsif (lProductInstallInfo[:Product] == nil)
+          rError = RuntimeError.new("Product #{iProductName}'s installation is corrupted. Installation file invalid.")
+        else
+          lProductID = lProductInstallInfo[:Product]
+          lProductConfig = getComponentConfigInfo(iProductName)
+          lToolConfig = getComponentConfigInfo("#{iProductName}.#{iToolID}")
+          lActionConfig = getComponentConfigInfo("#{iProductName}.#{iToolID}.#{iActionID}")
+          logDebug 'Executing action on a product using an adapter:'
+          logDebug "* Product: #{iProductName} (#{lProductID})"
+          logDebug "* Product config: #{lProductConfig.inspect}"
+          logDebug "* Tool: #{iToolID}"
+          logDebug "* Tool config: #{lToolConfig.inspect}"
+          logDebug "* Action: #{iActionID}"
+          logDebug "* Action config: #{lActionConfig.inspect}"
+          logDebug "* Action parameters: #{iActionParameters.inspect}"
+          # Access the correct plugin
+          @PluginsManager.accessPlugin("Actions/#{lProductID}/#{iToolID}", iActionID) do |ioAdapterPlugin|
+            ioAdapterPlugin.instance_variable_set(:@ProductConfig, lProductConfig)
+            ioAdapterPlugin.instance_variable_set(:@ToolConfig, lToolConfig)
+            ioAdapterPlugin.instance_variable_set(:@ActionConfig, lActionConfig)
+            begin
+              rError = ioAdapterPlugin.execute(iUserID, *iActionParameters)
+            rescue ArgumentError
+              rError = AdapterArgumentError.new("Slave Action #{lProductID}/#{iToolID}/#{iActionID} did not get valid arguments. Check parameters or the Action's signature: #{$!}.")
+            rescue Exception
+              rError = AdapterError.new(lProductID, iToolID, iActionID, $!)
+            end
+            if (rError == nil)
+              logDebug 'Action completed without error.'
+            else
+              logDebug "Action completed with an error: #{rError}."
+            end
           end
         end
 
@@ -388,7 +403,7 @@ Check http://weacemethod.sourceforge.net for details."
       end
 
       # Execute all the Actions having parameters.
-      # This method uses @Actions to get the possible Actions.
+      # This method uses @ActionsToExecute to get the Actions to execute.
       #
       # Parameters:
       # * *iUserID* (_String_): The User ID
@@ -405,17 +420,17 @@ Check http://weacemethod.sourceforge.net for details."
         # List of errors that occurred on some Adapters
         # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
         lErrors = []
-        @Actions.each do |iToolID, iToolInfo|
+        @ActionsToExecute.each do |iToolID, iToolInfo|
           # Don't look at Tools::All here.
           if (iToolID != Tools::All)
             # For each Action adapted in iToolID
             iToolInfo.each do |iActionID, iActionInfo|
               iProductsList, iAskedParameters = iActionInfo
               # Check out if their are additional parameters listed for All Tools
-              if ((@Actions[Tools::All] != nil) and
-                  (@Actions[Tools::All][iActionID] != nil))
+              if ((@ActionsToExecute[Tools::All] != nil) and
+                  (@ActionsToExecute[Tools::All][iActionID] != nil))
                 # Yes, we have extra parameters here
-                lEmptyProductsList, lAllToolsAskedParameters = @Actions[Tools::All][iActionID]
+                lEmptyProductsList, lAllToolsAskedParameters = @ActionsToExecute[Tools::All][iActionID]
                 lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters + lAllToolsAskedParameters)
               else
                 lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)
@@ -430,11 +445,12 @@ Check http://weacemethod.sourceforge.net for details."
         return rError
       end
       
-      # Execute an Action given to a list of Products
+      # Execute an Action given to a list of Products.
+      # Check if this Product/Tool/Action is active among SlaveClient's configuration.
       #
       # Parameters:
       # * *iUserID* (_String_): The User ID
-      # * *iProductsList* (<em>list<String,Boolean></em>): The Products list along with their installed? flag
+      # * *iProductsList* (<em>list<String></em>): The Products list
       # * *iToolID* (_String_): The corresponding Tool ID
       # * *iActionID* (_String_): The corresponding Action ID
       # * *iAskedParameters* (<em>list<list<String>></em>): The list of parameters to apply to the Action
@@ -444,16 +460,20 @@ Check http://weacemethod.sourceforge.net for details."
         rErrors = []
 
         iAskedParameters.each do |iActionParameters|
-          iProductsList.each do |iProductInfo|
-            iProductID, iProductInstalled = iProductInfo
-            if (iProductInstalled)
-              # Check configuration for this Product
-              lProductConfig = getProductConfig(@SlaveClientConfig[:WEACESlaveAdapters], iProductID, iToolID)
-              if (lProductConfig != nil)
+          iProductsList.each do |iProductName|
+            # Check that iProductName/iToolID/iActionID is active
+            if ((@SlaveClientConfig[:WEACESlaveAdapters][iProductName] != nil) and
+                (@SlaveClientConfig[:WEACESlaveAdapters][iProductName][iToolID] != nil) and
+                (@SlaveClientConfig[:WEACESlaveAdapters][iProductName][iToolID].include?(iActionID) != nil))
+              # Check that this Action is installed
+              lActionInstallInfo = getComponentInstallInfo("#{iProductName}.#{iToolID}.#{iActionID}")
+              if (lActionInstallInfo == nil)
+                rErrors << [ iProductName, iToolID, iActionID, iActionParameters, RuntimeError.new("Slave Action #{iProductName}/#{iToolID}/#{iActionID} is not installed.") ]
+              else
                 # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
-                lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
+                lError = executeAction(iUserID, iActionID, iActionParameters, iProductName, iToolID)
                 if (lError != nil)
-                  rErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
+                  rErrors << [ iProductName, iToolID, iActionID, iActionParameters, lError ]
                 end
               end
             end
@@ -464,7 +484,6 @@ Check http://weacemethod.sourceforge.net for details."
       end
 
       # Display to the user the available Actions.
-      # Uses @Actions.
       #
       # Parameters:
       # * *iDisplayDetails* (_Boolean_): Do we display detailed report ?
@@ -478,68 +497,52 @@ Check http://weacemethod.sourceforge.net for details."
             iToolInfo.each do |iActionID, iActionInfo|
               iProductsList, iAskedParameters = iActionInfo
               puts "** Action: #{iActionID}, updating #{iProductsList.size} Products:"
-              iProductsList.each do |iProductInfo|
-                iProductID, iProductInstalled = iProductInfo
-                lStrInstalled = nil
-                if (iProductInstalled)
-                  lStrInstalled = 'Installed'
-                else
-                  lStrInstalled = 'NOT Installed'
-                end
-                # Check if it is among the configured Slave Adapters.
-                lProductConfig = getProductConfig(iSlaveAdapters, iProductID, iToolID)
-                lStrConfig = nil
-                if (lProductConfig == nil)
-                  lStrConfig = 'NOT Configured'
-                else
-                  lStrConfig = 'Configured'
-                end
-                puts "*** #{iProductID} (#{lStrInstalled}) (#{lStrConfig})"
+              iProductsList.each do |iProductName|
+                puts "*** #{iProductName}"
               end
             end
             puts ''
           end
         else
-          # Just display Tools/Actions that are available for installed Products
-          # map< ToolID, map< ActionID, list< ProductID > > >
-          lInstalledActions = {}
-          @Actions.each do |iToolID, iToolInfo|
-            iToolInfo.each do |iActionID, iActionInfo|
-              iProductsList, iAskedParameters = iActionInfo
-              iProductsList.each do |iProductInfo|
-                iProductID, iProductInstalled = iProductInfo
-                if (iProductInstalled)
-                  # Check config
-                  lProductConfig = getProductConfig(iSlaveAdapters, iProductID, iToolID)
-                  if (lProductConfig != nil)
-                    # Add this one
-                    if (lInstalledActions[iToolID] == nil)
-                      lInstalledActions[iToolID] = {}
-                    end
-                    if (lInstalledActions[iToolID][iActionID] == nil)
-                      lInstalledActions[iToolID][iActionID] = []
-                    end
-                    lInstalledActions[iToolID][iActionID] << iProductID
-                  end
-                end
-              end
-            end
-          end
-          # Display in a friendly way
-          puts "== #{lInstalledActions.size} available Tools:"
-          lInstalledActions.each do |iToolID, iToolInfo|
-            puts "* Tool: #{iToolID}"
-            iToolInfo.each do |iActionID, iProductsList|
-              puts "** Action: #{iActionID} (updating #{iProductsList.join(', ')})"
-            end
-          end
+#          # Just display Tools/Actions that are available for installed Products
+#          # map< ToolID, map< ActionID, list< ProductID > > >
+#          lInstalledActions = {}
+#          @Actions.each do |iToolID, iToolInfo|
+#            iToolInfo.each do |iActionID, iActionInfo|
+#              iProductsList, iAskedParameters = iActionInfo
+#              iProductsList.each do |iProductName|
+#                if (iProductInstalled)
+#                  # Check config
+#                  lProductConfig = getProductConfig(iSlaveAdapters, iProductID, iToolID)
+#                  if (lProductConfig != nil)
+#                    # Add this one
+#                    if (lInstalledActions[iToolID] == nil)
+#                      lInstalledActions[iToolID] = {}
+#                    end
+#                    if (lInstalledActions[iToolID][iActionID] == nil)
+#                      lInstalledActions[iToolID][iActionID] = []
+#                    end
+#                    lInstalledActions[iToolID][iActionID] << iProductID
+#                  end
+#                end
+#              end
+#            end
+#          end
+#          # Display in a friendly way
+#          puts "== #{lInstalledActions.size} available Tools:"
+#          lInstalledActions.each do |iToolID, iToolInfo|
+#            puts "* Tool: #{iToolID}"
+#            iToolInfo.each do |iActionID, iProductsList|
+#              puts "** Action: #{iActionID} (updating #{iProductsList.join(', ')})"
+#            end
+#          end
         end
-        puts ''
-        puts 'A given Action is available only if it meets 3 requirements:'
-        puts ' 1. It has to be present among the WEACE Toolkit distribution you are using.'
-        puts ' 2. It has to be installed (using WEACEInstall).'
-        puts " 3. It has to be registered in the configuration file (#{getConfigFileName('SlaveClient')})"
-        puts 'For more information, please visit http://weacemethod.sourceforge.net'
+#        puts ''
+#        puts 'A given Action is available only if it meets 3 requirements:'
+#        puts ' 1. It has to be present among the WEACE Toolkit distribution you are using.'
+#        puts ' 2. It has to be installed (using WEACEInstall).'
+#        puts " 3. It has to be registered in the configuration file (#{getConfigFileName('SlaveClient')})"
+#        puts 'For more information, please visit http://weacemethod.sourceforge.net'
       end
 
       # Dump debugging information about WEACE Slave Client
@@ -548,21 +551,18 @@ Check http://weacemethod.sourceforge.net for details."
       # * *iUserID* (_String_): The User ID
       # * *iSlaveAdapters* (<em>list<map<Symbol,Object>></em>): The list of WEACE Slave Adapters as stated in the configuration file
       def dumpDebugInfo(iUserID, iSlaveAdapters)
+        # The User
         logDebug "* User: #{iUserID}"
-        logDebug "** #{@Actions.size} Tools have Actions:"
-        @Actions.each do |iToolID, iToolInfo|
-          logDebug "** Tool: #{iToolID} has #{iToolInfo.size} Actions"
+        # The Actions we want to execute
+        logDebug "** #{@ActionsToExecute.size} Tools have Actions to execute:"
+        @ActionsToExecute.each do |iToolID, iToolInfo|
+          logDebug "** Tool: #{iToolID} has #{iToolInfo.size} Actions to execute"
           iToolInfo.each do |iActionID, iActionInfo|
             iProductsList, iAskedParameters = iActionInfo
             logDebug "*** Action: #{iActionID}"
-            logDebug "**** #{iProductsList.size} Products:"
-            iProductsList.each do |iProductInfo|
-              iProductID, iProductInstalled = iProductInfo
-              if (iProductInstalled)
-                logDebug "***** #{iProductID} (Installed)"
-              else
-                logDebug "***** #{iProductID} (NOT Installed)"
-              end
+            logDebug "**** #{iProductsList.size} Products supporting this Action:"
+            iProductsList.each do |iProductName|
+              logDebug "***** #{iProductName}"
             end
             logDebug "**** Asked to be executed #{iAskedParameters.size} times:"
             iAskedParameters.each do |iActionParameters|
@@ -570,23 +570,16 @@ Check http://weacemethod.sourceforge.net for details."
             end
           end
         end
-        logDebug "#{iSlaveAdapters.size} Adapters configuration:"
-        lIdx = 0
-        iSlaveAdapters.each do |iAdapterInfo|
-          lProductID = iAdapterInfo[:Product]
-          lToolID = iAdapterInfo[:Tool]
-          # First check if this Adapter has been installed before using it
-          logDebug "* Adapter n.#{lIdx}:"
-          logDebug "** Product: #{lProductID}"
-          logDebug "** Tool: #{lToolID}"
-          logDebug '** Parameters:'
-          iAdapterInfo.each do |iKey, iValue|
-            if ((iKey != :Product) and
-                (iKey != :Tool))
-              logDebug "** #{iKey}: #{iValue.inspect}"
+        # The active Products from SlaveClient configuration
+        logDebug "#{iSlaveAdapters.size} active Products:"
+        iSlaveAdapters.each do |iProductName, iToolsSet|
+          logDebug "* Product: #{iProductName} (#{iToolsSet.size} active Tools)"
+          iToolsSet.each do |iToolID, iActionsList|
+            logDebug "** Tool: #{iToolID} (#{iActionsList.size} active Actions)"
+            iActionsList.each do |iActionID|
+              logDebug "*** Action: #{iActionID}"
             end
           end
-          lIdx += 1
         end
       end
       
@@ -601,37 +594,11 @@ Check http://weacemethod.sourceforge.net for details."
             Dir.glob("#{iDir}/#{lProductID}/*").each do |iToolDir|
               if (File.directory?(iToolDir))
                 lToolID = File.basename(iToolDir)
-                @PluginsManager.parsePluginsFromDir("Adapters/#{lProductID}/#{lToolID}", "#{iDir}/#{lProductID}/#{lToolID}", "WEACE::Slave::Adapters::#{lProductID}::#{lToolID}")
-                # Register those Actions
-                lNames = @PluginsManager.getPluginNames("Adapters/#{lProductID}/#{lToolID}")
-                if (!lNames.empty?)
-                  lNames.each do |iActionID|
-                    # Check if this Adapter has been installed
-                    lInstalledDesc = getComponentInstallInfo("Slave/Adapters/#{lProductID}/#{lToolID}/#{iActionID}")
-                    registerAction(lToolID, iActionID, lProductID, (lInstalledDesc != nil))
-                  end
-                end
+                @PluginsManager.parsePluginsFromDir("Actions/#{lProductID}/#{lToolID}", "#{iDir}/#{lProductID}/#{lToolID}", "WEACE::Slave::Adapters::#{lProductID}::#{lToolID}")
               end
             end
           end
         end
-      end
-
-      # Register a new Action
-      #
-      # Parameters:
-      # * *iToolID* (_String_): The Tool ID
-      # * *iActionID* (_String_): The Action ID
-      # * *iProductID* (_String_): The Product ID
-      # * *iIsInstalled* (_Boolean_): Is the Action installed ?
-      def registerAction(iToolID, iActionID, iProductID, iIsInstalled)
-        if (@Actions[iToolID] == nil)
-          @Actions[iToolID] = {}
-        end
-        if (@Actions[iToolID][iActionID] == nil)
-          @Actions[iToolID][iActionID] = [ [], [] ]
-        end
-        @Actions[iToolID][iActionID][0] << [ iProductID, iIsInstalled ]
       end
 
     end
