@@ -99,11 +99,11 @@ module WEACE
         RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
-        require 'fileutils'
-        FileUtils.mkdir_p("#{@WEACERepositoryDir}/Log")
-        setLogFile("#{@WEACERepositoryDir}/Log/SlaveClient.log")
-        @DefaultLogDir = "#{@WEACERepositoryDir}/Log"
-        @ConfigFile = "#{@WEACERepositoryDir}/Config/SlaveClient.conf.rb"
+        # Read SlaveClient conf
+        @SlaveClientConfig = getComponentConfigInfo('SlaveClient')
+        if (@SlaveClientConfig == nil)
+          logErr 'SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.'
+        end
         # Map of Actions
         # map< String, map< String, [ list< String >, list< list< String > > ] > >
         #      ToolID       ActionID        ProductName           Parameter
@@ -154,6 +154,17 @@ module WEACE
       def execute(iParameters)
         rError = nil
 
+        if (@SlaveClientConfig == nil)
+          rError = RuntimeError.new('SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.')
+        else
+          # Create log file
+          lLogFile = @SlaveClientConfig[:LogFile]
+          if (lLogFile == nil)
+            lLogFile = "#{@WEACERepositoryDir}/Log/SlaveClient.log"
+          end
+          require 'fileutils'
+          FileUtils::mkdir_p(File.dirname(lLogFile))
+          setLogFile(lLogFile)
           lUsage = "Signature: [-h|--help] [-v|--version] [-d|--debug] [-l|--list] [-e|--detailedlist] [ -u|--user <UserID> [ -t|--tool <ToolID> [ -a|--action <ActionID> <ActionParameters> ]* ]* ]
   -h, --help:         Display help
   -v, --version:      Display version of WEACE Slave Client
@@ -171,131 +182,129 @@ module WEACE
 Example: -u Scripts_Validator -t TicketTracker -a RejectDuplicate 123 456 -a AddLinkToTask 789 234
 
 Check http://weacemethod.sourceforge.net for details."
-        lUserID = nil
-        # Parse command line arguments, and check them
-        lDisplayUsage = false
-        lDisplayVersion = false
-        lDisplayList = false
-        lDisplayDetails = false
-        @DebugMode = false
-        lUserID = nil
-        lInvalid = false
-        lBeginNewTool = false
-        lCurrentTool = nil
-        lBeginNewAction = false
-        lCurrentAction = nil
-        lIdxCurrentAction = nil
-        lBeginNewUser = false
-        lIsActionPresent = false
-        iParameters.each do |iArg|
-          if (lBeginNewUser)
-            lUserID = iArg
-            lBeginNewUser = false
+          lUserID = nil
+          # Parse command line arguments, and check them
+          lDisplayUsage = false
+          lDisplayVersion = false
+          lDisplayList = false
+          lDisplayDetails = false
+          @DebugMode = false
+          lUserID = nil
+          lInvalid = false
+          lBeginNewTool = false
+          lCurrentTool = nil
+          lBeginNewAction = false
+          lCurrentAction = nil
+          lIdxCurrentAction = nil
+          lBeginNewUser = false
+          lIsActionPresent = false
+          iParameters.each do |iArg|
+            if (lBeginNewUser)
+              lUserID = iArg
+              lBeginNewUser = false
+            else
+              case iArg
+              when '-t', '--tool'
+                if ((lBeginNewAction) or
+                    ((lCurrentTool != nil) and
+                     (lIdxCurrentAction == nil)))
+                  lInvalid = true
+                else
+                  lBeginNewTool = true
+                  lIdxCurrentAction = nil
+                end
+              when '-a', '--action'
+                if ((lBeginNewTool) or
+                    (lCurrentTool == nil))
+                  lInvalid = true
+                else
+                  lBeginNewAction = true
+                  lIdxCurrentAction = nil
+                  lIsActionPresent = true
+                end
+              else
+                if (lBeginNewTool)
+                  # Name of the tool
+                  if (@Actions[iArg] == nil)
+                    logErr "Unknown Tool named #{iArg}. Please use --list to know available Tools and Actions."
+                    lInvalid = true
+                  else
+                    lCurrentTool = iArg
+                    lCurrentAction = nil
+                  end
+                  lBeginNewTool = false
+                elsif (lBeginNewAction)
+                  # Name of an action
+                  if ((@Actions[lCurrentTool] == nil) or
+                      (@Actions[lCurrentTool][iArg] == nil))
+                    logErr "Action #{iArg} is not available for Tool #{lCurrentTool}. Please use --list to know available Tools and Actions."
+                    lInvalid = true
+                  else
+                    @Actions[lCurrentTool][iArg][1] << []
+                    lIdxCurrentAction = @Actions[lCurrentTool][iArg][1].size - 1
+                    lCurrentAction = iArg
+                  end
+                  lBeginNewAction = false
+                elsif (lIdxCurrentAction != nil)
+                  # Name of a parameter
+                  @Actions[lCurrentTool][lCurrentAction][1][lIdxCurrentAction] << iArg
+                else
+                  # Can be other switches
+                  case iArg
+                  when '-h', '--help'
+                    lDisplayUsage = true
+                  when '-v', '--version'
+                    lDisplayVersion = true
+                  when '-d', '--debug'
+                    @DebugMode = true
+                  when '-l', '--list'
+                    lDisplayList = true
+                  when '-e', '--detailedlist'
+                    lDisplayList = true
+                    lDisplayDetails = true
+                  when '-u', '--user'
+                    lBeginNewUser = true
+                  else
+                    lInvalid = true
+                  end
+                end
+              end
+            end
+          end
+          # Execute what was asked on the command line
+          if (lDisplayUsage)
+            puts lUsage
           else
-            case iArg
-            when '-t', '--tool'
-              if ((lBeginNewAction) or
-                  ((lCurrentTool != nil) and
-                   (lIdxCurrentAction == nil)))
-                lInvalid = true
-              else
-                lBeginNewTool = true
-                lIdxCurrentAction = nil
-              end
-            when '-a', '--action'
-              if ((lBeginNewTool) or
-                  (lCurrentTool == nil))
-                lInvalid = true
-              else
-                lBeginNewAction = true
-                lIdxCurrentAction = nil
-                lIsActionPresent = true
-              end
-            else
-              if (lBeginNewTool)
-                # Name of the tool
-                if (@Actions[iArg] == nil)
-                  logErr "Unknown Tool named #{iArg}. Please use --list to know available Tools and Actions."
-                  lInvalid = true
-                else
-                  lCurrentTool = iArg
-                  lCurrentAction = nil
-                end
-                lBeginNewTool = false
-              elsif (lBeginNewAction)
-                # Name of an action
-                if ((@Actions[lCurrentTool] == nil) or
-                    (@Actions[lCurrentTool][iArg] == nil))
-                  logErr "Action #{iArg} is not available for Tool #{lCurrentTool}. Please use --list to know available Tools and Actions."
-                  lInvalid = true
-                else
-                  @Actions[lCurrentTool][iArg][1] << []
-                  lIdxCurrentAction = @Actions[lCurrentTool][iArg][1].size - 1
-                  lCurrentAction = iArg
-                end
-                lBeginNewAction = false
-              elsif (lIdxCurrentAction != nil)
-                # Name of a parameter
-                @Actions[lCurrentTool][lCurrentAction][1][lIdxCurrentAction] << iArg
-              else
-                # Can be other switches
-                case iArg
-                when '-h', '--help'
-                  lDisplayUsage = true
-                when '-v', '--version'
-                  lDisplayVersion = true
-                when '-d', '--debug'
-                  @DebugMode = true
-                when '-l', '--list'
-                  lDisplayList = true
-                when '-e', '--detailedlist'
-                  lDisplayList = true
-                  lDisplayDetails = true
-                when '-u', '--user'
-                  lBeginNewUser = true
-                else
-                  lInvalid = true
+            lCancelProcess = false
+            if (lDisplayVersion)
+              # Read version info
+              lReleaseInfo = {
+                :Version => 'Development',
+                :Tags => [],
+                :DevStatus => 'Unofficial'
+              }
+              lReleaseInfoFileName = "#{@WEACELibDir}/ReleaseInfo"
+              if (File.exists?(lReleaseInfoFileName))
+                File.open(lReleaseInfoFileName, 'r') do |iFile|
+                  lReleaseInfo = eval(iFile.read)
                 end
               end
+              puts lReleaseInfo[:Version]
+              lCancelProcess = true
             end
-          end
-        end
-        # Execute what was asked on the command line
-        if (lDisplayUsage)
-          puts lUsage
-        else
-          lCancelProcess = false
-          if (lDisplayVersion)
-            # Read version info
-            lReleaseInfo = {
-              :Version => 'Development',
-              :Tags => [],
-              :DevStatus => 'Unofficial'
-            }
-            lReleaseInfoFileName = "#{@WEACELibDir}/ReleaseInfo"
-            if (File.exists?(lReleaseInfoFileName))
-              File.open(lReleaseInfoFileName, 'r') do |iFile|
-                lReleaseInfo = eval(iFile.read)
+            if (lDisplayList)
+              outputActions(lDisplayDetails, @SlaveClientConfig[:WEACESlaveAdapters])
+              lCancelProcess = true
+            end
+            if (!lCancelProcess)
+              if (((lUserID == nil) and
+                   (lIsActionPresent)) or
+                  (lInvalid))
+                # Incorrect parameters
+                rError = CommandLineError.new("Incorrect parameters: \"#{iParameters.join(' ')}\"\n#{lUsage}.")
+              else
+                rError = executeActions(lUserID)
               end
-            end
-            puts lReleaseInfo[:Version]
-            lCancelProcess = true
-          end
-          if (lDisplayList)
-            rError, lConfig = readConfigFile
-            if (rError == nil)
-              outputActions(lDisplayDetails, lConfig[:WEACESlaveAdapters])
-            end
-            lCancelProcess = true
-          end
-          if (!lCancelProcess)
-            if (((lUserID == nil) and
-                 (lIsActionPresent)) or
-                (lInvalid))
-              # Incorrect parameters
-              rError = CommandLineError.new("Incorrect parameters: \"#{iParameters.join(' ')}\"\n#{lUsage}.")
-            else
-              rError = executeActions(lUserID)
             end
           end
         end
@@ -377,49 +386,39 @@ Check http://weacemethod.sourceforge.net for details."
       def executeActions(iUserID)
         rError = nil
 
-        # Read the configuration file
-        rError, lConfig = readConfigFile
-        if (rError == nil)
+        activateLogDebug(@DebugMode)
+        logInfo '== WEACE Slave Client called =='
+        dumpDebugInfo(iUserID, @SlaveClientConfig[:WEACESlaveAdapters])
+        lSlaveAdapters = @SlaveClientConfig[:WEACESlaveAdapters]
 
-          # Create log file
-          require 'fileutils'
-          FileUtils::mkdir_p(File.dirname(lConfig[:LogFile]))
-          setLogFile(lConfig[:LogFile])
-          activateLogDebug(@DebugMode)
-          logInfo '== WEACE Slave Client called =='
-          dumpDebugInfo(iUserID, lConfig[:WEACESlaveAdapters])
-          lSlaveAdapters = lConfig[:WEACESlaveAdapters]
-
-          # For each tool having an action, call all the adapters for this tool.
-          # List of errors that occurred on some Adapters
-          # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
-          lErrors = []
-          @Actions.each do |iToolID, iToolInfo|
-            # For each adapter adapting iToolID
-            iToolInfo.each do |iActionID, iActionInfo|
-              iProductsList, iAskedParameters = iActionInfo
-              iAskedParameters.each do |iActionParameters|
-                iProductsList.each do |iProductInfo|
-                  iProductID, iProductInstalled = iProductInfo
-                  if (iProductInstalled)
-                    # Check configuration for this Product
-                    lProductConfig = getProductConfig(lSlaveAdapters, iProductID, iToolID)
-                    if (lProductConfig != nil)
-                      # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
-                      lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
-                      if (lError != nil)
-                        lErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
-                      end
+        # For each tool having an action, call all the adapters for this tool.
+        # List of errors that occurred on some Adapters
+        # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
+        lErrors = []
+        @Actions.each do |iToolID, iToolInfo|
+          # For each adapter adapting iToolID
+          iToolInfo.each do |iActionID, iActionInfo|
+            iProductsList, iAskedParameters = iActionInfo
+            iAskedParameters.each do |iActionParameters|
+              iProductsList.each do |iProductInfo|
+                iProductID, iProductInstalled = iProductInfo
+                if (iProductInstalled)
+                  # Check configuration for this Product
+                  lProductConfig = getProductConfig(lSlaveAdapters, iProductID, iToolID)
+                  if (lProductConfig != nil)
+                    # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
+                    lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
+                    if (lError != nil)
+                      lErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
                     end
                   end
                 end
               end
             end
           end
-          if (!lErrors.empty?)
-            rError = ActionExecutionsError.new(lErrors)
-          end
-
+        end
+        if (!lErrors.empty?)
+          rError = ActionExecutionsError.new(lErrors)
         end
 
         return rError
@@ -500,7 +499,7 @@ Check http://weacemethod.sourceforge.net for details."
         puts 'A given Action is available only if it meets 3 requirements:'
         puts ' 1. It has to be present among the WEACE Toolkit distribution you are using.'
         puts ' 2. It has to be installed (using WEACEInstall).'
-        puts " 3. It has to be registered in the configuration file (#{@ConfigFile})"
+        puts " 3. It has to be registered in the configuration file (#{getConfigFileName('SlaveClient')})"
         puts 'For more information, please visit http://weacemethod.sourceforge.net'
       end
 
@@ -594,74 +593,6 @@ Check http://weacemethod.sourceforge.net for details."
           @Actions[iToolID][iActionID] = [ [], [] ]
         end
         @Actions[iToolID][iActionID][0] << [ iProductID, iIsInstalled ]
-      end
-
-      # Read the configuration file
-      #
-      # Return:
-      # * _Exception_: An error, or nil in case of success
-      # * <em>map<Symbol,Object></em>: The configuration
-      def readConfigFile
-        rError = nil
-        rConfig = nil
-
-        if (!File.exists?(@ConfigFile))
-          # Create a default config file
-          require 'fileutils'
-          FileUtils::mkdir_p(File.dirname(@ConfigFile))
-          File.open(@ConfigFile, 'w') do |oFile|
-            oFile << "
-# This configuration file has been generated by WEACESlaveClient on #{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}.
-# You can edit it to reflect your configuration.
-# Please check http://weacemethod.sourceforge.net for details about the contents of this file.
-
-{
-  # Log file used
-  # Optional, Defaults to WEACE repository log file, String
-  # :LogFile => '/var/log/WEACESlaveClient.log',
-
-  # Registered WEACE Slave Adapters that are reachable from this WEACE Slave Client
-  # Mandatory, list< map< Symbol, Object > >
-  :WEACESlaveAdapters => [
-  #   {
-  #     :Product => 'Redmine',
-  #     :Tool => Tools::TicketTracker,
-  #     :RedmineDir => '/home/groups/m/my/myproject/redmine',
-  #     :DBHost => 'mysql-r',
-  #     :DBName => 'redminedb',
-  #     :DBUser => 'dbuser',
-  #     :DBPassword => 'dbpassword'
-  #   },
-  #   {
-  #     :Product => 'MediaWiki',
-  #     :Tool => Tools::Wiki,
-  #     :MediaWikiDir => '/home/groups/m/my/myproject/htdocs/wiki'
-  #   }
-  ]
-}
-"
-          end
-        end
-        # Read the file
-        begin
-          File.open(@ConfigFile, 'r') do |iFile|
-            rConfig = eval(iFile.read)
-            # Check mandatory parameters
-            if (rConfig[:WEACESlaveAdapters] == nil)
-              rError = InvalidConfigFileError.new("Configuration file #{@ConfigFile} does not declare :WEACESlaveAdapters attribute. You can either edit it or delete it to create a new one.")
-            end
-          end
-        rescue Exception
-          rError = InvalidConfigFileError.new("Configuration file #{@ConfigFile} seems to be corrupted: #{$!}. You can either edit it or delete it to create a new one.")
-        end
-        if (rError == nil)
-          # Complete the configuration if needed
-          if (rConfig[:LogFile] == nil)
-            rConfig[:LogFile] = "#{@DefaultLogDir}/WEACESlaveClient.log"
-          end
-        end
-
-        return rError, rConfig
       end
 
     end

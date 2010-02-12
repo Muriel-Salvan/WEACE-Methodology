@@ -64,11 +64,11 @@ module WEACE
         RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
-        require 'fileutils'
-        FileUtils.mkdir_p("#{@WEACERepositoryDir}/Log")
-        setLogFile("#{@WEACERepositoryDir}/Log/MasterServer.log")
-        @DefaultLogDir = "#{@WEACERepositoryDir}/Log"
-        @ConfigFile = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
+        # Read SlaveClient conf
+        @MasterServerConfig = getComponentConfigInfo('MasterServer')
+        if (@MasterServerConfig == nil)
+          logErr 'MasterServer has not been installed correctly. Please use WEACEInstall.rb to install it.'
+        end
 
         # Parse for plugins
         require 'rUtilAnts/Plugins'
@@ -131,71 +131,75 @@ module WEACE
       def execute(iParameters)
         rError = nil
 
-        @DebugMode = false
-        @ForceMode = false
-        @ProcessID = nil
-        @UserID = nil
-        @OutputComponents = false
-        @OutputDetails = false
-        @OutputVersion = false
-        lOptions = getOptions
-        if (iParameters.size == 0)
-          puts lOptions
-          rError = CommandLineError.new('No parameter specified.')
+        if (@MasterServerConfig == nil)
+          rError = RuntimeError.new('MasterServer has not been installed correctly. Please use WEACEInstall.rb to install it.')
         else
-          # Parse options
-          lMasterArgs, lProcessArgs = splitParameters(iParameters)
-          begin
-            lOptions.parse(lMasterArgs)
-          rescue Exception
-            puts lOptions
-            rError = $!
+          # Create log file
+          lLogFile = @MasterServerConfig[:LogFile]
+          if (lLogFile == nil)
+            lLogFile = "#{@WEACERepositoryDir}/Log/MasterServer.log"
           end
-          if (rError == nil)
-            if (@OutputVersion)
-              # Read version info
-              lReleaseInfo = {
-                :Version => 'Development',
-                :Tags => [],
-                :DevStatus => 'Unofficial'
-              }
-              lReleaseInfoFileName = "#{@WEACELibDir}/ReleaseInfo"
-              if (File.exists?(lReleaseInfoFileName))
-                File.open(lReleaseInfoFileName, 'r') do |iFile|
-                  lReleaseInfo = eval(iFile.read)
+          require 'fileutils'
+          FileUtils::mkdir_p(File.dirname(lLogFile))
+          setLogFile(lLogFile)
+          @DebugMode = false
+          @ForceMode = false
+          @ProcessID = nil
+          @UserID = nil
+          @OutputComponents = false
+          @OutputDetails = false
+          @OutputVersion = false
+          lOptions = getOptions
+          if (iParameters.size == 0)
+            puts lOptions
+            rError = CommandLineError.new('No parameter specified.')
+          else
+            # Parse options
+            lMasterArgs, lProcessArgs = splitParameters(iParameters)
+            begin
+              lOptions.parse(lMasterArgs)
+            rescue Exception
+              puts lOptions
+              rError = $!
+            end
+            if (rError == nil)
+              if (@OutputVersion)
+                # Read version info
+                lReleaseInfo = {
+                  :Version => 'Development',
+                  :Tags => [],
+                  :DevStatus => 'Unofficial'
+                }
+                lReleaseInfoFileName = "#{@WEACELibDir}/ReleaseInfo"
+                if (File.exists?(lReleaseInfoFileName))
+                  File.open(lReleaseInfoFileName, 'r') do |iFile|
+                    lReleaseInfo = eval(iFile.read)
+                  end
+                end
+                puts lReleaseInfo[:Version]
+              end
+              if (@OutputComponents)
+                if (@OutputDetails)
+                  # TODO
+                else
+                  # Display what is accessible
+                  lProcesses = @PluginsManager.getPluginNames('Processes')
+                  puts "== #{lProcesses.size} available Processes: #{lProcesses.join(', ')}"
                 end
               end
-              puts lReleaseInfo[:Version]
-            end
-            if (@OutputComponents)
-              if (@OutputDetails)
-                # TODO
-              else
-                # Display what is accessible
-                lProcesses = @PluginsManager.getPluginNames('Processes')
-                puts "== #{lProcesses.size} available Processes: #{lProcesses.join(', ')}"
-              end
-            end
-            if (@ProcessID != nil)
-              if (@UserID == nil)
-                rError = CommandLineError.new('You must specify the UserID initiating this Process with --user option.')
-              else
-                # Read the configuration file
-                rError, lConfig = readConfigFile
-                if (rError == nil)
-                  # Create log file
-                  require 'fileutils'
-                  FileUtils::mkdir_p(File.dirname(lConfig[:LogFile]))
-                  setLogFile(lConfig[:LogFile])
+              if (@ProcessID != nil)
+                if (@UserID == nil)
+                  rError = CommandLineError.new('You must specify the UserID initiating this Process with --user option.')
+                else
                   activateLogDebug(@DebugMode)
                   # Log startup
                   logInfo '== WEACE Master Server called =='
                   logDebug "* User: #{@UserID}"
                   logDebug "* Process: #{@ProcessID}"
                   logDebug "* Parameters: #{lProcessArgs.join(' ')}"
-                  logDebug "#{lConfig[:WEACESlaveClients].size} clients configuration:"
+                  logDebug "#{@MasterServerConfig[:WEACESlaveClients].size} clients configuration:"
                   lIdx = 0
-                  lConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
+                  @MasterServerConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
                     logDebug "* Client n.#{lIdx}:"
                     logDebug "** Type: #{iSlaveClientInfo[:Type]}"
                     logDebug "** #{iSlaveClientInfo[:Tools].size} tools are installed on this client:"
@@ -233,7 +237,7 @@ module WEACE
                       if (rError == nil)
                         # And now call concerned Slave Clients with the returned Slave Actions to perform
                         lErrors = []
-                        lConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
+                        @MasterServerConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
                           # Gather all the Slave Actions to send to this client
                           # map< ToolID, map< ActionID, list< Parameters > >
                           lSlaveActionsForClient = {}
@@ -277,77 +281,6 @@ module WEACE
         end
         
         return rError
-      end
-
-      private
-      
-      # Read the configuration file
-      #
-      # Return:
-      # * _Exception_: An error, or nil in case of success
-      # * <em>map<Symbol,Object></em>: The configuration
-      def readConfigFile
-        rError = nil
-        rConfig = nil
-
-        if (!File.exists?(@ConfigFile))
-          # Create a default config file
-          require 'fileutils'
-          FileUtils::mkdir_p(File.dirname(@ConfigFile))
-          File.open(@ConfigFile, 'w') do |oFile|
-            oFile << "
-# This configuration file has been generated by WEACEMasterServer on #{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}.
-# You can edit it to reflect your configuration.
-# Please check http://weacemethod.sourceforge.net for details about the contents of this file.
-
-{
-  # Log file used
-  # Optional, Defaults to WEACE repository log file, String
-  # :LogFile => '/var/log/WEACEMasterServer.log',
-
-  # Registered WEACE Slave Clients that are reachable from this WEACE Master Server
-  # Mandatory, list< map< Symbol, Object > >
-  :WEACESlaveClients => [
-  #   {
-  #     :Type => 'Local',
-  #     :Tools => [
-  #       Tools::Wiki,
-  #       Tools::TicketTracker
-  #     ]
-  #   },
-  #   {
-  #     :Type => 'ExternalCGIPost',
-  #     :Tools => [
-  #       Tools::Wiki,
-  #       Tools::TicketTracker
-  #     ],
-  #     :ExternalCGIURL => 'http://www.otherprovider.com/path/to/cgi/cgilistener.cgi'
-  #   }
-  ]
-}
-"
-          end
-        end
-        # Read the file
-        begin
-          File.open(@ConfigFile, 'r') do |iFile|
-            rConfig = eval(iFile.read)
-            # Check mandatory parameters
-            if (rConfig[:WEACESlaveClients] == nil)
-              rError = InvalidConfigFileError.new("Configuration file #{@ConfigFile} does not declare :WEACESlaveClients attribute. You can either edit it or delete it to create a new one.")
-            end
-          end
-        rescue Exception
-          rError = InvalidConfigFileError.new("Configuration file #{@ConfigFile} seems to be corrupted: #{$!}. You can either edit it or delete it to create a new one.")
-        end
-        if (rError == nil)
-          # Complete the configuration if needed
-          if (rConfig[:LogFile] == nil)
-            rConfig[:LogFile] = "#{@DefaultLogDir}/WEACEMasterServer.log"
-          end
-        end
-
-        return rError, rConfig
       end
 
     end

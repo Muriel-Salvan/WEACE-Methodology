@@ -124,10 +124,23 @@ module WEACE
       # * *iConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ].
       def configureProducts(iConfigureProducts)
         # Bypass the configuration file reader to force our configuration
-        lError, $WEACESlaveConfig = readConfigFile
-        def self.readConfigFile
-          return nil, $WEACESlaveConfig
+        $WEACESlaveConfig = getComponentConfigInfo('SlaveClient')
+        if ($WEACESlaveConfig == nil)
+          $WEACESlaveConfig = {:WEACESlaveAdapters => []}
         end
+        self.class.module_eval("
+          alias :getComponentConfigInfo_ORG :getComponentConfigInfo
+
+          def getComponentConfigInfo_NEW(iComponent)
+            if (iComponent == 'SlaveClient')
+              return $WEACESlaveConfig
+            else
+              return getComponentConfigInfo_ORG(iComponent)
+            end
+          end
+
+          alias :getComponentConfigInfo :getComponentConfigInfo_NEW
+          ")
         iConfigureProducts.each do |iProductInfo|
           iProductID, iToolID, iProductConfig = iProductInfo
           $WEACESlaveConfig[:WEACESlaveAdapters] << iProductConfig.merge(
