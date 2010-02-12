@@ -6,7 +6,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/WEACE_Common'
+require 'WEACEToolkit/Common'
 
 module WEACE
 
@@ -30,8 +30,8 @@ module WEACE
       # Constructor
       #
       # Parameters:
-      # * *iToolID* (_String_): The tool ID (check values in ../../WEACE_Common.rb)
-      # * *iActionID* (_String_): The action ID (check values in ../../WEACE_Common.rb)
+      # * *iToolID* (_String_): The tool ID
+      # * *iActionID* (_String_): The action ID
       # * *iParameters* (<em>list<String></em>): Additional parameters to give the Slave Client
       def addSlaveAction(iToolID, iActionID, *iParameters)
         if (@SlaveActions[iToolID] == nil)
@@ -55,7 +55,7 @@ module WEACE
       class InvalidConfigFileError < RuntimeError
       end
 
-      include WEACE::Toolbox
+      include WEACE::Common
 
       # Constructor
       def initialize
@@ -240,8 +240,8 @@ module WEACE
                           lSlaveActionsForClient = {}
                           lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
                             if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
-                                (iSlaveClientInfo[:Tools].include?(Tools_All)) or
-                                (iToolID == Tools_All))
+                                (iSlaveClientInfo[:Tools].include?(Tools::All)) or
+                                (iToolID == Tools::All))
                               lSlaveActionsForClient[iToolID] = iSlaveActionsList
                             end
                           end

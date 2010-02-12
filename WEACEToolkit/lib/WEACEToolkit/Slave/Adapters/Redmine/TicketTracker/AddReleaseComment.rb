@@ -23,7 +23,7 @@ module WEACE
 
           class AddReleaseComment
 
-            include WEACE::Toolbox
+            include WEACE::Common
             include WEACE::Slave::Adapters::Redmine::Common
 
             # Add the release information to the ticket

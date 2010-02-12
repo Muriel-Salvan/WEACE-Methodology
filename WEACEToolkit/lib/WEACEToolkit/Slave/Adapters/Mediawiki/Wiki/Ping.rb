@@ -22,7 +22,7 @@ module WEACE
 
           class Ping
 
-            include WEACE::Toolbox
+            include WEACE::Common
             
             # Add the commit information to the wiki
             #

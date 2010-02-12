@@ -22,7 +22,7 @@ module WEACE
 
           class RejectDuplicate
 
-            include WEACE::Toolbox
+            include WEACE::Common
             include WEACE::Slave::Adapters::Redmine::Common
 
             # Mark 2 tickets as duplicated and close the slave ticket

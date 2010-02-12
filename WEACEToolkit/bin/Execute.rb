@@ -10,7 +10,7 @@
 
 require 'fileutils'
 
-require 'WEACEToolkit/WEACE_Common'
+require 'WEACEToolkit/Common'
 
 module WEACE
 

@@ -28,8 +28,8 @@ module WEACE
             executeProcess(['--comment', 'DummyComment']) do |iError, iSlaveActions|
               assert_equal(
                 {
-                  Tools_All => {
-                    Action_Test_Ping => [
+                  Tools::All => {
+                    Actions::Test_Ping => [
                       [ 'DummyComment' ]
                     ]
                   }

@@ -2,7 +2,7 @@
 # ruby -w ShowWEACESlaveInfo.rb
 # Dumps WEACE Slave info in an HTML page
 
-require 'WEACEToolkit/WEACE_Common'
+require 'WEACEToolkit/Common'
 # Load the Platform dependent extensions
 require 'rUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
@@ -15,7 +15,7 @@ module WEACE
   
     class DumpInfo
     
-      include WEACE::Toolbox
+      include WEACE::Common
   
       # Dump Client info
       def dumpSlaveClient_HTML

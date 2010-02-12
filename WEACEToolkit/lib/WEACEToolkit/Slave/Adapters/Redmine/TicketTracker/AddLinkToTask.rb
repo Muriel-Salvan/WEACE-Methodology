@@ -23,7 +23,7 @@ module WEACE
 
           class AddLinkToTask
 
-            include WEACE::Toolbox
+            include WEACE::Common
             include WEACE::Slave::Adapters::Redmine::Common
 
             # Add the task reference to the corresponding ticket

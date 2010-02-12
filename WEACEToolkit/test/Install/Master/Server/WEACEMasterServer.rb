@@ -17,7 +17,7 @@ module WEACE
           class WEACEMasterServer < ::Test::Unit::TestCase
 
             include WEACE::Test::Install::Common
-            include WEACE::Toolbox
+            include WEACE::Common
 
             # Test installing the Master Server without specifying any provider
             def testMasterServerWithoutProvider

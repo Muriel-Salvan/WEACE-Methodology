@@ -67,7 +67,7 @@ module WEACE
   # This class creates other classes for test cases
   class TestCreator
 
-#    include WEACE::Toolbox
+#    include WEACE::Common
 
     # Create classes for given adapters
     #

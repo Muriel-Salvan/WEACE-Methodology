@@ -18,7 +18,7 @@ module WEACE
 
         class Test_Broadcast
 
-          include WEACE::Toolbox
+          include WEACE::Common
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
@@ -31,7 +31,7 @@ module WEACE
             checkVar(:Comment, 'Comment to send with the Ping')
 
             ioSlaveActions.addSlaveAction(
-              Tools_All, Action_Test_Ping,
+              Tools::All, Actions::Test_Ping,
               @Comment
             )
 

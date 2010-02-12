@@ -16,3 +16,4 @@
 ** Ensure that Master Processes and Slave Actions respect the signature they should have.
 ** Replace "#!/usr/bin/env ruby" files with platform independent ones.
 ** Replace .sh creation with platform independent one.
+** Implement dumpTerminal

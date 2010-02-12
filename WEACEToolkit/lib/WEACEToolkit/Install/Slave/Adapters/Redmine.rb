@@ -11,7 +11,7 @@ module WEACEInstall
 
       class Redmine
 
-        include WEACE::Toolbox
+        include WEACE::Common
 
         # Check if we can install
         #

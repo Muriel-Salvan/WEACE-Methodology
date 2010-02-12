@@ -33,8 +33,8 @@ module WEACE
             ) do |iError, iSlaveActions|
               assert_equal(
                 {
-                  Tools_TicketTracker => {
-                    Action_Ticket_RejectDuplicate => [
+                  Tools::TicketTracker => {
+                    Actions::Ticket_RejectDuplicate => [
                       [ '123', '456' ]
                     ]
                   }

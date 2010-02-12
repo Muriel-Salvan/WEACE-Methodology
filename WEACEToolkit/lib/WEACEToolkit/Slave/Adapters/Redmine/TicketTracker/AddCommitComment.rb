@@ -23,7 +23,7 @@ module WEACE
 
           class AddCommitComment
 
-            include WEACE::Toolbox
+            include WEACE::Common
             include WEACE::Slave::Adapters::Redmine::Common
 
             # Add the commit information to the ticket

@@ -18,7 +18,7 @@ module WEACE
 
         class Ticket_CloseDuplicate
 
-          include WEACE::Toolbox
+          include WEACE::Common
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
@@ -33,7 +33,7 @@ module WEACE
             checkVar(:MasterTicketID, 'Master Ticket ID to keep')
             checkVar(:SlaveTicketID, 'Slave Ticket ID to be closed as a duplicate')
             ioSlaveActions.addSlaveAction(
-              Tools_TicketTracker, Action_Ticket_RejectDuplicate,
+              Tools::TicketTracker, Actions::Ticket_RejectDuplicate,
               @MasterTicketID, @SlaveTicketID
             )
 

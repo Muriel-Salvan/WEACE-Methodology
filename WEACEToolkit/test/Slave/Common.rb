@@ -9,7 +9,7 @@ require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
 module WEACE
 
   # We define dummy methods and classes that will replace some real ones to better track their behaviour.
-  module Toolbox
+  module Common
 
     # Class that replaces SQL connections to track queries
     class DummySQLConnection
@@ -198,7 +198,7 @@ module WEACE
 
                 # If we catch MySQL, do it now
                 WEACE::Test::Common::changeMethod(
-                  WEACE::Toolbox,
+                  WEACE::Common,
                   :beginMySQLTransaction,
                   :beginMySQLTransaction_Regression,
                   lCatchMySQL) do

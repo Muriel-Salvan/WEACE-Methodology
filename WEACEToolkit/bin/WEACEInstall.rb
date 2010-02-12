@@ -15,7 +15,7 @@ RUtilAnts::Misc::initializeMisc
 require 'rUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
 
-require 'WEACEToolkit/WEACE_Common'
+require 'WEACEToolkit/Common'
 require 'WEACEToolkit/Install/WEACE_InstallCommon'
 
 module WEACEInstall
@@ -23,7 +23,7 @@ module WEACEInstall
   # Main Installer class
   class Installer
   
-    include WEACE::Toolbox
+    include WEACE::Common
     include WEACEInstall::Common
 
     # Error returned when the plugin's check method did not authorize the installation

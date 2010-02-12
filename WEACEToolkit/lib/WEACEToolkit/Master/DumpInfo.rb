@@ -2,7 +2,7 @@
 # ruby -w ShowWEACEMasterInfo.rb
 # Dumps WEACE Master info in an HTML page
 
-require 'WEACEToolkit/WEACE_Common.rb'
+require 'WEACEToolkit/Common.rb'
 
 module WEACE
 
@@ -10,7 +10,7 @@ module WEACE
   
     class DumpInfo
     
-      include WEACE::Toolbox
+      include WEACE::Common
   
       # Dump Server info
       def dumpMasterServer_HTML

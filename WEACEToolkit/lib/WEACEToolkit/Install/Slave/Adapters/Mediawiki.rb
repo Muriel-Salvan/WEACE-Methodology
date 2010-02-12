@@ -11,7 +11,7 @@ module WEACEInstall
 
       class Mediawiki
 
-        include WEACE::Toolbox
+        include WEACE::Common
 
         # Check if we can install
         #

@@ -15,7 +15,7 @@ module WEACE
 
       module Common
 
-        include WEACE::Toolbox
+        include WEACE::Common
         include WEACE::Test::Common
 
         # Setup a Product temporary repository as an image of a given repository.

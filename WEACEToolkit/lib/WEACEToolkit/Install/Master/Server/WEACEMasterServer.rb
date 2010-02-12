@@ -14,7 +14,7 @@ module WEACEInstall
     class WEACEMasterServer
     
       include WEACEInstall::Common
-      include WEACE::Toolbox
+      include WEACE::Common
       
       # Install for real.
       # This is called only when check method returned no error.

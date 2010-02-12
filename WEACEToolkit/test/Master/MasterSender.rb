@@ -12,7 +12,7 @@ module WEACE
       # This module is meant to be included by test suites testing Senders
       module MasterSender
 
-        include WEACE::Toolbox
+        include WEACE::Common
         include WEACE::Test::Common
 
         # Give access to a Sender plugin

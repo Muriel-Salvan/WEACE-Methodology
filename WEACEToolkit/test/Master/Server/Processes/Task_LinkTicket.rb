@@ -33,13 +33,13 @@ module WEACE
             ) do |iError, iSlaveActions|
               assert_equal(
                 {
-                  Tools_TicketTracker => {
-                    Action_Ticket_AddLinkToTask => [
+                  Tools::TicketTracker => {
+                    Actions::Ticket_AddLinkToTask => [
                       [ '123', '456' ]
                     ]
                   },
-                  Tools_ProjectManager => {
-                    Action_Task_AddLinkToTicket => [
+                  Tools::ProjectManager => {
+                    Actions::Task_AddLinkToTicket => [
                       [ '456', '123' ]
                     ]
                   }

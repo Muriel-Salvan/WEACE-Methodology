@@ -21,7 +21,7 @@ module WEACE
         # Class that sends messages to an URL in a CGI script via POST HTTP method
         class ExternalCGIPost
 
-          include WEACE::Toolbox
+          include WEACE::Common
 
           # Send a message containing the specified Slave Actions.
           #

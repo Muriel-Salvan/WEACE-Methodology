@@ -22,7 +22,7 @@ module WEACE
 
           class AddCommitComment
 
-            include WEACE::Toolbox
+            include WEACE::Common
             
             # Add the commit information to the wiki
             #

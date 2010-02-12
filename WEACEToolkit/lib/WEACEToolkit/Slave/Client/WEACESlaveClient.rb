@@ -13,7 +13,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/WEACE_Common.rb'
+require 'WEACEToolkit/Common.rb'
 
 module WEACE
 
@@ -21,7 +21,7 @@ module WEACE
   
     class Client
       
-      include WEACE::Toolbox
+      include WEACE::Common
 
       # Error occurring during comand line parsing
       class CommandLineError < RuntimeError
@@ -223,7 +223,7 @@ Check http://weacemethod.sourceforge.net for details."
                 if (lBeginNewTool)
                   # Name of the tool
                   if (@Actions[iArg] == nil)
-                    if (iArg == WEACE::Tools::All)
+                    if (iArg == Tools::All)
                       # Create a new place in @Actions for it
                       @Actions[iArg] = {}
                       lCurrentTool = iArg
@@ -241,7 +241,7 @@ Check http://weacemethod.sourceforge.net for details."
                   # Name of an action
                   if ((@Actions[lCurrentTool] == nil) or
                       (@Actions[lCurrentTool][iArg] == nil))
-                    if (lCurrentTool == WEACE::Tools::All)
+                    if (lCurrentTool == Tools::All)
                       # Add this Action
                       @Actions[lCurrentTool][iArg] = [ [], [ [] ] ]
                       lIdxCurrentAction = 0
@@ -406,16 +406,16 @@ Check http://weacemethod.sourceforge.net for details."
         # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
         lErrors = []
         @Actions.each do |iToolID, iToolInfo|
-          # Don't look at WEACE::Tools::All here.
-          if (iToolID != WEACE::Tools::All)
+          # Don't look at Tools::All here.
+          if (iToolID != Tools::All)
             # For each Action adapted in iToolID
             iToolInfo.each do |iActionID, iActionInfo|
               iProductsList, iAskedParameters = iActionInfo
               # Check out if their are additional parameters listed for All Tools
-              if ((@Actions[WEACE::Tools::All] != nil) and
-                  (@Actions[WEACE::Tools::All][iActionID] != nil))
+              if ((@Actions[Tools::All] != nil) and
+                  (@Actions[Tools::All][iActionID] != nil))
                 # Yes, we have extra parameters here
-                lEmptyProductsList, lAllToolsAskedParameters = @Actions[WEACE::Tools::All][iActionID]
+                lEmptyProductsList, lAllToolsAskedParameters = @Actions[Tools::All][iActionID]
                 lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters + lAllToolsAskedParameters)
               else
                 lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)

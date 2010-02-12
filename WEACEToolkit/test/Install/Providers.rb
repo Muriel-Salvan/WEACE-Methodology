@@ -11,7 +11,7 @@ module WEACE
 
       module Providers
 
-        include WEACE::Toolbox
+        include WEACE::Common
         include WEACE::Test::Common
 
         # Test that the Provider effectively returns correct value

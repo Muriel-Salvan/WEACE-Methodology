@@ -17,7 +17,7 @@ module WEACEInstall
       
         class Test_Broadcast
 
-          include WEACE::Toolbox
+          include WEACE::Common
 
           # Check if we can install
           #

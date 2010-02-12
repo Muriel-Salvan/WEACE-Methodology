@@ -18,7 +18,7 @@ module WEACE
 
         class Task_LinkTicket
 
-          include WEACE::Toolbox
+          include WEACE::Common
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
@@ -33,11 +33,11 @@ module WEACE
             checkVar(:TicketID, 'Ticket ID to link to the Task')
             checkVar(:TaskID, 'Task ID to be linked to the Ticket')
             ioSlaveActions.addSlaveAction(
-              Tools_TicketTracker, Action_Ticket_AddLinkToTask,
+              Tools::TicketTracker, Actions::Ticket_AddLinkToTask,
               @TicketID, @TaskID
             )
             ioSlaveActions.addSlaveAction(
-              Tools_ProjectManager, Action_Task_AddLinkToTicket,
+              Tools::ProjectManager, Actions::Task_AddLinkToTicket,
               @TaskID, @TicketID
             )
 
