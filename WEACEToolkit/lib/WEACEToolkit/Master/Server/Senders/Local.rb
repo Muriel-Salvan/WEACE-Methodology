@@ -21,7 +21,7 @@ module WEACE
         # Class that sends messages to a Slave Client local
         class Local
 
-          include WEACE::Master::Server::Common
+          include WEACE::Toolbox
 
           # Send a message containing the specified Slave Actions.
           #

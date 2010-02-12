@@ -21,6 +21,49 @@ module WEACEInstall
 
   module Common
 
+    # Generate the WEACE environment file, used to load every environment parameter before executing or loading libraries from WEACE Toolkit
+    def generateWEACEEnvFile
+      # Find the rUtilAnts library directory
+      lRUALibDir = nil
+      if (defined?(Gem))
+        # Look through Gems
+        Gem.all_load_paths.each do |iGemLibDir|
+          if (File.exists?("#{iGemLibDir}/rUtilAnts"))
+            # So path to rUtilAnts is RubyGems' path
+            $LOAD_PATH.each do |iDir|
+              if (File.exists?("#{iDir}/rubygems.rb"))
+                lRUALibDir = iDir
+                break
+              end
+            end
+            break
+          end
+        end
+      end
+      if (lRUALibDir == nil)
+        # Look through normal load path
+        $LOAD_PATH.each do |iDir|
+          if (File.exists?("#{iDir}/rUtilAnts"))
+            lRUALibDir = iDir
+            break
+          end
+        end
+      end
+      if (lRUALibDir == nil)
+        logBug 'Unable to find rUtilAnts library directory among Rubygems or $LOAD_PATH.'
+      else
+        File.open(@WEACEEnvFile, 'w') do |oFile|
+          oFile << "\# This file is meant to be required by every script that needs to setup WEACE environment before loading and using WEACE Toolkit libraries.
+
+\# Path containing rUtilAnts library (can be path to RubyGems)
+$LOAD_PATH << '#{File.expand_path(lRUALibDir)}'
+\# Path containing WEACE Toolkit library
+$LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
+"
+        end
+      end
+    end
+
     # Get a Provider's environment
     #
     # Parameters:

@@ -59,8 +59,14 @@ module WEACE
 
       # Constructor
       def initialize
+        # Initialize logging
+        require 'rUtilAnts/Logging'
+        RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
+        require 'fileutils'
+        FileUtils.mkdir_p("#{@WEACERepositoryDir}/Log")
+        setLogFile("#{@WEACERepositoryDir}/Log/MasterServer.log")
         @DefaultLogDir = "#{@WEACERepositoryDir}/Log"
         @ConfigFile = "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb"
 

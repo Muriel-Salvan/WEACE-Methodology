@@ -242,12 +242,14 @@ module WEACE
               @ContextVars.merge!(lContextVarsToMerge)
             end
             
+            # Create the installer
+            @Installer = WEACEInstall::Installer.new
+            @WEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
+            @WEACEEnvFile = @Installer.instance_variable_get(:@WEACEEnvFile)
+            @ContextVars['WEACEEnvFile'] = @WEACEEnvFile
+
             # Setup the Product repository
             setupRepository(lProductRepositoryName) do
-
-              # Create the installer
-              @Installer = WEACEInstall::Installer.new
-              @WEACELibDir = @Installer.instance_variable_get(:@WEACELibDir)
 
               # Create a new WEACE repository by copying the wanted one
               setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|

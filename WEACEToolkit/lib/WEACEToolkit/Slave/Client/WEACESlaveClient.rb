@@ -94,8 +94,14 @@ module WEACE
 
       # Constructor
       def initialize
+        # Initialize logging
+        require 'rUtilAnts/Logging'
+        RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         # Read the directories locations
         setupWEACEDirs
+        require 'fileutils'
+        FileUtils.mkdir_p("#{@WEACERepositoryDir}/Log")
+        setLogFile("#{@WEACERepositoryDir}/Log/SlaveClient.log")
         @DefaultLogDir = "#{@WEACERepositoryDir}/Log"
         @ConfigFile = "#{@WEACERepositoryDir}/Config/SlaveClient.conf.rb"
         # Map of Actions
@@ -125,7 +131,7 @@ module WEACE
       # * *iUserScriptID* (_String_): The user name of the script
       # * *iSerializedActions* (_String_): The serialized actions to execute
       # Return:
-      # * _Boolean_: Has the operation completed successfully ?
+      # * _Exception_: An error, or nil in case of success
       def executeMarshalled(iUserScriptID, iSerializedActions)
         begin
           lActions = Marshal.load(iSerializedActions)

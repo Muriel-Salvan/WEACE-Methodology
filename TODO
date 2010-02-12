@@ -14,4 +14,5 @@
 ** Adapt ShowWEACE{Master|Slave}Info.rb so they display information correctly.
 ** Implement uninstall (generic) function on WEACEInstall.rb.
 ** Ensure that Master Processes and Slave Actions respect the signature they should have.
-** Find a proper way to include libraries before calling WEACEExecute or WEACEInstall. Maybe this way should also include calls to RUtilAnts::Misc, Logging and Platform ?
+** Replace "#!/usr/bin/env ruby" files with platform independent ones.
+** Replace .sh creation with platform independent one.

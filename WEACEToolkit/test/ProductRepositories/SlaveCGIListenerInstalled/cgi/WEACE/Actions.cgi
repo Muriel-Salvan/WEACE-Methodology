@@ -19,10 +19,17 @@ lCgi = CGI.new
 lUserID = lCgi['userid']
 lSerializedActions = lCgi['actions']
 
-# Call WEACE Slave Client
+# Load WEACE environment
+require '%{WEACEEnvFile}'
+# Call WEACE Slave Client library directly
+require 'rUtilAnts/Platform'
+RUtilAnts::Platform::initializePlatform
+require 'rUtilAnts/Misc'
+RUtilAnts::Misc::initializeMisc
 require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
-if (WEACE::Slave::Client.new.executeMarshalled(lUserID, lSerializedActions))
+lError = WEACE::Slave::Client.new.executeMarshalled(lUserID, lSerializedActions)
+if (lError == nil)
   puts 'CGI_EXIT: OK'
 else
-  puts 'CGI_EXIT: ERROR'
+  puts "CGI_EXIT: ERROR: #{lError}"
 end

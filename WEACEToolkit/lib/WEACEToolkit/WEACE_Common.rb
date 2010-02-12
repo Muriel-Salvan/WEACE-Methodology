@@ -378,6 +378,7 @@ module WEACE
     # * @WEACERepositoryDir: The directory base of the WEACE repository
     # * @WEACEInstallDir: The directory where Install related files lie
     # * @WEACEConfigDir: The directory where Configuration files lie
+    # * @WEACEEnvFile: The name of the file that should contain environment setup for using WEACE Toolkit
     def setupWEACEDirs
       lWEACERepositoryDir = ENV['WEACE_CONFIG_PATH']
       @WEACELibDir = File.expand_path(File.dirname(__FILE__))
@@ -386,8 +387,9 @@ module WEACE
         lWEACERepositoryDir = "#{File.dirname(__FILE__)}/../../config"
       end
       @WEACERepositoryDir = File.expand_path(lWEACERepositoryDir)
-      @WEACEInstallDir = "#{lWEACERepositoryDir}/Install"
-      @WEACEConfigDir = "#{lWEACERepositoryDir}/Config"
+      @WEACEInstallDir = "#{@WEACERepositoryDir}/Install"
+      @WEACEConfigDir = "#{@WEACERepositoryDir}/Config"
+      @WEACEEnvFile = "#{@WEACERepositoryDir}/WEACEEnv.rb"
     end
 
     # Iterate through installed Adapters in the filesystem
