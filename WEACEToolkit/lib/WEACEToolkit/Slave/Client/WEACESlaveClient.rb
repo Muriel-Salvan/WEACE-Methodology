@@ -226,8 +226,15 @@ Check http://weacemethod.sourceforge.net for details."
                 if (lBeginNewTool)
                   # Name of the tool
                   if (@Actions[iArg] == nil)
-                    logErr "Unknown Tool named #{iArg}. Please use --list to know available Tools and Actions."
-                    lInvalid = true
+                    if (iArg == Tools::All)
+                      # Create a new place in @Actions for it
+                      @Actions[iArg] = {}
+                      lCurrentTool = iArg
+                      lCurrentAction = nil
+                    else
+                      logErr "Unknown Tool named #{iArg}. Please use --list to know available Tools and Actions."
+                      lInvalid = true
+                    end
                   else
                     lCurrentTool = iArg
                     lCurrentAction = nil
@@ -237,8 +244,15 @@ Check http://weacemethod.sourceforge.net for details."
                   # Name of an action
                   if ((@Actions[lCurrentTool] == nil) or
                       (@Actions[lCurrentTool][iArg] == nil))
-                    logErr "Action #{iArg} is not available for Tool #{lCurrentTool}. Please use --list to know available Tools and Actions."
-                    lInvalid = true
+                    if (lCurrentTool == Tools::All)
+                      # Add this Action
+                      @Actions[lCurrentTool][iArg] = [ [], [ [] ] ]
+                      lIdxCurrentAction = 0
+                      lCurrentAction = iArg
+                    else
+                      logErr "Action #{iArg} is not available for Tool #{lCurrentTool}. Please use --list to know available Tools and Actions."
+                      lInvalid = true
+                    end
                   else
                     @Actions[lCurrentTool][iArg][1] << []
                     lIdxCurrentAction = @Actions[lCurrentTool][iArg][1].size - 1
@@ -389,30 +403,25 @@ Check http://weacemethod.sourceforge.net for details."
         activateLogDebug(@DebugMode)
         logInfo '== WEACE Slave Client called =='
         dumpDebugInfo(iUserID, @SlaveClientConfig[:WEACESlaveAdapters])
-        lSlaveAdapters = @SlaveClientConfig[:WEACESlaveAdapters]
 
         # For each tool having an action, call all the adapters for this tool.
         # List of errors that occurred on some Adapters
         # list< [ iProductID, iToolID, iActionID, iActionParameters, Exception ] >
         lErrors = []
         @Actions.each do |iToolID, iToolInfo|
-          # For each adapter adapting iToolID
-          iToolInfo.each do |iActionID, iActionInfo|
-            iProductsList, iAskedParameters = iActionInfo
-            iAskedParameters.each do |iActionParameters|
-              iProductsList.each do |iProductInfo|
-                iProductID, iProductInstalled = iProductInfo
-                if (iProductInstalled)
-                  # Check configuration for this Product
-                  lProductConfig = getProductConfig(lSlaveAdapters, iProductID, iToolID)
-                  if (lProductConfig != nil)
-                    # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
-                    lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
-                    if (lError != nil)
-                      lErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
-                    end
-                  end
-                end
+          # Don't look at Tools::All here.
+          if (iToolID != Tools::All)
+            # For each Action adapted in iToolID
+            iToolInfo.each do |iActionID, iActionInfo|
+              iProductsList, iAskedParameters = iActionInfo
+              # Check out if their are additional parameters listed for All Tools
+              if ((@Actions[Tools::All] != nil) and
+                  (@Actions[Tools::All][iActionID] != nil))
+                # Yes, we have extra parameters here
+                lEmptyProductsList, lAllToolsAskedParameters = @Actions[Tools::All][iActionID]
+                lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters + lAllToolsAskedParameters)
+              else
+                lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)
               end
             end
           end
@@ -424,6 +433,39 @@ Check http://weacemethod.sourceforge.net for details."
         return rError
       end
       
+      # Execute an Action given to a list of Products
+      #
+      # Parameters:
+      # * *iUserID* (_String_): The User ID
+      # * *iProductsList* (<em>list<String,Boolean></em>): The Products list along with their installed? flag
+      # * *iToolID* (_String_): The corresponding Tool ID
+      # * *iActionID* (_String_): The corresponding Action ID
+      # * *iAskedParameters* (<em>list<list<String>></em>): The list of parameters to apply to the Action
+      # Return:
+      # * <em>list<[String,String,String,list<String>,Exception]></em>: The list of errors encountered: [ ProductID, ToolID, ActionID, ActionParameters, Error ].
+      def executeActionForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)
+        rErrors = []
+
+        iAskedParameters.each do |iActionParameters|
+          iProductsList.each do |iProductInfo|
+            iProductID, iProductInstalled = iProductInfo
+            if (iProductInstalled)
+              # Check configuration for this Product
+              lProductConfig = getProductConfig(@SlaveClientConfig[:WEACESlaveAdapters], iProductID, iToolID)
+              if (lProductConfig != nil)
+                # Execute iActionID with iActionParameters for iProductID/iToolID using configuration lProductConfig
+                lError = executeAction(iUserID, iActionID, iActionParameters, iProductID, iToolID, lProductConfig)
+                if (lError != nil)
+                  rErrors << [ iProductID, iToolID, iActionID, iActionParameters, lError ]
+                end
+              end
+            end
+          end
+        end
+
+        return rErrors
+      end
+
       # Display to the user the available Actions.
       # Uses @Actions.
       #
