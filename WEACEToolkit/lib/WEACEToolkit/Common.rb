@@ -292,9 +292,10 @@ module WEACE
                 lInstalledActions[lActionID] = [
                   getComponentInstallInfo("#{lProductName}.#{lToolID}.#{lActionID}"),
                   ((lSlaveClientConfig != nil) and
-                   (lSlaveClientConfig[lProductName] != nil) and
-                   (lSlaveClientConfig[lProductName][lToolID] != nil) and
-                   (lSlaveClientConfig[lProductName][lToolID].include?(lActionID)))
+                   (lSlaveClientConfig[:WEACESlaveAdapters] != nil) and
+                   (lSlaveClientConfig[:WEACESlaveAdapters][lProductName] != nil) and
+                   (lSlaveClientConfig[:WEACESlaveAdapters][lProductName][lToolID] != nil) and
+                   (lSlaveClientConfig[:WEACESlaveAdapters][lProductName][lToolID].include?(lActionID)))
                  ]
               end
               lInstalledTools[lToolID] = [ getComponentInstallInfo("#{lProductName}.#{lToolID}"), lInstalledActions ]

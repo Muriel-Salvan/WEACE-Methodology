@@ -114,7 +114,7 @@ module WEACE
                 '--action', 'DummyAction'
               ],
               :AddRegressionActions => true,
-              :Repository => 'DummyActionAvailable'
+              :Repository => 'Dummy/SlaveActionActive'
             ) do |iError|
               assert_equal('DummyUser', $Variables[:DummyAction_User])
             end
@@ -129,9 +129,54 @@ module WEACE
                 '--action', 'DummyAction'
               ],
               :AddRegressionActions => true,
-              :Repository => 'DummyActionAvailable'
+              :Repository => 'Dummy/SlaveActionActive'
             ) do |iError|
-              assert_equal('DummyConfigValue', $Variables[:DummyAction_ProductConfigParam])
+              assert_equal(
+                {
+                  :PersonalizedProductAttr => 'PersonalizedProductValue'
+                },
+                $Variables[:DummyAction_ProductConfig]
+              )
+            end
+          end
+
+          # Test executing an Action from a Tool having a configuration parameter
+          def testRunActionToolConfigParam
+            executeSlave(
+              [
+                '--user', 'DummyUser',
+                '--tool', 'DummyTool',
+                '--action', 'DummyAction'
+              ],
+              :AddRegressionActions => true,
+              :Repository => 'Dummy/SlaveActionActive'
+            ) do |iError|
+              assert_equal(
+                {
+                  :PersonalizedToolAttr => 'PersonalizedToolValue'
+                },
+                $Variables[:DummyAction_ToolConfig]
+              )
+            end
+          end
+
+          # Test executing an Action from an Action having a configuration parameter
+          def testRunActionActionConfigParam
+            executeSlave(
+              [
+                '--user', 'DummyUser',
+                '--tool', 'DummyTool',
+                '--action', 'DummyAction'
+              ],
+              :AddRegressionActions => true,
+              :Repository => 'Dummy/SlaveActionActive'
+            ) do |iError|
+              assert_equal(
+                {
+                  :PersonalizedActionAttr => 'PersonalizedActionValue'
+                },
+                $Variables[:DummyAction_ActionConfig]
+              )
             end
           end
 
@@ -146,7 +191,7 @@ module WEACE
                 'Param2'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable'
+              :Repository => 'Dummy/AllDummyActionsAvailable'
             ) do |iError|
               assert_equal([ 'Param1', 'Param2' ], $Variables[:DummyActionWithParams_Params])
             end
@@ -164,7 +209,7 @@ module WEACE
                 'Param3'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable',
+              :Repository => 'Dummy/AllDummyActionsAvailable',
               :Error => WEACE::Slave::Client::ActionExecutionsError
             ) do |iError|
               assert(defined?(iError.ErrorsList))
@@ -173,7 +218,7 @@ module WEACE
               assert(iError.ErrorsList[0].kind_of?(Array))
               assert_equal(5, iError.ErrorsList[0].size)
               lProduct, lTool, lAction, lParams, lError = iError.ErrorsList[0]
-              assert_equal('DummyProduct', lProduct)
+              assert_equal('RegProduct', lProduct)
               assert_equal('DummyTool', lTool)
               assert_equal('DummyActionWithParams', lAction)
               assert_equal(['Param1', 'Param2', 'Param3'], lParams)
@@ -191,7 +236,7 @@ module WEACE
                 'Param1'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable',
+              :Repository => 'Dummy/AllDummyActionsAvailable',
               :Error => WEACE::Slave::Client::ActionExecutionsError
             ) do |iError|
               assert(defined?(iError.ErrorsList))
@@ -200,7 +245,7 @@ module WEACE
               assert(iError.ErrorsList[0].kind_of?(Array))
               assert_equal(5, iError.ErrorsList[0].size)
               lProduct, lTool, lAction, lParams, lError = iError.ErrorsList[0]
-              assert_equal('DummyProduct', lProduct)
+              assert_equal('RegProduct', lProduct)
               assert_equal('DummyTool', lTool)
               assert_equal('DummyActionWithParams', lAction)
               assert_equal(['Param1'], lParams)
@@ -217,7 +262,7 @@ module WEACE
                 '--action', 'DummyActionError'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable',
+              :Repository => 'Dummy/AllDummyActionsAvailable',
               :Error => WEACE::Slave::Client::ActionExecutionsError
             ) do |iError|
               assert(defined?(iError.ErrorsList))
@@ -226,7 +271,7 @@ module WEACE
               assert(iError.ErrorsList[0].kind_of?(Array))
               assert_equal(5, iError.ErrorsList[0].size)
               lProduct, lTool, lAction, lParams, lError = iError.ErrorsList[0]
-              assert_equal('DummyProduct', lProduct)
+              assert_equal('RegProduct', lProduct)
               assert_equal('DummyTool', lTool)
               assert_equal('DummyActionError', lAction)
               assert_equal([], lParams)
@@ -246,7 +291,7 @@ module WEACE
                 '--action', 'DummyAction'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable'
+              :Repository => 'Dummy/AllDummyActionsAvailable'
             ) do |iError|
               assert_equal('DummyUser', $Variables[:DummyAction_User])
               assert_equal('DummyUser', $Variables[:DummyActionWithParams_User])
@@ -265,7 +310,7 @@ module WEACE
                 '--action', 'DummyAction2'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable'
+              :Repository => 'Dummy/AllDummyActionsAvailable'
             ) do |iError|
               assert_equal('DummyUser', $Variables[:DummyAction_User])
               assert_equal('DummyUser', $Variables[:DummyAction2_User])
@@ -283,7 +328,7 @@ module WEACE
                 '--action', 'DummyAction3'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable'
+              :Repository => 'Dummy/AllDummyActionsAvailable'
             ) do |iError|
               assert_equal('DummyUser', $Variables[:DummyAction_User])
               assert_equal('DummyUser', $Variables[:DummyAction3_User])
@@ -299,7 +344,7 @@ module WEACE
                 '--action', 'DummyAction4'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable'
+              :Repository => 'Dummy/AllDummyActionsAvailable'
             ) do |iError|
               assert_equal('DummyUser', $Variables[:DummyAction4_User])
               assert_equal(true, $Variables[:DummyAction4_DummyProduct])
@@ -318,7 +363,7 @@ module WEACE
                 '--action', 'DummyAction'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable',
+              :Repository => 'Dummy/AllDummyActionsAvailable',
               :Error => WEACE::Slave::Client::ActionExecutionsError
             ) do |iError|
               assert_equal('DummyUser', $Variables[:DummyAction_User])
@@ -328,7 +373,7 @@ module WEACE
               assert(iError.ErrorsList[0].kind_of?(Array))
               assert_equal(5, iError.ErrorsList[0].size)
               lProduct, lTool, lAction, lParams, lError = iError.ErrorsList[0]
-              assert_equal('DummyProduct', lProduct)
+              assert_equal('RegProduct', lProduct)
               assert_equal('DummyTool', lTool)
               assert_equal('DummyActionWithParams', lAction)
               assert_equal(['Param1'], lParams)
@@ -347,7 +392,7 @@ module WEACE
                 '--action', 'DummyActionError'
               ],
               :AddRegressionActions => true,
-              :Repository => 'AllDummyActionsAvailable',
+              :Repository => 'Dummy/AllDummyActionsAvailable',
               :Error => WEACE::Slave::Client::ActionExecutionsError
             ) do |iError|
               assert(defined?(iError.ErrorsList))
@@ -357,7 +402,7 @@ module WEACE
               assert(iError.ErrorsList[0].kind_of?(Array))
               assert_equal(5, iError.ErrorsList[0].size)
               lProduct, lTool, lAction, lParams, lError = iError.ErrorsList[0]
-              assert_equal('DummyProduct', lProduct)
+              assert_equal('RegProduct', lProduct)
               assert_equal('DummyTool', lTool)
               assert_equal('DummyActionWithParams', lAction)
               assert_equal(['Param1'], lParams)
@@ -366,7 +411,7 @@ module WEACE
               assert(iError.ErrorsList[1].kind_of?(Array))
               assert_equal(5, iError.ErrorsList[1].size)
               lProduct, lTool, lAction, lParams, lError = iError.ErrorsList[1]
-              assert_equal('DummyProduct', lProduct)
+              assert_equal('RegProduct', lProduct)
               assert_equal('DummyTool', lTool)
               assert_equal('DummyActionError', lAction)
               assert_equal([], lParams)

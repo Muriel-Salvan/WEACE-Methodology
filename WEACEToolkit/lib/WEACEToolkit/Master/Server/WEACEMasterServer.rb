@@ -59,9 +59,11 @@ module WEACE
 
       # Constructor
       def initialize
-        # Initialize logging
-        require 'rUtilAnts/Logging'
-        RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+        # Initialize logging if needed
+        if (!defined?(RUtilAnts::Logging))
+          require 'rUtilAnts/Logging'
+          RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+        end
         # Read the directories locations
         setupWEACEDirs
 

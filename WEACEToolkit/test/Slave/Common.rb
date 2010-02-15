@@ -156,7 +156,7 @@ module WEACE
         # * *iParameters* (<em>list<String></em>): The parameters to give WEACE Slave Client
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
         # ** *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
-        # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
+        # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Dummy/SlaveClientInstalled']
         # ** *:AddRegressionActions* (_Boolean_): Do we add Actions defined from the regression ? [optional = false]
         # ** *:InstallActions* (<em>list<[String,String,String]></em>): List of Actions to install: [ ProductID, ToolID, ActionID ]. [optional = nil]
         # ** *:ConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ]. [optional = nil]
@@ -169,7 +169,7 @@ module WEACE
           lExpectedErrorClass = iOptions[:Error]
           lRepositoryName = iOptions[:Repository]
           if (lRepositoryName == nil)
-            lRepositoryName = 'Empty'
+            lRepositoryName = 'Dummy/SlaveClientInstalled'
           end
           lAddRegressionActions = iOptions[:AddRegressionActions]
           if (lAddRegressionActions == nil)
@@ -212,12 +212,16 @@ module WEACE
 
                   # Execute for real now that it has been modified
                   require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
+                  lSlaveClient = WEACE::Slave::Client.new
+                  # Change instance variables
+                  lSlaveClient.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
+                  lSlaveClient.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
+
                   begin
                     if (debugActivated?)
-                      lError = WEACE::Slave::Client.new.execute(['-d']+iParameters)
-                      #p lError
+                      lError = lSlaveClient.execute(['-d']+iParameters)
                     else
-                      lError = WEACE::Slave::Client.new.execute(iParameters)
+                      lError = lSlaveClient.execute(iParameters)
                     end
                   rescue Exception
                     # This way exception is shown on screen for better understanding
@@ -226,8 +230,26 @@ module WEACE
 
                   # Check result
                   if (lExpectedErrorClass == nil)
+                    if (lError != nil)
+                      logErr "Unexpected error: #{lError.class}: #{lError}"
+                      if (lError.backtrace == nil)
+                        logErr 'No backtrace'
+                      else
+                        logErr lError.backtrace.join("\n")
+                      end
+                    end
                     assert_equal(nil, lError)
                   else
+                    if (lError == nil)
+                      logErr 'Unexpected success.'
+                    elsif (!lError.kind_of?(lExpectedErrorClass))
+                      logErr "Unexpected error: #{lError.class}: #{lError}"
+                      if (lError.backtrace == nil)
+                        logErr 'No backtrace'
+                      else
+                        logErr lError.backtrace.join("\n")
+                      end
+                    end
                     assert(lError.kind_of?(lExpectedErrorClass))
                   end
                   # Call additional checks from the test case itself

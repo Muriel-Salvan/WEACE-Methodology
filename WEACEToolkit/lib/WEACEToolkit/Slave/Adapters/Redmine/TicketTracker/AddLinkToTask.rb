@@ -8,7 +8,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/Slave/Adapters/Redmine/Redmine_Common'
+require 'WEACEToolkit/Slave/Adapters/Redmine/Common'
 require 'date'
 
 module WEACE

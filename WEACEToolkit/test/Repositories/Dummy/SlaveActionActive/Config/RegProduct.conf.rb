@@ -1,0 +1,5 @@
+
+{
+  :PersonalizedProductAttr => 'PersonalizedProductValue'
+}
+

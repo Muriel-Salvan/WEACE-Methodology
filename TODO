@@ -2,6 +2,7 @@
 ** Add Tests for MasterServer matching correct Tools depending on the Config and the Actions returned by the Process. Don't forget to test Tools::All.
 ** Create test framework for Slave/Listeners
 ** Create tests for configuration files
+** Add checks ensuring that every possible Adapter has a unit test.
 
 * Development:
 ** Implement in-code TODOs
