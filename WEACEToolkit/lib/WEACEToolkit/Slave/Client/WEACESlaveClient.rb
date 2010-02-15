@@ -431,9 +431,9 @@ Check http://weacemethod.sourceforge.net for details."
                   (@ActionsToExecute[Tools::All][iActionID] != nil))
                 # Yes, we have extra parameters here
                 lEmptyProductsList, lAllToolsAskedParameters = @ActionsToExecute[Tools::All][iActionID]
-                lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters + lAllToolsAskedParameters)
+                lErrors += executeActionForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters + lAllToolsAskedParameters)
               else
-                lErrors += executeActionsForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)
+                lErrors += executeActionForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)
               end
             end
           end
@@ -447,9 +447,9 @@ Check http://weacemethod.sourceforge.net for details."
                 if ((@ActionsToExecute[Tools::All][iActionID] != nil) and
                     ((@ActionsToExecute[iToolID] == nil) or
                      (@ActionsToExecute[iToolID][iActionID] == nil)))
-                  lEmptyProductsList, lAskedParameters = @ActionsToExecute[iToolID][iActionID]
+                  lEmptyProductsList, lAskedParameters = @ActionsToExecute[Tools::All][iActionID]
                   # OK, we can execute it for iProductName
-                  lErrors += executeActionsForProductsList(iUserID, [iProductName], iToolID, iActionID, lAskedParameters)
+                  lErrors += executeActionForProductsList(iUserID, [iProductName], iToolID, iActionID, lAskedParameters)
                 end
               end
             end

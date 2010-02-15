@@ -8,6 +8,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
+require 'WEACEToolkit/Slave/Adapters/Mediawiki/Common'
 require 'date'
 
 module WEACE
@@ -22,7 +23,7 @@ module WEACE
 
           class Ping
 
-            include WEACE::Common
+            include WEACE::Slave::Adapters::Mediawiki::Common
             
             # Add the commit information to the wiki
             #
@@ -32,21 +33,9 @@ module WEACE
             # Return:
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iComment)
-              rError = nil
-
-              lMediawikiDir = @ProductConfig[:MediawikiDir]
-              if (lMediawikiDir == nil)
-                rError = RuntimeError.new('Mediawiki Product\'s configuration is corrupted. Missing :MediawikiDir attribute.')
-              else
-                # Get the existing text
-                lContent = `php ../Mediawiki_getContent.php #{lMediawikiDir} Tester_Log`.split("\n")
-                # Add a new entry at the end of the Tester Log
-                lContent << "* [#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - Ping Mediawiki/Wiki: #{iComment}"
-                # Set the new text
-                `echo '#{lContent.join("\n").gsub(/'/,'\\\\\'')}' | php #{lMediawikiDir}/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon ping' Tester_Log`
+              return initMediawiki(iUserID) do
+                next logMediawiki('Mediawiki/Wiki/Ping', iUserID, iComment)
               end
-
-              return rError
             end
 
           end
