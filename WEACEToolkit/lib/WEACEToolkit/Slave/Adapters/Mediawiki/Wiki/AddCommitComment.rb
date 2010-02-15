@@ -59,7 +59,13 @@ module WEACE
                 lContent.insert(lIdxLine, "* <code><small>[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}]</small></code> - Commit #{iCommitID} by #{iCommitUser}: #{iCommitComment}")
                 rSubError = writeArticle("Changelog_#{iBranchName}", lContent, "Automatic addition upon commit #{iCommitID} by #{iCommitUser}")
                 if (rSubError == nil)
-                  rSubError = logMediawiki('Mediawiki/Wiki/AddCommitComment', iUserID, iTicketID, iBranchName, iCommitID, iCommitUser, iCommitComment)
+                  rSubError = logMediawiki('Mediawiki/Wiki/AddCommitComment',
+                    :UserID => iUserID,
+                    :TicketID => iTicketID,
+                    :BranchName => iBranchName,
+                    :CommitID => iCommitID,
+                    :CommitUser => iCommitUser,
+                    :CommitComment => iCommitComment)
                 end
 
                 next rSubError
