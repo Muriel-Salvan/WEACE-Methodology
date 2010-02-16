@@ -31,8 +31,10 @@ require 'Master/Common'
 require 'Master/MasterSender'
 require 'Slave/Common'
 require 'Slave/Adapters/Common'
+require 'Slave/GenericAdapters/Ping'
 require 'Slave/GenericAdapters/Wiki/AddCommitComment'
 require 'Slave/GenericAdapters/Wiki/Ping'
+require 'Slave/GenericAdapters/TicketTracker/Ping'
 
 # Requires defining generic test suites
 require 'Install/Master/MasterProcesses'

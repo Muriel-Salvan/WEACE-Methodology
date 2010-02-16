@@ -57,41 +57,6 @@ module WEACE
               }
             end
 
-            # Execute a test for Mediawiki Slave Adapters
-            #
-            # Parameters:
-            # * *iProductConfig* (<em>map<Symbol,Object></em>): The Product configuration
-            # * *iParameters* (<em>list<String></em>): Parameters given to the Adapter
-            # * *iOptions* (<em>map<Symbol,Object></em>): Options [optional = {}]
-            # ** *:OSExecAnswers* (<em>list<String></em>): List of answers calls to `` have to return [optional = []]
-            # * *CodeBlock*: The code called once the Adapter has been executed [optional = nil]:
-            # ** *iError* (_Exception_): Error returned by the Adapter.
-            def executeSlaveAdapterMediawiki(iProductConfig, iParameters, iOptions = {}, &iCodeCheck)
-              # Parse options
-              lOSExecAnswers = iOptions[:OSExecAnswers]
-              if (lOSExecAnswers == nil)
-                lOSExecAnswers = []
-              end
-
-              # Catch `` executions
-              WEACE::Test::Common::changeMethod(
-                Kernel,
-                :`,
-                :backquote_regression,
-                true
-              ) do
-                $WEACERegression_ExecAnswers = lOSExecAnswers
-                executeSlaveAdapter(
-                  iProductConfig,
-                  iParameters
-                ) do |iError|
-                  if (iCodeCheck != nil)
-                    iCodeCheck.call(iError)
-                  end
-                end
-              end
-            end
-
           end
 
         end

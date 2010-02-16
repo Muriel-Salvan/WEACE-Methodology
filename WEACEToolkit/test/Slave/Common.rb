@@ -73,7 +73,13 @@ module WEACE
     # * *iDBPassword* (_String_): The password of the database user
     # * _CodeBlock_: The code called once the Transaction is created
     # ** *ioSQL* (_Object_): The SQL object used to perform queries
+    # ** Return:
+    # ** _Exception_: An error, or nil in case of success
+    # Return:
+    # * _Exception_: An error, or nil in case of success
     def beginMySQLTransaction_Regression(iMySQLHost, iDBName, iDBUser, iDBPassword)
+      rError = nil
+
       if ($Variables[:MySQLExecs] == nil)
         $Variables[:MySQLExecs] = []
       end
@@ -88,7 +94,7 @@ module WEACE
       }
       lDummySQL = DummySQLConnection.new(lCalls, $WEACERegression_DummySQLAnswers)
       begin
-        yield(lDummySQL)
+        rError = yield(lDummySQL)
       rescue Exception
         # Do this to track the error.
         lDummySQL.query("rollback: #{$!} (#{$!.backtrace.join("\n")})")
@@ -100,6 +106,8 @@ module WEACE
           ioCallInfo[1] = iCallData.split.join(' ')
         end
       end
+
+      return rError
     end
 
   end

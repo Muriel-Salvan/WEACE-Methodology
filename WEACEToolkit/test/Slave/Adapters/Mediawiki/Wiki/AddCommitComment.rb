@@ -81,7 +81,7 @@ module WEACE
                 checkCallsMatch(
                   [
                     [ 'query', "php %{WEACELibDir}/Slave/Adapters/Mediawiki/Mediawiki_getContent.php /path/to/Mediawiki Changelog_#{iBranchName}" ],
-                    [ 'query', Regexp.new('^' + Regexp.escape('echo \'') + $Context[:NewWikiContentRegExp] + Regexp.escape("' | php /path/to/Mediawiki/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon commit #{iCommitID} by #{iCommitUser}' Changelog_#{iBranchName}") + '$')]
+                    [ 'query', Regexp.new('^' + Regexp.escape('echo "') + $Context[:NewWikiContentRegExp] + Regexp.escape("\" | php /path/to/Mediawiki/maintenance/edit.php -u #{iUserID} -s 'Automatic addition upon commit #{iCommitID} by #{iCommitUser}' Changelog_#{iBranchName}") + '$')]
                   ],
                   $Variables[:OS_Exec]
                 )

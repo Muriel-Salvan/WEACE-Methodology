@@ -8,7 +8,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/Slave/Adapters/Mediawiki/Common'
+require 'WEACEToolkit/Slave/Adapters/Redmine/Common'
 
 module WEACE
 
@@ -16,14 +16,14 @@ module WEACE
 
     module Adapters
 
-      module Mediawiki
+      module Redmine
 
-        module Wiki
+        module TicketTracker
 
           class Ping
 
-            include WEACE::Slave::Adapters::Mediawiki::Common
-
+            include WEACE::Slave::Adapters::Redmine::Common
+            
             # Ping the Product
             #
             # Parameters:

@@ -495,21 +495,35 @@ module WEACE
     # * *iDBPassword* (_String_): The password of the database user
     # * _CodeBlock_: The code called once the Transaction is created
     # ** *ioSQL* (_Object_): The SQL object used to perform queries
+    # ** Return:
+    # ** _Exception_: An error, or nil in case of success
+    # Return:
+    # * _Exception_: An error, or nil in case of success
     def beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword)
+      rError = nil
+
       # Go on with real MySQL library
-      require 'rubygems'
-      require 'mysql'
-      # Connect to the db
-      lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-      # Create a transaction
-      lMySQL.query("start transaction")
       begin
-        yield(lMySQL)
-        lMySQL.query("commit")
-      rescue RuntimeError
-        lMySQL.query("rollback")
-        raise
+        require 'rubygems'
+        require 'mysql'
+        # Connect to the db
+        lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
+        # Create a transaction
+      rescue Exception
+        rError = $!
       end
+      if (rError == nil)
+        begin
+          lMySQL.query("start transaction")
+          rError = yield(lMySQL)
+          lMySQL.query("commit")
+        rescue RuntimeError
+          lMySQL.query("rollback")
+          rError = $!
+        end
+      end
+
+      return rError
     end
 
     # Execute some Ruby code in the MySQL environment.

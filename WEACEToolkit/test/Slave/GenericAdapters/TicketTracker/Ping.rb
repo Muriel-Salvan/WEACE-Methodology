@@ -11,7 +11,7 @@ module WEACE
 
       module GenericAdapters
 
-        module Wiki
+        module TicketTracker
 
           module Ping
 
