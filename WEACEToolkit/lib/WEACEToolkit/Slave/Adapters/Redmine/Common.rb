@@ -16,6 +16,8 @@ module WEACE
       module Redmine
       
         module Common
+
+          include WEACE::Common
         
           # Create a new Ruby session to execute the executeSQL method in a new environment
           #
@@ -40,13 +42,9 @@ module WEACE
           # Return:
           # * _Exception_: An error, or nil in case of success
           def connectRedmine
-            rError = nil
-
-            rError = beginMySQLTransaction(@ProductConfig[:DBHost], @ProductConfig[:DBName], @ProductConfig[:DBUser], @ProductConfig[:DBPassword]) do |ioSQL|
+            return beginMySQLTransaction(@ProductConfig[:DBHost], @ProductConfig[:DBName], @ProductConfig[:DBUser], @ProductConfig[:DBPassword]) do |ioSQL|
               next yield(ioSQL)
             end
-
-            return rError
           end
 
           # Get the User ID based on its name
