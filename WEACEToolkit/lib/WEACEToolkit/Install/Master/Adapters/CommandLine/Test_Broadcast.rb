@@ -43,8 +43,8 @@ module WEACEInstall
           def execute
             # Generate the shell script that will run WEACEExecute.
             File.open("#{@ProviderEnv[:Shell][:InternalDirectory]}/Test_Broadcast.sh", 'w') do |oFile|
-              oFile << "\#!/usr/bin/env ruby
-#{@ProviderEnv[:WEACEExecuteCmd]} MasterServer Scripts_Tester Test_Broadcast ARGV[0]
+              oFile << "\#!/bin/sh
+#{@ProviderEnv[:WEACEExecuteCmd]} MasterServer --user Scripts_Tester --process Test_Broadcast -- --comment $1
 "
             end
 

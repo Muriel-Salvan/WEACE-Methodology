@@ -44,7 +44,7 @@ module WEACE
         @@Regression_ConfigureProducts = nil
       end
 
-      # Execute the server for a given configuration
+      # Execute the SlaveClient for a given configuration
       #
       # Parameters:
       # * *iParameters* (<em>list<String></em>): The parameters

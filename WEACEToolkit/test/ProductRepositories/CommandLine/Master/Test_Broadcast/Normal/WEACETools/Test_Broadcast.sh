@@ -1,2 +1,2 @@
-#!/usr/bin/env ruby
-%{WEACEExecuteCmd} MasterServer Scripts_Tester Test_Broadcast ARGV[0]
+#!/bin/sh
+%{WEACEExecuteCmd} MasterServer --user Scripts_Tester --process Test_Broadcast -- --comment $1

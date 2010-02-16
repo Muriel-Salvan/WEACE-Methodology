@@ -99,10 +99,10 @@ module WEACE
             # list< String >
             lStrLstParams = []
             iParameters.each do |iParam, iValue|
-              lStrLstParams << "#{iParam}=>#{iValue.inspect}"
+              lStrLstParams << "** '''#{iParam}''': <nowiki>#{iValue.inspect}</nowiki>"
             end
-            # Add a new entry at the end of the Tester Log
-            lContent << "* [#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}] - #{iOperationName}: #{lStrLstParams.join(', ')}"
+            # Add a new entry at the end of the WEACE Log
+            lContent << "* [''#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}''] - #{iOperationName}: #{lStrLstParams.join("\n")}"
             # Set the new text
             rError = writeArticle('WEACE_Toolkit_Log', lContent, 'Automatic addition upon log')
 

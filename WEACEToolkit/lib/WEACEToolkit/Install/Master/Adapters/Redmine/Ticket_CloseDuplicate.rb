@@ -62,7 +62,7 @@ module WEACEInstall
     if (request.post?)
       if (@relation.relation_type == IssueRelation::TYPE_DUPLICATES)
         # Call WEACE Master Server
-        lCommand = \"#{@ProviderEnv[:WEACEExecuteCmd]} MasterServer Scripts_Validator Ticket_CloseDuplicate \#{@relation.issue_to_id} \#{@issue.id} 2>&1\"
+        lCommand = \"#{@ProviderEnv[:WEACEExecuteCmd]} MasterServer --user Scripts_Validator --process Ticket_CloseDuplicate -- --masterticket \#{@relation.issue_to_id} --slaveticket \#{@issue.id} 2>&1\"
         lOutput = `\#{lCommand}`
         lErrorCode = $?
         if (lErrorCode != 0)
