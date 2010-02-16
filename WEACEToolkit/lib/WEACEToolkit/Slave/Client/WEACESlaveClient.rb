@@ -115,16 +115,24 @@ module WEACE
       # Return:
       # * _Exception_: An error, or nil in case of success
       def executeMarshalled(iUserScriptID, iSerializedActions)
-        begin
-          lActionsToExecute = Marshal.load(iSerializedActions)
-        rescue Exception
-          puts "!!! Exception while unserializing data: #{$!}."
-          puts $!.backtrace.join("\n")
-          raise
+        rError = nil
+
+        @SlaveClientConfig = getComponentConfigInfo('SlaveClient')
+        if (@SlaveClientConfig == nil)
+          rError = RuntimeError.new('SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.')
+        else
+          begin
+            lActionsToExecute = Marshal.load(iSerializedActions)
+          rescue Exception
+            puts "!!! Exception while unserializing data: #{$!}."
+            puts $!.backtrace.join("\n")
+            raise
+          end
+          # Execute Actions
+          rError = executeActions(iUserScriptID, lActionsToExecute)
         end
 
-        # Execute Actions
-        return executeActions(iUserScriptID, lActionsToExecute)
+        return rError
       end
     
       # Execute the server for a given configuration
