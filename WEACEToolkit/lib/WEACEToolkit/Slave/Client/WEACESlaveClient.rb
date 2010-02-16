@@ -373,6 +373,7 @@ Check http://weacemethod.sourceforge.net for details."
             ioAdapterPlugin.instance_variable_set(:@ProductConfig, lProductConfig)
             ioAdapterPlugin.instance_variable_set(:@ToolConfig, lToolConfig)
             ioAdapterPlugin.instance_variable_set(:@ActionConfig, lActionConfig)
+            ioAdapterPlugin.instance_variable_set(:@WEACELibDir, @WEACELibDir)
             begin
               rError = ioAdapterPlugin.execute(iUserID, *iActionParameters)
               lLogError = ioAdapterPlugin.logProduct(iUserID, iProductName, lProductID, iToolID, iActionID, rError, iActionParameters)
