@@ -121,6 +121,14 @@ module WEACE
         if (@SlaveClientConfig == nil)
           rError = RuntimeError.new('SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.')
         else
+          # Create log file
+          lLogFile = @SlaveClientConfig[:LogFile]
+          if (lLogFile == nil)
+            lLogFile = "#{@WEACERepositoryDir}/Log/SlaveClient.log"
+          end
+          require 'fileutils'
+          FileUtils::mkdir_p(File.dirname(lLogFile))
+          setLogFile(lLogFile)
           begin
             lActionsToExecute = Marshal.load(iSerializedActions)
           rescue Exception

@@ -98,7 +98,7 @@ module WEACE
               lContent = readArticle('WEACE_Toolkit_Log')
               logDebug "Retrieved last Log: #{lContent[-1]}"
               # Add a new entry at the end of the WEACE Log
-              lContent << "* [''#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}''] - #{iUserID}@#{iProductName} - #{iProductID}/#{iToolID}/#{iActionID}} - <nowiki>#{iParameters.join(' ')}</nowiki>"
+              lContent << "* [''#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}''] - #{iUserID}@#{iProductName} - #{iProductID}/#{iToolID}/#{iActionID} - <nowiki>#{iParameters.join(' ')}</nowiki>"
               if (iError == nil)
                 lContent << '** <span style="color:green">Success</span>'
               else
