@@ -234,7 +234,6 @@ module WEACE
       # * @ScriptID (_String_): The Process, Action, Listener or Provider ID (nil if not applicable)
       # * @TestName (_String_): Name of the test case
       # * @InstallTest (_Boolean_): Is the test part of the installation ones ? (nil if not applicable)
-      # * @ComponentType (_String_): The component type (Adapters, Listeners or Providers) (nil if not applicable)
       def initTestDetails
         @Type = nil
         @ProductID = nil
@@ -265,27 +264,52 @@ module WEACE
                     logDebug "Unable to parse test case name: #{lClassName}."
                   else
                     @ProductID = lMatchData[1]
-                    @ComponentType = 'Providers'
                   end
                 else
                   @ProductID = lMatchData[1]
-                  @ComponentType = 'Listeners'
                 end
               else
                 @ProductID = lMatchData[1]
-                @ComponentType = 'Adapters'
               end
             else
               @ProductID, @ToolID = lMatchData[1..2]
-              @ComponentType = 'Adapters'
             end
           else
             @ProductID, @ToolID, @ScriptID = lMatchData[1..3]
-            @ComponentType = 'Adapters'
           end
         else
           @InstallTest = false
-          # TODO
+          if (lClassName.match(/^WEACE::Test::Master::.*$/) != nil)
+            @Type = 'Master'
+          else
+            @Type = 'Slave'
+          end
+          lMatchData = lClassName.match(/^WEACE::Test::Slave::Adapters::(.*)::(.*)::(.*)$/)
+          if (lMatchData == nil)
+            lMatchData = lClassName.match(/^WEACE::Test::.*::Adapters::(.*)::(.*)$/)
+            if (lMatchData == nil)
+              lMatchData = lClassName.match(/^WEACE::Test::.*::Adapters::(.*)$/)
+              if (lMatchData == nil)
+                lMatchData = lClassName.match(/^WEACE::Test::.*::Listeners::(.*)$/)
+                if (lMatchData == nil)
+                  lMatchData = lClassName.match(/^WEACE::Test::.*::Providers::(.*)$/)
+                  if (lMatchData == nil)
+                    logDebug "Unable to parse test case name: #{lClassName}."
+                  else
+                    @ProductID = lMatchData[1]
+                  end
+                else
+                  @ProductID = lMatchData[1]
+                end
+              else
+                @ProductID = lMatchData[1]
+              end
+            else
+              @ProductID, @ToolID = lMatchData[1..2]
+            end
+          else
+            @ProductID, @ToolID, @ScriptID = lMatchData[1..3]
+          end
         end
       end
 

@@ -367,6 +367,14 @@ Check http://weacemethod.sourceforge.net for details."
             ioAdapterPlugin.instance_variable_set(:@ActionConfig, lActionConfig)
             begin
               rError = ioAdapterPlugin.execute(iUserID, *iActionParameters)
+              lLogError = ioAdapterPlugin.logProduct(iUserID, iProductName, lProductID, iToolID, iActionID, rError, iActionParameters)
+              if (lLogError != nil)
+                # Log it and transfer it if no error otherwise
+                logErr "Error while logging operation in the Product: #{lLogError}"
+                if (rError == nil)
+                  rError = RuntimeError.new("Error while logging operation in the Product: #{lLogError}")
+                end
+              end
             rescue ArgumentError
               rError = AdapterArgumentError.new("Slave Action #{lProductID}/#{iToolID}/#{iActionID} did not get valid arguments. Check parameters or the Action's signature: #{$!}.")
             rescue Exception

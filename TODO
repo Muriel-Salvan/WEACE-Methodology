@@ -3,6 +3,7 @@
 ** Create test framework for Slave/Listeners
 ** Create tests for configuration files
 ** Add checks ensuring that every possible Adapter has a unit test.
+** Add checks for generic process flow of SlaveAdapters.
 
 * Development:
 ** Implement in-code TODOs
@@ -14,7 +15,6 @@
 ** Check if CmdOtherSession framework can be removed.
 ** Adapt ShowWEACE{Master|Slave}Info.rb so they display information correctly.
 ** Implement uninstall (generic) function on WEACEInstall.rb.
-** Ensure that Master Processes and Slave Actions respect the signature they should have.
 ** Replace "#!/usr/bin/env ruby" files with platform independent ones.
 ** Replace .sh creation with platform independent one.
 ** Implement dumpTerminal

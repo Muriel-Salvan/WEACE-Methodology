@@ -23,51 +23,27 @@ module WEACE
 
             class Ping < ::Test::Unit::TestCase
 
-              include WEACE::Test::Slave::Adapters::Common
+              include WEACE::Test::Slave::GenericAdapters::Wiki::Ping
               include WEACE::Test::Slave::Adapters::Mediawiki::Common
 
-              # Test normal behaviour with an empty page
-              def testNormalWithEmptyContent
-                executeSlaveAdapterMediawiki(
-                  {
-                    :MediaWikiInstallationDir => '/home/groups/m/my/myproject/mediawiki'
-                  },
-                  [ 'DummyComment' ],
-                  :OSExecAnswers => [
-                    '',
-                    ''
-                  ]
-                ) do |iError|
-                  checkCallsMatch(
-                    [
-                      [ 'query', 'php ../Mediawiki_getContent.php /home/groups/m/my/myproject/mediawiki Tester_Log' ],
-                      [ 'query', /^echo '\* \[....-..-.. ..:..:..\] - Ping Mediawiki\/Wiki: DummyComment' \| php \/home\/groups\/m\/my\/myproject\/mediawiki\/maintenance\/edit\.php -u DummyUser -s 'Automatic addition upon ping' Tester_Log$/]
-                    ],
-                    $Variables[:OS_Exec]
-                  )
-                end
+              # Prepare the plugin's execution
+              #
+              # Parameters:
+              # * *iUserID* (_String_): User ID of the script adding this info
+              # * *iComment* (_String_): The Ping comment
+              # * *CodeBlock*: Code to call once preparation has been made
+              def prepareExecution(iUserID, iComment)
+                # Nothing to do
+                yield
               end
 
-              # Test normal behaviour with a page having content
-              def testNormalWithContent
-                executeSlaveAdapterMediawiki(
-                  {
-                    :MediaWikiInstallationDir => '/home/groups/m/my/myproject/mediawiki'
-                  },
-                  [ 'DummyComment' ],
-                  :OSExecAnswers => [
-                    "Content - Line 1\nContent - Line 2",
-                    ''
-                  ]
-                ) do |iError|
-                  checkCallsMatch(
-                    [
-                      [ 'query', 'php ../Mediawiki_getContent.php /home/groups/m/my/myproject/mediawiki Tester_Log' ],
-                      [ 'query', /^echo 'Content - Line 1\nContent - Line 2\n\* \[....-..-.. ..:..:..\] - Ping Mediawiki\/Wiki: DummyComment' \| php \/home\/groups\/m\/my\/myproject\/mediawiki\/maintenance\/edit\.php -u DummyUser -s 'Automatic addition upon commit ping' Tester_Log$/]
-                    ],
-                    $Variables[:OS_Exec]
-                  )
-                end
+              # Check the last ping
+              #
+              # Parameters:
+              # * *iUserID* (_String_): User ID of the script adding this info
+              # * *iComment* (_String_): The Ping comment
+              def checkPing(iUserID, iComment)
+                # Nothing to test
               end
 
             end

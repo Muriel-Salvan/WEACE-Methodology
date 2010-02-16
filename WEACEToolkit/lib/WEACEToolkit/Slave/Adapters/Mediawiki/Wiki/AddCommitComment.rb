@@ -58,15 +58,6 @@ module WEACE
                 # Get the lIdxLine first lines of the old content, then insert the new comment at line lIdxLine, and then copy the remaining lines
                 lContent.insert(lIdxLine, "* <code><small>[#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}]</small></code> - Commit #{iCommitID} by #{iCommitUser}: #{iCommitComment}")
                 rSubError = writeArticle("Changelog_#{iBranchName}", lContent, "Automatic addition upon commit #{iCommitID} by #{iCommitUser}")
-                if (rSubError == nil)
-                  rSubError = logMediawiki('Mediawiki/Wiki/AddCommitComment',
-                    :UserID => iUserID,
-                    :TicketID => iTicketID,
-                    :BranchName => iBranchName,
-                    :CommitID => iCommitID,
-                    :CommitUser => iCommitUser,
-                    :CommitComment => iCommitComment)
-                end
 
                 next rSubError
               end

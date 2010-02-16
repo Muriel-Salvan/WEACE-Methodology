@@ -144,7 +144,7 @@ module WEACE
               end
             else
               # Exact matching test
-              assert_equal(iCallMatchData, iCallData)
+              assert_equal(replaceVars(iCallMatchData), iCallData)
             end
             lIdxCall += 1
           end

@@ -78,35 +78,35 @@ module WEACE
           # Return:
           # * <em>list<String></em>: The article (can be empty)
           def readArticle(iArticleName)
-            return `php ../Mediawiki_getContent.php #{@ProductConfig[:MediawikiDir]} #{iArticleName}`.split("\n")
+            return `php #{@WEACELibDir}/Slave/Adapters/Mediawiki/Mediawiki_getContent.php #{@ProductConfig[:MediawikiDir]} #{iArticleName}`.split("\n")
           end
 
-          # Log an operation in Mediawiki
-          # Uses @ProductConfig[:MediawikiDir]
-          # Uses @UserID
+          # Log an operation in the adapted Product
           #
           # Parameters:
-          # * *iOperationName* (_String_): Name of the operation to log.
-          # * *iParameters* (<em>map<Symbol,Object></em>): The parameters to give the operation [optional = {}]
+          # * *iUserID* (_String_): User ID initiating the log.
+          # * *iProductName* (_String_): Product name to log
+          # * *iProductID* (_String_): Product ID to log
+          # * *iToolID* (_String_): Tool ID to log
+          # * *iActionID* (_String_): Action ID to log
+          # * *iError* (_Exception_): The error to log, can be nil in case of success
+          # * *iParameters* (<em>list<String></em>): The parameters given to the operation
           # Return:
           # * _Exception_: An error, or nil if success
-          def logMediawiki(iOperationName, iParameters)
-            rError = nil
-
-            lContent = readArticle('WEACE_Toolkit_Log')
-            logDebug "Retrieved last Log: #{lContent[-1]}"
-            # Format parameters
-            # list< String >
-            lStrLstParams = []
-            iParameters.each do |iParam, iValue|
-              lStrLstParams << "** '''#{iParam}''': <nowiki>#{iValue.inspect}</nowiki>"
+          def logProduct(iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
+            return initMediawiki(iUserID) do
+              lContent = readArticle('WEACE_Toolkit_Log')
+              logDebug "Retrieved last Log: #{lContent[-1]}"
+              # Add a new entry at the end of the WEACE Log
+              lContent << "* [''#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}''] - #{iUserID}@#{iProductName} - #{iProductID}/#{iToolID}/#{iActionID}} - <nowiki>#{iParameters.join(' ')}</nowiki>"
+              if (iError == nil)
+                lContent << '** <span style="color:green">Success</span>'
+              else
+                lContent << "** <span style=\"color:red\">'''Error''': <nowiki>#{iError}</nowiki></span>"
+              end
+              # Set the new text
+              next writeArticle('WEACE_Toolkit_Log', lContent, 'Automatic addition upon log')
             end
-            # Add a new entry at the end of the WEACE Log
-            lContent << "* [''#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}''] - #{iOperationName}: #{lStrLstParams.join("\n")}"
-            # Set the new text
-            rError = writeArticle('WEACE_Toolkit_Log', lContent, 'Automatic addition upon log')
-
-            return rError
           end
 
         end

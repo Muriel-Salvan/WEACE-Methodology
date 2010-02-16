@@ -33,11 +33,8 @@ module WEACE
             # Return:
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iComment)
-              return initMediawiki(iUserID) do
-                next logMediawiki('Mediawiki/Wiki/Ping',
-                  :UserID => iUserID,
-                  :Comment => iComment)
-              end
+              # Do nothing, it will just be logged
+              return nil
             end
 
           end

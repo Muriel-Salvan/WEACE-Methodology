@@ -23,11 +23,11 @@ module Kernel
     $Variables[:OS_Exec] << [ 'query', iCommand ]
 
     # Send an automated answer
-    if ($WEACERegression_ExecAnswers.empty?)
+    if ($Context[:OS_ExecAnswers].empty?)
       $Variables[:OS_Exec] << [ 'error', "ERROR: Execution of command \"#{iCommand}\" is not prepared by WEACE Regression." ]
     else
-      rResult = $WEACERegression_ExecAnswers[0]
-      $WEACERegression_ExecAnswers.delete_at(0)
+      rResult = $Context[:OS_ExecAnswers][0]
+      $Context[:OS_ExecAnswers].delete_at(0)
     end
 
     return rResult
@@ -46,6 +46,16 @@ module WEACE
         module Mediawiki
 
           module Common
+
+            # Get the Product's configuration to give the plugin for testing
+            #
+            # Return:
+            # * <em>map<Symbol,Object></em>: The Product configuration
+            def getProductConfig
+              return {
+                :MediawikiDir => '/path/to/Mediawiki'
+              }
+            end
 
             # Execute a test for Mediawiki Slave Adapters
             #
