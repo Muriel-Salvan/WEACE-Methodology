@@ -32,7 +32,8 @@ module WEACEInstall
             },
             :Shell => {
               :InternalDirectory => "#{lProjectDir}/WEACETools/Master"
-            }
+            },
+            :PersistentDir => "#{lProjectDir}/persistent/WEACE"
           }
         end
 

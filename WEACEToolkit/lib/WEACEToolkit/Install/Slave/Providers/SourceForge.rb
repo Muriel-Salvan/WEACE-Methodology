@@ -30,7 +30,8 @@ module WEACEInstall
             },
             :Shell => {
               :InternalDirectory => "#{lProjectDir}/WEACETools/Slave"
-            }
+            },
+            :PersistentDir => "#{lProjectDir}/persistent/WEACE"
           }
         end
 

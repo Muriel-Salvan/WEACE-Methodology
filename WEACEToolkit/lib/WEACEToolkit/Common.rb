@@ -503,23 +503,58 @@ module WEACE
       rError = nil
 
       # Go on with real MySQL library
+      lSuccess = true
       begin
         require 'rubygems'
         require 'mysql'
-        # Connect to the db
-        lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-        # Create a transaction
       rescue Exception
-        rError = $!
+        lSuccess = false
+      end
+      if (!lSuccess)
+        # We must first install RubyGems and MySQL using RDI
+        if (@ProviderEnv[:PersistentDir] == nil)
+          # We can't use RDI without a persistent directory on the Provider.
+          rError = RuntimeError.new('RubyGems and/or MySQL are not installed. This Provider does not define any persistent directory to install missing dependencies.')
+        else
+          # Try to use RDI
+          lRDIInstaller = nil
+          begin
+            require 'rdi/rdi'
+            lRDIInstaller = RDI::Installer.new(@ProviderEnv[:PersistentDir])
+          rescue Exception
+            rError = RuntimeError.new("RubyGems and/or MySQL are not installed, and RDI failed to initialize: #{$!}")
+          end
+          if (rError == nil)
+            # OK, use RDI
+            lRubyMySQLDescription = RDI::Model::DependencyDescription.new('WxRuby').addTesterInfo(
+              [ 'RubyRequires', [ 'mysql' ] ]
+            ).addInstallerInfo(
+              [ 'Gem', 'mysql', [ [ 'GemPath', '%INSTALLDIR%' ] ] ]
+            )
+            lRDIInstaller.ensureDependencies( [ lRubyMySQLDescription ] )
+          end
+        end
       end
       if (rError == nil)
+        require 'rubygems'
+        require 'mysql'
+        # Now we can go on with the DB transaction
         begin
-          lMySQL.query("start transaction")
-          rError = yield(lMySQL)
-          lMySQL.query("commit")
-        rescue RuntimeError
-          lMySQL.query("rollback")
+          # Connect to the db
+          lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
+          # Create a transaction
+        rescue Exception
           rError = $!
+        end
+        if (rError == nil)
+          begin
+            lMySQL.query("start transaction")
+            rError = yield(lMySQL)
+            lMySQL.query("commit")
+          rescue RuntimeError
+            lMySQL.query("rollback")
+            rError = $!
+          end
         end
       end
 

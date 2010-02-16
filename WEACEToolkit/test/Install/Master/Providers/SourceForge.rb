@@ -43,7 +43,8 @@ module WEACE
                   },
                   :Shell => {
                     :InternalDirectory => '/home/groups/m/my/myproject/WEACETools/Master'
-                  }
+                  },
+                  :PersistentDir => '/home/groups/m/my/myproject/persistent/WEACE'
                 },
                 iProviderEnv
               )

@@ -25,7 +25,8 @@ module WEACEInstall
             :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb',
             :Shell => {
               :InternalDirectory => @ShellDir
-            }
+            },
+            :PersistentDir => @ShellDir
           }
         end
 

@@ -39,7 +39,8 @@ module WEACE
                   :WEACEExecuteCmd => 'ruby -w WEACEExecute.rb',
                   :Shell => {
                     :InternalDirectory => '/home/WEACETools'
-                  }
+                  },
+                  :PersistentDir => '/home/WEACETools'
                 },
                 iProviderEnv
               )
