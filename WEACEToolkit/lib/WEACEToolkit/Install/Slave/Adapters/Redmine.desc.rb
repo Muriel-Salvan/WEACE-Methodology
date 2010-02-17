@@ -24,17 +24,11 @@
       'Example: /home/groups/m/my/myproject/mysql/lib'
     ],
     [
-      :GemHomeDir,
-      '-g', '--gemhome <GemHomePath>', String,
-      '<GemHomePath>: Path to the Gems installed by RubyGems.',
-      'Example: /home/groups/m/my/myproject/rubygems/mygems'
-    ],
-    [
-      :RubyGemsLibDir,
-      '-l', '--rubygemslib <RubyGemsLibPath>', String,
-      '<RubyGemsLibPath>: Path to the directory containing RubyGems\' library.',
-      'Example: /home/groups/m/my/myproject/rubygems/lib'
+      :RubyMySQLLibDir,
+      '-r', '--rubymysql <RubyMySQLLibPath>', String,
+      '<RubyMySQLLibPath>: Path to the directory containing Ruby\'s MySQL library.',
+      'Example: /home/groups/m/my/myproject/ruby-mysql'
     ]
   ],
-  :OptionsExample => '--redminedir /home/redmine --mysql /home/groups/m/my/myproject/mysql/lib --gemhome /home/groups/m/my/myproject/rubygems/mygems --rubygemslib /home/groups/m/my/myproject/rubygems/lib'
+  :OptionsExample => '--redminedir /home/redmine --mysql /home/groups/m/my/myproject/mysql/lib --rubymysql /home/groups/m/my/myproject/ruby-mysql'
 }

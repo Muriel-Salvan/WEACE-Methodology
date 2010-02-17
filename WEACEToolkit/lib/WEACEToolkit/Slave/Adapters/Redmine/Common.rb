@@ -166,8 +166,7 @@ module WEACE
               @ProductConfig[:DBPassword],
               :logProduct_SQL,
               [ iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters ],
-              :RubyGemsLibDir => @ProductConfig[:RubyGemsLibDir],
-              :GemHomeDir => @ProductConfig[:GemHomeDir],
+              :RubyMySQLLibDir => @ProductConfig[:RubyMySQLLibDir],
               :MySQLLibDir => @ProductConfig[:MySQLLibDir]
             )
           end

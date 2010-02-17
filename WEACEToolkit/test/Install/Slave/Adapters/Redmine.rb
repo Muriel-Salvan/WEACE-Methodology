@@ -36,14 +36,12 @@ module WEACE
                 :InstallSlaveProductParameters => [
                   '--redminedir', '%{ProductDir}/redmine-0.8.2',
                   '--mysql', '/usr/lib/mysql/lib',
-                  '--gemhome', '/usr/rubygems/gems',
-                  '--rubygemslib', '/usr/rubygems/lib'
+                  '--rubymysql', '/usr/ruby-mysql'
                 ],
                 :InstallSlaveProductParametersShort => [
                   '-d', '%{ProductDir}/redmine-0.8.2',
                   '-m', '/usr/lib/mysql/lib',
-                  '-g', '/usr/rubygems/gems',
-                  '-l', '/usr/rubygems/lib'
+                  '-r', '/usr/ruby-mysql'
                 ],
                 :SlaveProductInstallInfo => {
                   :Description => 'Redmine adapted to WEACE Slave.',
@@ -51,8 +49,7 @@ module WEACE
                 },
                 :SlaveProductConfigInfo => {
                   :RedmineDir => '%{ProductDir}/redmine-0.8.2',
-                  :RubyGemsLibDir => '/usr/rubygems/lib',
-                  :GemHomeDir => '/usr/rubygems/gems',
+                  :RubyMySQLLibDir => '/usr/ruby-mysql',
                   :MySQLLibDir => '/usr/lib/mysql/lib',
                   :DBHost => 'mysql',
                   :DBUser => 'm12345_admin',

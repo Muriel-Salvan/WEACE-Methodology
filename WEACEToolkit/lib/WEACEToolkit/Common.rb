@@ -432,8 +432,7 @@ module WEACE
     # * *iSQLMethod* (_Symbol_): The method to call once connection is established
     # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
     # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
-    # ** *:RubyGemsLibDir* (_String_): RubyGems' lib directory to try if RubyGem is not natively accessible [optional = nil]
-    # ** *:GemHomeDir* (_String_): RubyGems' gems directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    # ** *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
     # ** *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
     # ** *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
     # ** Return:
@@ -443,8 +442,7 @@ module WEACE
     def beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethod, iSQLMethodParameters, iOptions = {})
       rError = nil
 
-      lRubyGemsLibDir = iOptions[:RubyGemsLibDir]
-      lGemHomeDir = iOptions[:GemHomeDir]
+      lRubyMySQLLibDir = iOptions[:RubyMySQLLibDir]
       lMySQLLibDir = iOptions[:MySQLLibDir]
       lExtraProcess = iOptions[:ExtraProcess]
       if (lExtraProcess == nil)
@@ -452,102 +450,80 @@ module WEACE
       end
 
       lAlreadyExecuted = false
-      # First, try RubyGems
+      # First, try directly
       lSuccess = true
       begin
-        require 'rubygems'
+        require 'mysql'
       rescue Exception
         lSuccess = false
       end
       if (!lSuccess)
         # Try altering the environment if possible
-        if (lRubyGemsLibDir == nil)
-          rError = RuntimeError.new('RubyGems is not installed. Please install it before using MySQL.')
-        else
+        if (lRubyMySQLLibDir != nil)
           # Add this directory in the $LOAD_PATH, and try again
-          $LOAD_PATH << lRubyGemsLibDir
-          begin
-            require 'rubygems'
-            lSuccess = true
-          rescue Exception
-            rError = RuntimeError.new("RubyGems is not installed, even in #{lRubyGemsLibDir}. Please install it before using MySQL.")
-          end
-        end
-      end
-      if (lSuccess)
-        # Try Ruby/MySQL
-        begin
-          require 'mysql'
-        rescue Exception
-          lSuccess = false
-        end
-        if (!lSuccess)
-          # First, try altering GEM_HOME
-          ENV['GEM_HOME'] = lGemHomeDir
+          $LOAD_PATH << lRubyMySQLLibDir
           begin
             require 'mysql'
             lSuccess = true
           rescue Exception
           end
-          if (!lSuccess)
-            if (lMySQLLibDir == nil)
-              rError = RuntimeError.new('MySQL C-connector library is not installed. Please install it before using MySQL.')
-            else
-              # We have to alter our libraries paths and try again
-              $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath + [lMySQLLibDir])
-              if ($rUtilAnts_Platform_Info.os == OS_UNIX)
-                if (lExtraProcess)
-                  # Execute in a separate process, as $LD_LIBRARY_PATH can't be changed dynamically inside a process
-                  require 'rUtilAnts/ForeignProcess'
-                  rError, lResult = RUtilAnts::ForeignProcess::execCmdOtherSession(
-                    "export LD_LIBRARY_PATH='#{ENV['LD_LIBRARY_PATH']}'",
-                    self,
-                    'beginMySQLTransaction',
-                    [
-                      iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethod, iSQLMethodParameters, iOptions.merge({:ExtraProcess => false})
-                    ]
-                  )
-                  if (rError == nil)
-                    rError = lResult
-                  end
-                  # Don't try to execute it the normal way
-                  lAlreadyExecuted = true
-                else
-                  rError = RuntimeError.new('Using MySQL C-connector library is impossible. Please make sure it is among your system libraries path.')
-                end
-              else
-                begin
-                  require 'mysql'
-                  lSuccess = true
-                rescue Exception
-                  rError = RuntimeError.new("Ruby/MySQL is not installed, even when adding #{lMySQLLibDir} to paths. Please install it before using MySQL.")
-                end
+        end
+        # Try the C-connector if possible
+        if ((!lSuccess) and
+            (lMySQLLibDir != nil))
+          # We have to alter our libraries paths and try again
+          $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath + [lMySQLLibDir])
+          if ($rUtilAnts_Platform_Info.os == OS_UNIX)
+            if (lExtraProcess)
+              # Execute in a separate process, as $LD_LIBRARY_PATH can't be changed dynamically inside a process
+              require 'rUtilAnts/ForeignProcess'
+              rError, lResult = RUtilAnts::ForeignProcess::execCmdOtherSession(
+                "export LD_LIBRARY_PATH='#{ENV['LD_LIBRARY_PATH']}'",
+                self,
+                'beginMySQLTransaction',
+                [
+                  iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethod, iSQLMethodParameters, iOptions.merge({:ExtraProcess => false})
+                ]
+              )
+              if (rError == nil)
+                rError = lResult
               end
+              # Don't try to execute it the normal way
+              lAlreadyExecuted = true
+              lSuccess = true
+            end
+          else
+            begin
+              require 'mysql'
+              lSuccess = true
+            rescue Exception
             end
           end
         end
       end
-      # Now we execute it if we can and if it has not been done before
-      if ((!lAlreadyExecuted) and
-          (rError == nil))
-        begin
-          # Connect to the db
-          lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-          # Create a transaction
-        rescue Exception
-          rError = $!
-        end
-        if (rError == nil)
+      if (lSuccess)
+        if (!lAlreadyExecuted)
           begin
-            lMySQL.query("start transaction")
-            self.send(iSQLMethod, *([lMySQL] + iSQLMethodParameters))
-            rError = yield(lMySQL)
-            lMySQL.query("commit")
-          rescue RuntimeError
-            lMySQL.query("rollback")
+            # Connect to the db
+            lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
+            # Create a transaction
+          rescue Exception
             rError = $!
           end
+          if (rError == nil)
+            begin
+              lMySQL.query("start transaction")
+              self.send(iSQLMethod, *([lMySQL] + iSQLMethodParameters))
+              rError = yield(lMySQL)
+              lMySQL.query("commit")
+            rescue RuntimeError
+              lMySQL.query("rollback")
+              rError = $!
+            end
+          end
         end
+      else
+        rError = RuntimeError.new("Using Ruby MySQL is impossible. Please make sure it is among your system libraries path. Ruby library path tried: #{lRubyMySQLLibDir}. MySQL C-connector path tried: #{lMySQLLibDir}.")
       end
 
       return rError
