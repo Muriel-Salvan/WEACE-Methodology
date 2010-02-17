@@ -19,6 +19,8 @@ module WEACEInstall
         # * _Exception_: An error, or nil in case of success
         def check
           checkVar(:RedmineDir, '--redminedir')
+          checkVar(:RubyGemsLibDir, '--rubygemslib')
+          checkVar(:GemHomeDir, '--gemhome')
 
           return performModify(false)
         end
@@ -29,6 +31,7 @@ module WEACEInstall
         # Return:
         # * _Exception_: An error, or nil in case of success
         def execute
+          # TODO: Install Ruby/MySQL if the Provider does not give access to it natively.
           return performModify(true)
         end
 
@@ -41,6 +44,14 @@ module WEACEInstall
 {
   \# Directory where Redmine is installed
   :RedmineDir => '#{@RedmineDir}',
+  \# Directory containing rubygems.rb
+  :RubyGemsLibDir => '#{@RubyGemsLibDir}',
+  \# Directory storing Gems
+  :GemHomeDir => '#{@GemHomeDir}',
+  \# Directory containing MySQL C-connector library
+  :MySQLLibDir => '#{@MySQLLibDir}',
+
+  \# Database connection parameters
   :DBHost => 'mysql',
   :DBUser => 'm12345_admin',
   :DBPassword => 'Pass',

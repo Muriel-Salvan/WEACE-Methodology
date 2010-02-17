@@ -52,14 +52,18 @@ module WEACEInstall
       if (lRUALibDir == nil)
         logBug 'Unable to find rUtilAnts library directory among Rubygems or $LOAD_PATH.'
       else
-        File.open(@WEACEEnvFile, 'w') do |oFile|
-          oFile << "\# This file is meant to be required by every script that needs to setup WEACE environment before loading and using WEACE Toolkit libraries.
+        if (File.exists?(@WEACEEnvFile))
+          logWarn "Environment file #{@WEACEEnvFile} already exists. Will not overwrite it."
+        else
+          File.open(@WEACEEnvFile, 'w') do |oFile|
+            oFile << "\# This file is meant to be required by every script that needs to setup WEACE environment before loading and using WEACE Toolkit libraries.
 
 \# Path containing rUtilAnts library (can be path to RubyGems)
 $LOAD_PATH << '#{File.expand_path(lRUALibDir)}'
 \# Path containing WEACE Toolkit library
 $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
 "
+          end
         end
       end
     end

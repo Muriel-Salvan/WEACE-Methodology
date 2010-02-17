@@ -33,14 +33,27 @@ module WEACE
             # * <em>map<Symbol,Object></em>: The different properties
             def getSlaveProductTestSpecs
               return {
-                :InstallSlaveProductParameters => [ '--redminedir', '%{ProductDir}/redmine-0.8.2', '--mysql', '/usr/lib/mysql/lib' ],
-                :InstallSlaveProductParametersShort => [ '-d', '%{ProductDir}/redmine-0.8.2', '-m', '/usr/lib/mysql/lib' ],
+                :InstallSlaveProductParameters => [
+                  '--redminedir', '%{ProductDir}/redmine-0.8.2',
+                  '--mysql', '/usr/lib/mysql/lib',
+                  '--gemhome', '/usr/rubygems/gems',
+                  '--rubygemslib', '/usr/rubygems/lib'
+                ],
+                :InstallSlaveProductParametersShort => [
+                  '-d', '%{ProductDir}/redmine-0.8.2',
+                  '-m', '/usr/lib/mysql/lib',
+                  '-g', '/usr/rubygems/gems',
+                  '-l', '/usr/rubygems/lib'
+                ],
                 :SlaveProductInstallInfo => {
                   :Description => 'Redmine adapted to WEACE Slave.',
                   :Author => 'murielsalvan@users.sourceforge.net'
                 },
                 :SlaveProductConfigInfo => {
                   :RedmineDir => '%{ProductDir}/redmine-0.8.2',
+                  :RubyGemsLibDir => '/usr/rubygems/lib',
+                  :GemHomeDir => '/usr/rubygems/gems',
+                  :MySQLLibDir => '/usr/lib/mysql/lib',
                   :DBHost => 'mysql',
                   :DBUser => 'm12345_admin',
                   :DBPassword => 'Pass',

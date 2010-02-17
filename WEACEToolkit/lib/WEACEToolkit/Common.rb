@@ -17,38 +17,6 @@ require 'WEACEToolkit/Errors'
 
 module WEACE
 
-  # Class containing info for serialized method calls
-  # TODO: Check if we can remove it.
-  class MethodCallInfo
-
-    #  String: LogFile
-    attr_accessor :LogFile
-    
-    #  list<String>: Load path
-    attr_accessor :LoadPath
-    
-    #  list<String>: List of files to require
-    attr_accessor :RequireFiles
-    
-    #  String: Serialized MethodDetails
-    # It is stored serialized as to unserialize it we first need to unserialize the RequireFiles
-    attr_accessor :SerializedMethodDetails
-    
-    class MethodDetails
-
-      #  Object: Object to call the function on,
-      attr_accessor :Object
-    
-      #  String: Function name to call,
-      attr_accessor :FunctionName
-    
-      #  list<Object>: Parameters,
-      attr_accessor :Parameters
-      
-    end
-    
-  end
-
   # Various methods used broadly
   module Common
 
@@ -362,40 +330,6 @@ module WEACE
       @WEACEEnvFile = "#{@WEACERepositoryDir}/WEACEEnv.rb"
     end
 
-    # Iterate through installed Adapters in the filesystem
-    #
-    # Parameters:
-    # * *iDirectory* (_String_): The directory to parse for Adapters (Master/Slave)
-    # * *iInstallDir* (_Boolean_): Do we parse the installation directory ?
-    # * *CodeBlock*: The code to call for each directory found. Parameters:
-    # ** *iProductID* (_String_): The product ID
-    # ** *iToolID* (_String_): The tool ID
-    # ** *iScriptID* (_String_): The script ID
-    def eachAdapter(iDirectory, iInstallDir)
-      lRootDir = File.dirname(__FILE__)
-      lScriptPrefix = ''
-      if (iInstallDir)
-        lRootDir += '/Install'
-        lScriptPrefix = 'Install_'
-      end
-      Dir.glob("#{lRootDir}/#{iDirectory}/Adapters/*") do |iFileName1|
-        if (File.directory?(iFileName1))
-          lProductID = File.basename(iFileName1)
-          Dir.glob("#{lRootDir}/#{iDirectory}/Adapters/#{lProductID}/*") do |iFileName2|
-            if (File.directory?(iFileName2))
-              lToolID = File.basename(iFileName2)
-              Dir.glob("#{lRootDir}/#{iDirectory}/Adapters/#{lProductID}/#{lToolID}/#{lScriptPrefix}*.rb") do |iFileName3|
-                if (!File.directory?(iFileName3))
-                  lScriptID = File.basename(iFileName3).match(/#{lScriptPrefix}(.*)\.rb/)[1]
-                  yield(lProductID, lToolID, lScriptID)
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-
     # Check that an instance variable has been correctly instantiated, and give a good looking exception otherwise.
     #
     # Parameters:
@@ -487,58 +421,115 @@ module WEACE
     end
 
     # Start a MySQL transaction, connecting first to the database.
+    # A real method symbol is given instead of a code block, as it might be necessary to serialize the call to give it to an external process.
+    # This method will have the SQL connection object followed by its parameters given as a signature.
     #
     # Parameters:
     # * *iMySQLHost* (_String_): The name of the MySQL host
     # * *iDBName* (_String_): The name of the database of Redmine
     # * *iDBUser* (_String_): The name of the database user
     # * *iDBPassword* (_String_): The password of the database user
-    # * _CodeBlock_: The code called once the Transaction is created
-    # ** *ioSQL* (_Object_): The SQL object used to perform queries
+    # * *iSQLMethod* (_Symbol_): The method to call once connection is established
+    # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
+    # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
+    # ** *:RubyGemsLibDir* (_String_): RubyGems' lib directory to try if RubyGem is not natively accessible [optional = nil]
+    # ** *:GemHomeDir* (_String_): RubyGems' gems directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    # ** *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    # ** *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
     # ** Return:
     # ** _Exception_: An error, or nil in case of success
     # Return:
     # * _Exception_: An error, or nil in case of success
-    def beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword)
+    def beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethod, iSQLMethodParameters, iOptions = {})
       rError = nil
 
-      # Go on with real MySQL library
+      lRubyGemsLibDir = iOptions[:RubyGemsLibDir]
+      lGemHomeDir = iOptions[:GemHomeDir]
+      lMySQLLibDir = iOptions[:MySQLLibDir]
+      lExtraProcess = iOptions[:ExtraProcess]
+      if (lExtraProcess == nil)
+        lExtraProcess = true
+      end
+
+      lAlreadyExecuted = false
+      # First, try RubyGems
       lSuccess = true
       begin
         require 'rubygems'
-        require 'mysql'
       rescue Exception
         lSuccess = false
       end
       if (!lSuccess)
-        # We must first install RubyGems and MySQL using RDI
-        if (@ProviderEnv[:PersistentDir] == nil)
-          # We can't use RDI without a persistent directory on the Provider.
-          rError = RuntimeError.new('RubyGems and/or MySQL are not installed. This Provider does not define any persistent directory to install missing dependencies.')
+        # Try altering the environment if possible
+        if (lRubyGemsLibDir == nil)
+          rError = RuntimeError.new('RubyGems is not installed. Please install it before using MySQL.')
         else
-          # Try to use RDI
-          lRDIInstaller = nil
+          # Add this directory in the $LOAD_PATH, and try again
+          $LOAD_PATH << lRubyGemsLibDir
           begin
-            require 'rdi/rdi'
-            lRDIInstaller = RDI::Installer.new(@ProviderEnv[:PersistentDir])
+            require 'rubygems'
+            lSuccess = true
           rescue Exception
-            rError = RuntimeError.new("RubyGems and/or MySQL are not installed, and RDI failed to initialize: #{$!}")
-          end
-          if (rError == nil)
-            # OK, use RDI
-            lRubyMySQLDescription = RDI::Model::DependencyDescription.new('WxRuby').addTesterInfo(
-              [ 'RubyRequires', [ 'mysql' ] ]
-            ).addInstallerInfo(
-              [ 'Gem', 'mysql', [ [ 'GemPath', '%INSTALLDIR%' ] ] ]
-            )
-            lRDIInstaller.ensureDependencies( [ lRubyMySQLDescription ] )
+            rError = RuntimeError.new("RubyGems is not installed, even in #{lRubyGemsLibDir}. Please install it before using MySQL.")
           end
         end
       end
-      if (rError == nil)
-        require 'rubygems'
-        require 'mysql'
-        # Now we can go on with the DB transaction
+      if (lSuccess)
+        # Try Ruby/MySQL
+        begin
+          require 'mysql'
+        rescue Exception
+          lSuccess = false
+        end
+        if (!lSuccess)
+          # First, try altering GEM_HOME
+          ENV['GEM_HOME'] = lGemHomeDir
+          begin
+            require 'mysql'
+            lSuccess = true
+          rescue Exception
+          end
+          if (!lSuccess)
+            if (lMySQLLibDir == nil)
+              rError = RuntimeError.new('MySQL C-connector library is not installed. Please install it before using MySQL.')
+            else
+              # We have to alter our libraries paths and try again
+              $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath + [lMySQLLibDir])
+              if ($rUtilAnts_Platform_Info.os == OS_UNIX)
+                if (lExtraProcess)
+                  # Execute in a separate process, as $LD_LIBRARY_PATH can't be changed dynamically inside a process
+                  require 'rUtilAnts/ForeignProcess'
+                  rError, lResult = RUtilAnts::ForeignProcess::execCmdOtherSession(
+                    "export LD_LIBRARY_PATH='#{ENV['LD_LIBRARY_PATH']}'",
+                    self,
+                    'beginMySQLTransaction',
+                    [
+                      iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethod, iSQLMethodParameters, iOptions.merge({:ExtraProcess => false})
+                    ]
+                  )
+                  if (rError == nil)
+                    rError = lResult
+                  end
+                  # Don't try to execute it the normal way
+                  lAlreadyExecuted = true
+                else
+                  rError = RuntimeError.new('Using MySQL C-connector library is impossible. Please make sure it is among your system libraries path.')
+                end
+              else
+                begin
+                  require 'mysql'
+                  lSuccess = true
+                rescue Exception
+                  rError = RuntimeError.new("Ruby/MySQL is not installed, even when adding #{lMySQLLibDir} to paths. Please install it before using MySQL.")
+                end
+              end
+            end
+          end
+        end
+      end
+      # Now we execute it if we can and if it has not been done before
+      if ((!lAlreadyExecuted) and
+          (rError == nil))
         begin
           # Connect to the db
           lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
@@ -549,6 +540,7 @@ module WEACE
         if (rError == nil)
           begin
             lMySQL.query("start transaction")
+            self.send(iSQLMethod, *([lMySQL] + iSQLMethodParameters))
             rError = yield(lMySQL)
             lMySQL.query("commit")
           rescue RuntimeError
@@ -573,50 +565,6 @@ module WEACE
     def execMySQL(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
       beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword) do |ioSQL|
         executeSQL(ioSQL, *iParameters)
-      end
-    end
-    
-    # Execute a command in another Ruby session, executing some Shell commands before invocation.
-    #
-    # Parameters:
-    # * *iShellCmd* (_String_): Shell command to invoke before Ruby
-    # * *iObject* (_Object_): Object that will have a function to call in the new session
-    # * *iFunctionName* (_String_): Function name to call on the object
-    # * *Parameters*: Remaining parameters
-    def execCmdOtherSession(iShellCmd, iObject, iFunctionName, *iParameters)
-      # Create an object that we will serialize, containing all needded information for the session
-      lInfo = MethodCallInfo.new
-      lInfo.LogFile = getLogFile
-      lInfo.RequireFiles = $".clone
-      lInfo.LoadPath = $LOAD_PATH.clone
-      lMethodDetails = MethodCallInfo::MethodDetails.new
-      lMethodDetails.Parameters = iParameters
-      lMethodDetails.FunctionName = iFunctionName
-      lMethodDetails.Object = iObject
-      lInfo.SerializedMethodDetails = Marshal.dump(lMethodDetails)
-      # Dump this object in a temporary file
-      require 'tmpdir'
-      lFileName = "#{Dir.tmpdir}/WEACE_#{Thread.object_id}_Call"
-      File.open(lFileName, 'w') do |iFile|
-        iFile.write(Marshal.dump(lInfo))
-      end
-      # For security reasons, ensure that only us can read this file. It can contain passwords.
-      require 'fileutils'
-      FileUtils.chmod(0700, lFileName)
-      # Call the other session
-      execCmd("#{iShellCmd}; ruby -w Execute.rb #{lFileName} 2>&1")
-    end
-  
-    # Execute a command
-    #
-    # Parameters:
-    # * *iCmd* (_String_): The command to execute
-    def execCmd(iCmd)
-      lOutput = `#{iCmd}`
-      lErrorCode = $?
-      if (lErrorCode != 0)
-        logErr "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
-        raise RuntimeError, "Error while running command \"#{iCmd}\". Here is the output:\n#{lOutput}."
       end
     end
     

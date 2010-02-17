@@ -22,7 +22,19 @@
       '-m', '--mysql <MySQLLibPath>', String,
       '<MySQLLibPath>: Path to the directory containing the MySQL (C-Connector) library.',
       'Example: /home/groups/m/my/myproject/mysql/lib'
+    ],
+    [
+      :GemHomeDir,
+      '-g', '--gemhome <GemHomePath>', String,
+      '<GemHomePath>: Path to the Gems installed by RubyGems.',
+      'Example: /home/groups/m/my/myproject/rubygems/mygems'
+    ],
+    [
+      :RubyGemsLibDir,
+      '-l', '--rubygemslib <RubyGemsLibPath>', String,
+      '<RubyGemsLibPath>: Path to the directory containing RubyGems\' library.',
+      'Example: /home/groups/m/my/myproject/rubygems/lib'
     ]
   ],
-  :OptionsExample => '--redminedir /home/redmine --mysql /home/groups/m/my/myproject/mysql/lib'
+  :OptionsExample => '--redminedir /home/redmine --mysql /home/groups/m/my/myproject/mysql/lib --gemhome /home/groups/m/my/myproject/rubygems/mygems --rubygemslib /home/groups/m/my/myproject/rubygems/lib'
 }
