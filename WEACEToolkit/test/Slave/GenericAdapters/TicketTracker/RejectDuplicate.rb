@@ -11,11 +11,11 @@ module WEACE
 
       module GenericAdapters
 
-        module Wiki
+        module TicketTracker
 
-          # Define test cases that are common to any Product adapting Wiki/AddCommitComment.
-          # This module is meant to be included by any test suite of a SlaveAction testing Wiki/AddCommitComment.
-          module AddCommitComment
+          # Define test cases that are common to any Product adapting TicketTracker/RejectDuplicate.
+          # This module is meant to be included by any test suite of a SlaveAction testing TicketTracker/RejectDuplicate.
+          module RejectDuplicate
 
             include WEACE::Test::Slave::GenericAdapters::Common
 
@@ -24,7 +24,7 @@ module WEACE
             # Return:
             # * _Integer_: The execute's arity
             def getExecuteArity
-              return 6
+              return 3
             end
 
             # Test normal case
@@ -32,11 +32,8 @@ module WEACE
               execTest(
                 'DummyUserID',
                 [
-                  'TicketID',
-                  'BranchName',
-                  'CommitID',
-                  'CommitUser',
-                  'CommitComment'
+                  'MasterTicketID',
+                  'SlaveTicketID'
                 ]
               )
             end

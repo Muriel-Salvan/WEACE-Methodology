@@ -42,7 +42,7 @@ module WEACE
               # Parameters:
               # * *iUserID* (_String_): User ID of the script adding this info
               # * *iComment* (_String_): The Ping comment
-              def checkPing(iUserID, iComment)
+              def checkData(iUserID, iComment)
                 # Nothing to test
               end
 
