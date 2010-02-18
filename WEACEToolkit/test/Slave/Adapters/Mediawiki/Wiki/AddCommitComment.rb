@@ -23,9 +23,8 @@ module WEACE
 
             class AddCommitComment < ::Test::Unit::TestCase
 
+              include WEACE::Test::Slave::Common
               include WEACE::Test::Slave::GenericAdapters::Wiki::AddCommitComment
-              
-              include WEACE::Test::Slave::Adapters::Common
               include WEACE::Test::Slave::Adapters::Mediawiki::Common
 
               # Prepare the plugin's execution

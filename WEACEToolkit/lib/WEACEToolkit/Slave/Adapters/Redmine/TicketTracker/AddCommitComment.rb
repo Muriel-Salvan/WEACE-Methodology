@@ -23,7 +23,6 @@ module WEACE
 
           class AddCommitComment
 
-            include WEACE::Common
             include WEACE::Slave::Adapters::Redmine::TicketTracker_Common
 
             # Execute SQL
@@ -82,12 +81,6 @@ module WEACE
             # Return:
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iTicketID, iBranchName, iCommitID, iCommitUser, iCommitComment)
-              checkVar(:RedmineDir, 'The directory where Redmine is installed')
-              checkVar(:DBHost, 'The name of the MySQL host')
-              checkVar(:DBName, 'The name of the database of Redmine')
-              checkVar(:DBUser, 'The name of the database user')
-              checkVar(:DBPassword, 'The password of the database user')
-
               return executeRedmine(
                 SQL_AddCommitComment.new,
                 [ iUserID, iTicketID, iBranchName, iCommitID, iCommitUser, iCommitComment ]

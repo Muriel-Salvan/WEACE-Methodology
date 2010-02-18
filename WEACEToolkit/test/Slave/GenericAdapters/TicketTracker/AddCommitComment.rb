@@ -31,9 +31,7 @@ module WEACE
             def testNormal
               execTest(
                 'DummyUserID',
-                [
-                  'TicketID', 'BranchName', 'CommitID', 'CommitUser', 'CommitComment'
-                ]
+                [ '123', 'DummyBranchName', 'DummyCommitID', 'DummyCommitUser', 'DummyCommitComment' ]
               )
             end
 

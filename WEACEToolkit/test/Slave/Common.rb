@@ -94,7 +94,7 @@ module WEACE
         :DBPassword => iDBPassword,
         :Calls => lCalls
       }
-      lDummySQL = DummySQLConnection.new(lCalls, $WEACERegression_DummySQLAnswers)
+      lDummySQL = DummySQLConnection.new(lCalls, $Context[:DummySQLAnswers])
       begin
         rError = iSQLExecuteObject.execute(*([lDummySQL] + iSQLMethodParameters))
       rescue Exception
@@ -170,8 +170,6 @@ module WEACE
         # ** *:AddRegressionActions* (_Boolean_): Do we add Actions defined from the regression ? [optional = false]
         # ** *:InstallActions* (<em>list<[String,String,String]></em>): List of Actions to install: [ ProductID, ToolID, ActionID ]. [optional = nil]
         # ** *:ConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ]. [optional = nil]
-        # ** *:CatchMySQL* (_Boolean_): Do we redirect MySQL calls to a local Regression function ? [optional = false]
-        # ** *:DummySQLAnswers* (<em>list<list<list<String>>></em>): The list of rows to return when asked. [optional = nil]
         # * _CodeBlock_: The code called once the server was run: [optional = nil]
         # ** *iError* (_Exception_): The error returned by the server, or nil in case of success
         def executeSlave(iParameters, iOptions = {}, &iCheckCode)
@@ -187,92 +185,65 @@ module WEACE
           end
           lInstallActions = iOptions[:InstallActions]
           lConfigureProducts = iOptions[:ConfigureProducts]
-          lCatchMySQL = iOptions[:CatchMySQL]
-          if (lCatchMySQL == nil)
-            lCatchMySQL = false
-          end
-          lDummySQLAnswers = iOptions[:DummySQLAnswers]
 
           initTestCase do
-
             # Create a new WEACE repository by copying the wanted one
             setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
               @WEACERepositoryDir = iTmpDir
-
               WEACE::Slave::Client.changeClient(
                 @WEACERepositoryDir,
                 lAddRegressionActions,
                 lInstallActions,
                 lConfigureProducts
               ) do
+                # Execute for real now that it has been modified
+                require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
+                lSlaveClient = WEACE::Slave::Client.new
+                # Change instance variables
+                lSlaveClient.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
+                lSlaveClient.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
 
-                # If we catch MySQL, do it now
-                WEACE::Test::Common::changeMethod(
-                  WEACE::Common,
-                  :beginMySQLTransaction,
-                  :beginMySQLTransaction_Regression,
-                  lCatchMySQL) do
-
-                  # If we need to setup dummy answers, do it now
-                  if (lDummySQLAnswers == nil)
-                    $WEACERegression_DummySQLAnswers = []
+                begin
+                  if (debugActivated?)
+                    lError = lSlaveClient.execute(['-d']+iParameters)
                   else
-                    $WEACERegression_DummySQLAnswers = lDummySQLAnswers
+                    lError = lSlaveClient.execute(iParameters)
                   end
-
-                  # Execute for real now that it has been modified
-                  require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
-                  lSlaveClient = WEACE::Slave::Client.new
-                  # Change instance variables
-                  lSlaveClient.instance_variable_set(:@WEACEInstallDir, "#{@WEACERepositoryDir}/Install")
-                  lSlaveClient.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
-
-                  begin
-                    if (debugActivated?)
-                      lError = lSlaveClient.execute(['-d']+iParameters)
-                    else
-                      lError = lSlaveClient.execute(iParameters)
-                    end
-                  rescue Exception
-                    # This way exception is shown on screen for better understanding
-                    assert_equal(nil, $!)
-                  end
-
-                  # Check result
-                  if (lExpectedErrorClass == nil)
-                    if (lError != nil)
-                      logErr "Unexpected error: #{lError.class}: #{lError}"
-                      if (lError.backtrace == nil)
-                        logErr 'No backtrace'
-                      else
-                        logErr lError.backtrace.join("\n")
-                      end
-                    end
-                    assert_equal(nil, lError)
-                  else
-                    if (lError == nil)
-                      logErr 'Unexpected success.'
-                    elsif (!lError.kind_of?(lExpectedErrorClass))
-                      logErr "Unexpected error: #{lError.class}: #{lError}"
-                      if (lError.backtrace == nil)
-                        logErr 'No backtrace'
-                      else
-                        logErr lError.backtrace.join("\n")
-                      end
-                    end
-                    assert(lError.kind_of?(lExpectedErrorClass))
-                  end
-                  # Call additional checks from the test case itself
-                  if (iCheckCode != nil)
-                    iCheckCode.call(lError)
-                  end
-
+                rescue Exception
+                  # This way exception is shown on screen for better understanding
+                  assert_equal(nil, $!)
                 end
 
+                # Check result
+                if (lExpectedErrorClass == nil)
+                  if (lError != nil)
+                    logErr "Unexpected error: #{lError.class}: #{lError}"
+                    if (lError.backtrace == nil)
+                      logErr 'No backtrace'
+                    else
+                      logErr lError.backtrace.join("\n")
+                    end
+                  end
+                  assert_equal(nil, lError)
+                else
+                  if (lError == nil)
+                    logErr 'Unexpected success.'
+                  elsif (!lError.kind_of?(lExpectedErrorClass))
+                    logErr "Unexpected error: #{lError.class}: #{lError}"
+                    if (lError.backtrace == nil)
+                      logErr 'No backtrace'
+                    else
+                      logErr lError.backtrace.join("\n")
+                    end
+                  end
+                  assert(lError.kind_of?(lExpectedErrorClass))
+                end
+                # Call additional checks from the test case itself
+                if (iCheckCode != nil)
+                  iCheckCode.call(lError)
+                end
               end
-
             end
-
           end
         end
 

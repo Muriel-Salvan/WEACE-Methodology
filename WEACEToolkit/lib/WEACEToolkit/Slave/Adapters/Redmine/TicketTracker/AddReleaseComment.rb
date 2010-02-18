@@ -23,7 +23,6 @@ module WEACE
 
           class AddReleaseComment
 
-            include WEACE::Common
             include WEACE::Slave::Adapters::Redmine::TicketTracker_Common
 
             # Execute SQL
@@ -36,6 +35,7 @@ module WEACE
               #
               # Parameters:
               # * *ioSQL* (_Object_): The SQL connection
+              # * *iUserID* (_String_): User ID of the script adding this info
               # * *iTicketID* (_String_): The Ticket ID
               # * *iBranchName* (_String_): Name of the branch receiving the commit
               # * *iReleaseVersion* (_String_): The Release version
@@ -81,12 +81,6 @@ module WEACE
             # Return:
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iTicketID, iBranchName, iReleaseVersion, iReleaseUser, iReleaseComment)
-              checkVar(:RedmineDir, 'The directory where Redmine is installed')
-              checkVar(:DBHost, 'The name of the MySQL host')
-              checkVar(:DBName, 'The name of the database of Redmine')
-              checkVar(:DBUser, 'The name of the database user')
-              checkVar(:DBPassword, 'The password of the database user')
-
               return executeRedmine(
                 SQL_AddReleaseComment.new,
                 [ iUserID, iTicketID, iBranchName, iReleaseVersion, iReleaseUser, iReleaseComment ]

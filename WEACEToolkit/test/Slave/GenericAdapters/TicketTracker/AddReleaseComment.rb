@@ -31,9 +31,7 @@ module WEACE
             def testNormal
               execTest(
                 'DummyUserID',
-                [
-                  'TicketID', 'BranchName', 'ReleaseVersion', 'ReleaseUser', 'ReleaseComment'
-                ]
+                [ '123', 'DummyBranchName', '0.0.1.20100112', 'DummyReleaseUser', 'DummyReleaseComment' ]
               )
             end
 

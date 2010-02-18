@@ -32,8 +32,8 @@ module WEACE
               execTest(
                 'DummyUserID',
                 [
-                  'MasterTicketID',
-                  'SlaveTicketID'
+                  '123',
+                  '456'
                 ]
               )
             end
