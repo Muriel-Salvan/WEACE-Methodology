@@ -42,8 +42,8 @@ module WEACE
               WEACE::Test::Common::changeMethod(
                 WEACE::Common,
                 :beginMySQLTransaction,
-                :beginMySQLTransaction_Regression,
-                true) do
+                :beginMySQLTransaction_Regression
+              ) do
                 yield
               end
             end

@@ -42,8 +42,7 @@ module WEACE
                 WEACE::Test::Common::changeMethod(
                   Kernel,
                   :`,
-                  :backquote_regression,
-                  true
+                  :backquote_regression
                 ) do
                   if ($Context[:WikiContent] == nil)
                     $Context[:OS_ExecAnswers] = [

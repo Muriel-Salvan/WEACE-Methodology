@@ -32,8 +32,7 @@ module WEACE
         WEACE::Test::Common::changeMethod(
           WEACE::Slave::Client,
           :execute,
-          :execute_Regression,
-          true
+          :execute_Regression
         ) do
           yield
         end
@@ -166,32 +165,27 @@ module WEACE
       # * *iClass* (_class_): Class in which we change the method
       # * *iOldMethod* (_Symbol_): Symbol of the method to replace
       # * *iNewMethod* (_Symbol_): Symbol of the replacing method
-      # * *iActive* (_Boolean_): Do we actually perform the change ? If not, nothing is done except calling the code block.
       # * *CodeBlock*: Code called once the method has been changed
-      def self.changeMethod(iClass, iOldMethod, iNewMethod, iActive)
+      def self.changeMethod(iClass, iOldMethod, iNewMethod)
         # Be careful with strange method names (for example :`)
         lBackupMethodName = "#{iOldMethod.to_s.gsub(/\W/,'_')}_Original"
-        if (iActive)
-          iClass.module_eval("
-            alias :#{lBackupMethodName} :#{iOldMethod}
-            alias :#{iOldMethod} :#{iNewMethod}
-            ")
-          begin
-            yield
-          rescue Exception
-            iClass.module_eval("
-              alias :#{iNewMethod} :#{iOldMethod}
-              alias :#{iOldMethod} :#{lBackupMethodName}
-              ")
-            raise
-          end
+        iClass.module_eval("
+          alias :#{lBackupMethodName} :#{iOldMethod}
+          alias :#{iOldMethod} :#{iNewMethod}
+          ")
+        begin
+          yield
+        rescue Exception
           iClass.module_eval("
             alias :#{iNewMethod} :#{iOldMethod}
             alias :#{iOldMethod} :#{lBackupMethodName}
             ")
-        else
-          yield
+          raise
         end
+        iClass.module_eval("
+          alias :#{iNewMethod} :#{iOldMethod}
+          alias :#{iOldMethod} :#{lBackupMethodName}
+          ")
       end
 
       # Change a singleton method into another of a specific class, and ensure changing it back.

@@ -5,6 +5,30 @@
 
 module WEACE
 
+  module Slave
+
+    class Client
+
+      # Execute all the Actions having parameters.
+      #
+      # Parameters:
+      # * *iUserID* (_String_): The User ID
+      # * *iActionsToExecute* (<em>map<ToolID,map<ActionID,list<list<String>>>></em>): Map of Actions to execute per Tool, along with their lists of parameters
+      # Return:
+      # * _ActionExecutionsError_: An error, or nil in case of success
+      def executeActions_Regression(iUserID, iActionsToExecute)
+        $Variables[:SlaveActions] = {
+          :UserID => iUserID,
+          :ActionsToExecute => iActionsToExecute
+        }
+        
+        return nil
+      end
+
+    end
+
+  end
+
   module Test
 
     module Master
@@ -15,30 +39,13 @@ module WEACE
 
           include WEACE::Test::Master::MasterSender
 
-          # Give additional execution parameters to be given to executeSender method
+          # Get a map of variables to instantiate in the plugin.
+          # This is used to simulate the configuration stored in MasterServer.conf.rb
           #
           # Return:
-          # * <em>map<Symbol,Object></em>: The additional parameters
-          def getExecutionParameters
-            return {
-              :DummySlaveClient => true,
-              :ClientAddRegressionActions => true,
-              :ClientInstallActions => [
-                [ 'DummyProduct', 'DummyTool', 'DummyAction' ],
-                [ 'DummyProduct', 'DummyTool', 'DummyActionWithParams' ],
-                [ 'DummyProduct', 'DummyTool2', 'DummyAction2' ]
-              ],
-              :ClientConfigureProducts => [
-                [
-                  'DummyProduct', 'DummyTool',
-                  {}
-                ],
-                [
-                  'DummyProduct', 'DummyTool2',
-                  {}
-                ]
-              ]
-            }
+          # * <em>map<Symbol,Object></em>: The variables to instantiate
+          def getVarsToInstantiate
+            return {}
           end
 
           # Prepare for execution.
@@ -47,7 +54,14 @@ module WEACE
           # Parameters:
           # * *CodeBlock*: The code to call once preparation is done
           def prepareExecution
-            yield
+            # Bypass SlaveClient (executeMarshalled)
+            WEACE::Test::Common::changeMethod(
+              WEACE::Slave::Client,
+              :executeActions,
+              :executeActions_Regression
+            ) do
+              yield
+            end
           end
 
           # Get back the User ID and the Actions once sent.

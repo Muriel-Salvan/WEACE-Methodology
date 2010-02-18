@@ -8,48 +8,6 @@ require 'WEACEToolkit/Master/Server/WEACEMasterServer'
 
 module WEACE
 
-  # Needed to track the WEACE Slave Client behaviour when testing Senders
-  module Slave
-
-    class Client
-
-      # Execute all the Actions having parameters.
-      # This method uses @Actions to get the possible Actions.
-      #
-      # Parameters:
-      # * *iUserID* (_String_): The User ID
-      # Return:
-      # * _ActionExecutionsError_: An error, or nil in case of success
-      def executeActions_Regression(iUserID)
-        # Actions to execute, taken from @Actions
-        # map< String, map< String,   list< list< String > > > >
-        # map< ToolID, map< ActionID, list< Parameters     > > >
-        lActionsToExecute = {}
-        @Actions.each do |iToolID, iToolInfo|
-          # For each adapter adapting iToolID
-          iToolInfo.each do |iActionID, iActionInfo|
-            iProductsList, iAskedParameters = iActionInfo
-            if (!iAskedParameters.empty?)
-              if (lActionsToExecute[iToolID] == nil)
-                lActionsToExecute[iToolID] = {}
-              end
-              lActionsToExecute[iToolID][iActionID] = iAskedParameters
-            end
-          end
-        end
-
-        $Variables[:SlaveActions] = {
-          :UserID => iUserID,
-          :ActionsToExecute => lActionsToExecute
-        }
-
-        return nil
-      end
-
-    end
-
-  end
-
   module Test
 
     module Master

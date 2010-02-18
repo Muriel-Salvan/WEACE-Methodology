@@ -37,10 +37,8 @@ module WEACE
             require "WEACEToolkit/Slave/Client/WEACESlaveClient"
             # Save the Log file location before, and restore it after
             lOldLogFile = getLogFile
-            # Create the list of parameters to give the WEACE Slave Client
-            lParameters = getSlaveClientParamsFromActions(iUserScriptID, iSlaveActions)
             # Call the Slave Client directly
-            rError = WEACE::Slave::Client.new.execute(lParameters)
+            rError = WEACE::Slave::Client.new.executeActions(iUserScriptID, iSlaveActions)
             setLogFile(lOldLogFile)
 
             return rError

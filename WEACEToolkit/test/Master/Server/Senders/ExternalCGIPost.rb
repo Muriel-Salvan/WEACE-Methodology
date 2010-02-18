@@ -63,15 +63,14 @@ module WEACE
 
           end
 
-          # Give additional execution parameters to be given to executeSender method
+          # Get a map of variables to instantiate in the plugin.
+          # This is used to simulate the configuration stored in MasterServer.conf.rb
           #
           # Return:
-          # * <em>map<Symbol,Object></em>: The additional parameters
-          def getExecutionParameters
+          # * <em>map<Symbol,Object></em>: The variables to instantiate
+          def getVarsToInstantiate
             return {
-              :InstantiateVariables => {
-                :ExternalCGIURL => 'http://ExternalURL'
-              }
+              :ExternalCGIURL => 'http://ExternalURL'
             }
           end
 
