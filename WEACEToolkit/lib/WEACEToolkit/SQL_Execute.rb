@@ -56,7 +56,7 @@ module WEACE
             logDebug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path."
             lSuccess = true
           rescue Exception
-            logDebug 'Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path.'
+            logDebug "Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path."
           end
         end
         # Try the C-connector if possible
@@ -89,6 +89,7 @@ module WEACE
               logDebug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
               lSuccess = true
             rescue Exception
+              logDebug "Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
             end
           end
         end
@@ -98,12 +99,12 @@ module WEACE
           begin
             # Connect to the db
             lMySQL = Mysql::new(iMySQLHost, iDBUser, iDBPassword, iDBName)
-            # Create a transaction
           rescue Exception
             rError = $!
           end
           if (rError == nil)
             begin
+              # Create a transaction
               lMySQL.query("start transaction")
               execute(*([lMySQL] + iSQLMethodParameters))
               rError = yield(lMySQL)
