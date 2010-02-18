@@ -35,12 +35,15 @@ module WEACE
         lExtraProcess = true
       end
 
+      logDebug "Trying to create an SQL transaction #{iDBUser}@#{iDBName}@#{iMySQLHost} ..."
       lAlreadyExecuted = false
       # First, try directly
       lSuccess = true
       begin
         require 'mysql'
+        logDebug 'Ruby-mysql accessible natively.'
       rescue Exception
+        logDebug 'Ruby-mysql NOT accessible natively.'
         lSuccess = false
       end
       if (!lSuccess)
@@ -50,8 +53,10 @@ module WEACE
           $LOAD_PATH << lRubyMySQLLibDir
           begin
             require 'mysql'
+            logDebug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path."
             lSuccess = true
           rescue Exception
+            logDebug 'Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path.'
           end
         end
         # Try the C-connector if possible
@@ -81,6 +86,7 @@ module WEACE
           else
             begin
               require 'mysql'
+              logDebug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
               lSuccess = true
             rescue Exception
             end
