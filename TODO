@@ -1,7 +1,7 @@
 * Regression:
 ** Add Tests for MasterServer matching correct Tools depending on the Config and the Actions returned by the Process. Don't forget to test Tools::All.
 ** Create test framework for Slave/Listeners
-** Create tests for configuration files
+** Create tests for configuration files (invalid data inside, missing properties...)
 ** Add checks ensuring that every possible Adapter has a unit test.
 ** Add checks for generic process flow of SlaveAdapters.
 

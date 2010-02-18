@@ -71,13 +71,15 @@ module WEACE
     # * *iDBName* (_String_): The name of the database of Redmine
     # * *iDBUser* (_String_): The name of the database user
     # * *iDBPassword* (_String_): The password of the database user
-    # * _CodeBlock_: The code called once the Transaction is created
-    # ** *ioSQL* (_Object_): The SQL object used to perform queries
-    # ** Return:
-    # ** _Exception_: An error, or nil in case of success
+    # * *iSQLExecuteObject* (_Object_): The object containing the SQL execution
+    # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
+    # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
+    # ** *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
+    # ** *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    # ** *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
     # Return:
     # * _Exception_: An error, or nil in case of success
-    def beginMySQLTransaction_Regression(iMySQLHost, iDBName, iDBUser, iDBPassword)
+    def beginMySQLTransaction_Regression(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLExecuteObject, iSQLMethodParameters, iOptions = {})
       rError = nil
 
       if ($Variables[:MySQLExecs] == nil)
@@ -94,7 +96,7 @@ module WEACE
       }
       lDummySQL = DummySQLConnection.new(lCalls, $WEACERegression_DummySQLAnswers)
       begin
-        rError = yield(lDummySQL)
+        rError = iSQLExecuteObject.execute(*([lDummySQL] + iSQLMethodParameters))
       rescue Exception
         # Do this to track the error.
         lDummySQL.query("rollback: #{$!} (#{$!.backtrace.join("\n")})")

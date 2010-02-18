@@ -19,6 +19,57 @@ module WEACE
 
           include WEACE::Common
         
+          # Execute SQL to log into this Product
+          class SQL_LogProduct < SQL_Execute
+
+            # Log an operation in the adapted Product.
+            # This is the internal method used once the DB connection is active
+            #
+            # Parameters:
+            # * *ioSQL* (_Object_): The SQL connection
+            # * *iUserID* (_String_): User ID initiating the log.
+            # * *iProductName* (_String_): Product name to log
+            # * *iProductID* (_String_): Product ID to log
+            # * *iToolID* (_String_): Tool ID to log
+            # * *iActionID* (_String_): Action ID to log
+            # * *iError* (_Exception_): The error to log, can be nil in case of success
+            # * *iParameters* (<em>list<String></em>): The parameters given to the operation
+            # Return:
+            # * _Exception_: An error, or nil if success
+            def execute(ioSQL, iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
+              # Get the User ID
+              lRedmineUserID = getUserID(ioSQL, 'WEACE_Logger')
+              # Get the Ticket ID
+              lWEACELogTicketID = getTicketID(ioSQL, 'WEACE_Toolkit_Log')
+              # Insert a comment on the WEACE_Toolkit_Log ticket
+              lNow = DateTime.now
+              lStrError = nil
+              if (iError == nil)
+                lStrError = 'Success'
+              else
+                lStrError = "Error: #{iError.gsub(/'/,'\\\\\'')}"
+              end
+              ioSQL.query(
+                "insert
+                   into journals
+                   ( journalized_id,
+                     journalized_type,
+                     user_id,
+                     notes,
+                     created_on )
+                   values (
+                     #{lWEACELogTicketID},
+                     'Issue',
+                     #{lRedmineUserID},
+                     '[#{lNow.strftime('%Y-%m-%d %H:%M:%S')}] - #{iUserID}@#{iProductName} - #{iProductID}/#{iToolID}/#{iActionID} - #{iParameters.join(' ').gsub(/'/,'\\\\\'')} - #{lStrError}',
+                     '#{lNow.strftime('%Y-%m-%d %H:%M:%S')}'
+                   )")
+
+              return nil
+            end
+
+          end
+
           # Create a new Ruby session to execute the executeSQL method in a new environment
           #
           # Parameters:
@@ -164,57 +215,11 @@ module WEACE
               @ProductConfig[:DBName],
               @ProductConfig[:DBUser],
               @ProductConfig[:DBPassword],
-              :logProduct_SQL,
+              SQL_LogProduct.new,
               [ iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters ],
               :RubyMySQLLibDir => @ProductConfig[:RubyMySQLLibDir],
               :MySQLLibDir => @ProductConfig[:MySQLLibDir]
             )
-          end
-
-          # Log an operation in the adapted Product.
-          # This is the internal method used once the DB connection is active
-          #
-          # Parameters:
-          # * *ioSQL* (_Object_): The SQL connection
-          # * *iUserID* (_String_): User ID initiating the log.
-          # * *iProductName* (_String_): Product name to log
-          # * *iProductID* (_String_): Product ID to log
-          # * *iToolID* (_String_): Tool ID to log
-          # * *iActionID* (_String_): Action ID to log
-          # * *iError* (_Exception_): The error to log, can be nil in case of success
-          # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-          # Return:
-          # * _Exception_: An error, or nil if success
-          def logProduct_SQL(ioSQL, iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
-            # Get the User ID
-            lRedmineUserID = getUserID(ioSQL, 'WEACE_Logger')
-            # Get the Ticket ID
-            lWEACELogTicketID = getTicketID(ioSQL, 'WEACE_Toolkit_Log')
-            # Insert a comment on the WEACE_Toolkit_Log ticket
-            lNow = DateTime.now
-            lStrError = nil
-            if (iError == nil)
-              lStrError = 'Success'
-            else
-              lStrError = "Error: #{iError.gsub(/'/,'\\\\\'')}"
-            end
-            ioSQL.query(
-              "insert
-                 into journals
-                 ( journalized_id,
-                   journalized_type,
-                   user_id,
-                   notes,
-                   created_on )
-                 values (
-                   #{lWEACELogTicketID},
-                   'Issue',
-                   #{lRedmineUserID},
-                   '[#{lNow.strftime('%Y-%m-%d %H:%M:%S')}] - #{iUserID}@#{iProductName} - #{iProductID}/#{iToolID}/#{iActionID} - #{iParameters.join(' ').gsub(/'/,'\\\\\'')} - #{lStrError}',
-                   '#{lNow.strftime('%Y-%m-%d %H:%M:%S')}'
-                 )")
-            
-            return nil
           end
 
         end
