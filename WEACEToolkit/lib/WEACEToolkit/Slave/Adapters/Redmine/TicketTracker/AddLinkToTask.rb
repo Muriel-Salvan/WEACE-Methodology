@@ -8,7 +8,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/Slave/Adapters/Redmine/Common'
+require 'WEACEToolkit/Slave/Adapters/Redmine/TicketTracker_Common'
 require 'date'
 
 module WEACE
@@ -24,7 +24,49 @@ module WEACE
           class AddLinkToTask
 
             include WEACE::Common
-            include WEACE::Slave::Adapters::Redmine::Common
+            include WEACE::Slave::Adapters::Redmine::TicketTracker_Common
+
+            # Execute SQL
+            class SQL_AddLinkToTask < SQL_Execute
+
+              include WEACE::Slave::Adapters::Redmine::Common::MiscUtils
+
+              # Execute SQL.
+              # This is the internal method used once the DB connection is active.
+              #
+              # Parameters:
+              # * *ioSQL* (_Object_): The SQL connection
+              # * *iUserID* (_String_): User ID of the script adding this info
+              # * *iTicketID* (_String_): The Ticket ID
+              # * *iTaskID* (_String_): The Task ID
+              # * *iTaskName* (_String_): The Task name to add into the comment
+              # Return:
+              # * _Exception_: An error, or nil if success
+              def execute(ioSQL, iUserID, iTicketID, iTaskID, iTaskName)
+                # Get the User ID
+                lRedmineUserID = getUserID(ioSQL, iUserID)
+                # Insert a comment for the Ticket
+                lNow = DateTime.now
+                ioSQL.query(
+                  "insert
+                     into journals
+                     ( journalized_id,
+                       journalized_type,
+                       user_id,
+                       notes,
+                       created_on )
+                     values (
+                       #{iTicketID},
+                       'Issue',
+                       #{lRedmineUserID},
+                       '[#{lNow.strftime('%Y-%m-%d %H:%M:%S')}] - This Ticket has been linked to Task \"#{iTaskName.gsub(/'/,'\\\\\'')}\" (ID: #{iTaskID})',
+                       '#{lNow.strftime('%Y-%m-%d %H:%M:%S')}'
+                     )")
+
+                return nil
+              end
+
+            end
 
             # Add the task reference to the corresponding ticket
             #
@@ -41,39 +83,11 @@ module WEACE
               checkVar(:DBName, 'The name of the database of Redmine')
               checkVar(:DBUser, 'The name of the database user')
               checkVar(:DBPassword, 'The password of the database user')
-#              execMySQLOtherSession(@RedmineDir, @DBHost, @DBName, @DBUser, @DBPassword, iUserID, iTicketID, iTaskID, iTaskName)
-              execMySQL(@DBHost, @DBName, @DBUser, @DBPassword, iUserID, iTicketID, iTaskID, iTaskName)
-              return nil
-            end
 
-            # Execute the corresponding SQL statements
-            #
-            # Parameters:
-            # * *iSQL* (_Object_): The SQL connection
-            # * *iUserID* (_String_): User ID of the script adding this info
-            # * *iTicketID* (_String_): The Ticket ID
-            # * *iTaskID* (_String_): The Task ID
-            # * *iTaskName* (_String_): The Task name to add into the comment
-            def executeSQL(iSQL, iUserID, iTicketID, iTaskID, iTaskName)
-              # Get the User ID
-              lRedmineUserID = getUserID(iSQL, iUserID)
-              # Insert a comment for the Ticket
-              lNow = DateTime.now
-              iSQL.query(
-                "insert
-                   into journals
-                   ( journalized_id,
-                     journalized_type,
-                     user_id,
-                     notes,
-                     created_on )
-                   values (
-                     #{iTicketID},
-                     'Issue',
-                     #{lRedmineUserID},
-                     '[#{lNow.strftime('%Y-%m-%d %H:%M:%S')}] - This Ticket has been linked to Task \"#{iTaskName.gsub(/'/,'\\\\\'')}\" (ID: #{iTaskID})',
-                     '#{lNow.strftime('%Y-%m-%d %H:%M:%S')}'
-                   )")
+              return executeRedmine(
+                SQL_AddLinkToTask.new,
+                [ iUserID, iTicketID, iTaskID, iTaskName ]
+              )
             end
 
           end

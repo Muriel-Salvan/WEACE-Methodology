@@ -8,7 +8,7 @@
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
-require 'WEACEToolkit/Slave/Adapters/Redmine/Common'
+require 'WEACEToolkit/Slave/Adapters/Redmine/TicketTracker_Common'
 
 module WEACE
 
@@ -22,7 +22,7 @@ module WEACE
 
           class Ping
 
-            include WEACE::Slave::Adapters::Redmine::Common
+            include WEACE::Slave::Adapters::Redmine::TicketTracker_Common
             
             # Ping the Product
             #

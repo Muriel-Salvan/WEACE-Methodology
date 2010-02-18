@@ -442,21 +442,6 @@ module WEACE
       return iSQLExecuteObject.executeTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethodParameters, iOptions)
     end
 
-    # Execute some Ruby code in the MySQL environment.
-    # The code executed has to be in a method named executeSQL that takes the SQL connection as a first parameter.
-    #
-    # Parameters:
-    # * *iMySQLHost* (_String_): The name of the MySQL host
-    # * *iDBName* (_String_): The name of the database of Redmine
-    # * *iDBUser* (_String_): The name of the database user
-    # * *iDBPassword* (_String_): The password of the database user
-    # * *Parameters* (<em>list<String></em>): Additional parameters
-    def execMySQL(iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-      beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword) do |ioSQL|
-        executeSQL(ioSQL, *iParameters)
-      end
-    end
-    
     # Modify a file in a safe way (exception protected, keep copy of original...).
     # It inserts (just before the end marker) or replaces some of the content of this file, between 2 markers (1 begin and 1 end markers).
     #

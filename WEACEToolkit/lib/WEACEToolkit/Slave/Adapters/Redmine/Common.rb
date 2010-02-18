@@ -122,107 +122,21 @@ module WEACE
 
           end
         
-          # Execute SQL to log into this Product
-          class SQL_LogProduct < SQL_Execute
-
-            include MiscUtils
-
-            # Log an operation in the adapted Product.
-            # This is the internal method used once the DB connection is active
-            #
-            # Parameters:
-            # * *ioSQL* (_Object_): The SQL connection
-            # * *iUserID* (_String_): User ID initiating the log.
-            # * *iProductName* (_String_): Product name to log
-            # * *iProductID* (_String_): Product ID to log
-            # * *iToolID* (_String_): Tool ID to log
-            # * *iActionID* (_String_): Action ID to log
-            # * *iError* (_Exception_): The error to log, can be nil in case of success
-            # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-            # Return:
-            # * _Exception_: An error, or nil if success
-            def execute(ioSQL, iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
-              # Get the User ID
-              lRedmineUserID = getUserID(ioSQL, 'WEACE_Logger')
-              # Get the Ticket ID
-              lWEACELogTicketID = getTicketID(ioSQL, 'WEACE_Toolkit_Log')
-              # Insert a comment on the WEACE_Toolkit_Log ticket
-              lNow = DateTime.now
-              lStrError = nil
-              if (iError == nil)
-                lStrError = 'Success'
-              else
-                lStrError = "Error: #{iError.gsub(/'/,'\\\\\'')}"
-              end
-              ioSQL.query(
-                "insert
-                   into journals
-                   ( journalized_id,
-                     journalized_type,
-                     user_id,
-                     notes,
-                     created_on )
-                   values (
-                     #{lWEACELogTicketID},
-                     'Issue',
-                     #{lRedmineUserID},
-                     '[#{lNow.strftime('%Y-%m-%d %H:%M:%S')}] - #{iUserID}@#{iProductName} - #{iProductID}/#{iToolID}/#{iActionID} - #{iParameters.join(' ').gsub(/'/,'\\\\\'')} - #{lStrError}',
-                     '#{lNow.strftime('%Y-%m-%d %H:%M:%S')}'
-                   )")
-
-              return nil
-            end
-
-          end
-
-          # Create a new Ruby session to execute the executeSQL method in a new environment
-          #
-          # Parameters:
-          # * *iRedmineDir* (_String_): The directory where Redmine is installed
-          # * *iMySQLHost* (_String_): The name of the MySQL host
-          # * *iDBName* (_String_): The name of the database of Redmine
-          # * *iDBUser* (_String_): The name of the database user
-          # * *iDBPassword* (_String_): The password of the database user
-          # * *Parameters* (<em>list<String></em>): Additional parameters
-          def execMySQLOtherSession(iRedmineDir, iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-            execCmdOtherSession(". #{iRedmineDir}/DBEnv.sh", self, 'execMySQL', iMySQLHost, iDBName, iDBUser, iDBPassword, *iParameters)
-          end
-
           # Connect to Redmine's database
           #
           # Parameters:
-          # * *CodeBlock*: The code to be called once connected
-          # ** *ioSQL* (_Object_): The SQL connection object
-          # ** Return:
-          # ** _Exception_: An error, or nil in case of success
+          # * *iSQLExecuteObject* (_Object_): The object containing the SQL execution
+          # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
           # Return:
           # * _Exception_: An error, or nil in case of success
-          def connectRedmine
-            return beginMySQLTransaction(@ProductConfig[:DBHost], @ProductConfig[:DBName], @ProductConfig[:DBUser], @ProductConfig[:DBPassword]) do |ioSQL|
-              next yield(ioSQL)
-            end
-          end
-
-          # Log an operation in the adapted Product
-          #
-          # Parameters:
-          # * *iUserID* (_String_): User ID initiating the log.
-          # * *iProductName* (_String_): Product name to log
-          # * *iProductID* (_String_): Product ID to log
-          # * *iToolID* (_String_): Tool ID to log
-          # * *iActionID* (_String_): Action ID to log
-          # * *iError* (_Exception_): The error to log, can be nil in case of success
-          # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-          # Return:
-          # * _Exception_: An error, or nil if success
-          def logProduct(iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
+          def executeRedmine(iSQLExecuteObject, iSQLMethodParameters)
             return beginMySQLTransaction(
               @ProductConfig[:DBHost],
               @ProductConfig[:DBName],
               @ProductConfig[:DBUser],
               @ProductConfig[:DBPassword],
-              SQL_LogProduct.new,
-              [ iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters ],
+              iSQLExecuteObject,
+              iSQLMethodParameters,
               :RubyMySQLLibDir => @ProductConfig[:RubyMySQLLibDir],
               :MySQLLibDir => @ProductConfig[:MySQLLibDir]
             )
