@@ -16,7 +16,7 @@ require 'rUtilAnts/Platform'
 RUtilAnts::Platform::initializePlatform
 
 require 'WEACEToolkit/Common'
-require 'WEACEToolkit/Install/WEACE_InstallCommon'
+require 'WEACEToolkit/Install/Common'
 
 module WEACEInstall
 

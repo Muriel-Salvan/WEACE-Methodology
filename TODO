@@ -12,8 +12,6 @@
 ** Big code review to remove useless functions
 ** When WEACE Slave Client does not execute Actions due to uninstalled or unconfigured Adapters, we have to know it.
 ** Check if DBEnv.sh can be removed.
-** Check if CmdOtherSession framework can be removed.
-** Adapt ShowWEACE{Master|Slave}Info.rb so they display information correctly.
 ** Implement uninstall (generic) function on WEACEInstall.rb.
 ** Replace "#!/usr/bin/env ruby" files with platform independent ones.
 ** Replace .sh creation with platform independent one.

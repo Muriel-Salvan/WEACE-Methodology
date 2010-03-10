@@ -126,7 +126,7 @@ $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
     # Raise an exception if they are not all affected.
     #
     # Parameters:
-    # * *iVariablesSet* (<em>map<Symbol,[OptionsParser,String]></em>): The set of variables, along with their options
+    # * *iVariablesSet* (<em>map<Symbol,[OptionParser,String]></em>): The set of variables, along with their options
     # Return:
     # * _Exception_: An error, or nil in case of success
     def checkMandatoryVariables(iVariablesSet)

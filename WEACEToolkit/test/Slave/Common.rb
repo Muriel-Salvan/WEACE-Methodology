@@ -152,9 +152,12 @@ module WEACE
               else
                 assert(true)
               end
+            elsif (iCallMatchData.kind_of?(String))
+              # Exact matching test with replacing vars
+              assert_equal(replaceVars(iCallMatchData), iCallData)
             else
               # Exact matching test
-              assert_equal(replaceVars(iCallMatchData), iCallData)
+              assert_equal(iCallMatchData, iCallData)
             end
             lIdxCall += 1
           end

@@ -13,7 +13,7 @@ module WEACE
 
         module Adapters
 
-          class Redmine
+          class Redmine < ::Test::Unit::TestCase
 
             class TicketTracker < ::Test::Unit::TestCase
 

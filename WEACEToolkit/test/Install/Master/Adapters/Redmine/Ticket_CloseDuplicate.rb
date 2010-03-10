@@ -17,7 +17,7 @@ module WEACE
 
         module Adapters
 
-          class Redmine
+          class Redmine < ::Test::Unit::TestCase
 
             class Ticket_CloseDuplicate < ::Test::Unit::TestCase
 

@@ -99,6 +99,8 @@ module WEACE
           require 'rUtilAnts/Logging'
           RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         end
+        # Protection to initialize log file only once
+        @AlreadyInitialized = false
         # Read the directories locations
         setupWEACEDirs
         # Parse for plugins

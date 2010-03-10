@@ -13,7 +13,7 @@ module WEACE
 
         module Adapters
 
-          class Mediawiki
+          class Mediawiki < ::Test::Unit::TestCase
 
             class Wiki < ::Test::Unit::TestCase
 
