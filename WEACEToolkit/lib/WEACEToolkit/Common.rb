@@ -86,7 +86,7 @@ module WEACE
     def parseWEACEPluginsFromDir(iCategoryName, iDir, iBaseClassName)
       # Get plugins from there
       @PluginsManager.parsePluginsFromDir(iCategoryName, iDir, iBaseClassName)
-      # Create the corresponding OptionsParser object, and complete the current description with it
+      # Create the corresponding OptionParser object, and complete the current description with it
       @PluginsManager.getPluginsDescriptions(iCategoryName).each do |iScriptID, ioDescription|
         initializePluginDescription(ioDescription)
       end

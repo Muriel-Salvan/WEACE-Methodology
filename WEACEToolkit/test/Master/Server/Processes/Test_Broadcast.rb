@@ -29,7 +29,7 @@ module WEACE
               assert_equal(
                 {
                   Tools::All => {
-                    Actions::Test_Ping => [
+                    Actions::All_Ping => [
                       [ 'DummyComment' ]
                     ]
                   }

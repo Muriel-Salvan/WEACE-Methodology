@@ -29,14 +29,13 @@ module WEACE
             #
             # Parameters:
             # * *iUserID* (_String_): User ID of the script adding this info
-            # * *iTicketID* (_String_): The Ticket ID
             # * *iBranchName* (_String_): Name of the branch receiving the commit
             # * *iCommitID* (_String_): The commit ID
             # * *iCommitUser* (_String_): The commit user
             # * *iCommitComment* (_String_): The commit comment
             # Return:
             # * _Exception_: An error, or nil in case of success
-            def execute(iUserID, iTicketID, iBranchName, iCommitID, iCommitUser, iCommitComment)
+            def execute(iUserID, iBranchName, iCommitID, iCommitUser, iCommitComment)
               return initMediawiki(iUserID) do
                 rSubError = nil
 

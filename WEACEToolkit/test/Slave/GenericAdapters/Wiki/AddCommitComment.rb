@@ -24,7 +24,7 @@ module WEACE
             # Return:
             # * _Integer_: The execute's arity
             def getExecuteArity
-              return 6
+              return 5
             end
 
             # Test normal case
@@ -32,7 +32,6 @@ module WEACE
               execTest(
                 'DummyUserID',
                 [
-                  'TicketID',
                   'BranchName',
                   'CommitID',
                   'CommitUser',

@@ -11,13 +11,17 @@ module WEACE
 
   # Actions enumeration
   module Actions
-    # For the Tester:
-    Test_Ping = 'Ping'
+    # For All:
+    All_Ping = 'Ping'
     # For the Tickets Manager:
+    Ticket_AddCommitComment = 'AddCommitComment'
     Ticket_AddLinkToTask = 'AddLinkToTask'
     Ticket_RejectDuplicate = 'RejectDuplicate'
     # For the Project Manager:
     Task_AddLinkToTicket = 'AddLinkToTicket'
+    Task_AddCommitComment = 'AddCommitComment'
+    # For the Wiki:
+    Wiki_AddCommitComment = 'AddCommitComment'
   end
 
 end
