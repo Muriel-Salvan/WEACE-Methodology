@@ -20,6 +20,38 @@ module WEACE
 
           include WEACE::Common
 
+          # Error thrown when the Files file is missing
+          class MissingFilesFileError < RuntimeError
+          end
+
+          # Error thrown when the Tasks file is missing
+          class MissingTasksFileError < RuntimeError
+          end
+
+          # Error thrown when the Tickets file is missing
+          class MissingTicketsFileError < RuntimeError
+          end
+
+          # Error thrown when the Local Repository is missing
+          class MissingLocalRepositoryError < RuntimeError
+          end
+
+          # Error thrown when update has a conflict
+          class UpdateConflictError < RuntimeError
+          end
+
+          # Error thrown when commit has a conflict
+          class CommitConflictError < RuntimeError
+          end
+
+          # Error thrown when commit has an invalid output
+          class CommitInvalidError < RuntimeError
+          end
+
+          # Error thrown when regression fails
+          class RegressionError < RuntimeError
+          end
+
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
           # Parameters:
@@ -37,7 +69,8 @@ module WEACE
             checkVar(:TasksFileName, 'Name of the file containing Tasks ID')
             checkVar(:TicketsFileName, 'Name of the file containing Tickets ID')
             checkVar(:LocalRepository, 'Path to the local repository containing files to commit')
-            if (@FilesFileName != nil)
+            if ((@FilesFileName != nil) and
+                (@RegressionCmd != nil))
               checkVar(:SVNCOCmd, 'Command line parameters to give "svn co"')
             end
             # Read files first. Don't try anything if they fail.
@@ -46,7 +79,7 @@ module WEACE
               # Lists of files, Tasks and Tickets have been retrieved
               rError = updateAndCheckConflicts
               if (rError == nil)
-                if (!@IgnoreRegression)
+                if (@RegressionCmd != nil)
                   rError = testCommitAgainstRegression
                 end
                 if (rError == nil)
@@ -122,16 +155,15 @@ module WEACE
               '<LocalRepository>: Path to the local SVN checkout repository. This is where we will be fetching files to commit.') do |iArg|
               @LocalRepository = iArg
             end
-            rOptions.on('-s', '--svnco', String,
+            rOptions.on('-s', '--svnco <SVNCheckOutCmd>', String,
               '<SVNCheckOutCmd>: The command line options to give "svn co" command to checkout the project\'s repository.',
-              'Mandatory only if specific files list is given using --filesfile parameter.') do |iArg|
+              'Used only if specific files list is given using --filesfile parameter and --regressioncmd has been specified.') do |iArg|
               @SVNCOCmd = iArg
             end
             rOptions.on('-r', '--regressioncmd <RegressionCmd>', String,
               '<RegressionCmd>: The command to launch from the repository root to test for the regression. Return code will tell about the regression validation (0=success).') do |iArg|
               @RegressionCmd = iArg
             end
-
 
             return rOptions
           end
@@ -156,7 +188,7 @@ module WEACE
                     end
                   end
                 else
-                  rError = RuntimeError.new("Missing Files file: #{@FilesFileName}")
+                  rError = MissingFilesFileError.new("Missing Files file: #{@FilesFileName}")
                 end
               end
               if (rError == nil)
@@ -186,14 +218,14 @@ module WEACE
                       end
                     end
                   else
-                    rError = RuntimeError.new("Missing Tickets file: #{@TicketsFileName}")
+                    rError = MissingTicketsFileError.new("Missing Tickets file: #{@TicketsFileName}")
                   end
                 else
-                  rError = RuntimeError.new("Missing Tasks file: #{@TasksFileName}")
+                  rError = MissingTasksFileError.new("Missing Tasks file: #{@TasksFileName}")
                 end
               end
             else
-              rError = RuntimeError.new("Missing local repository: #{@LocalRepository}")
+              rError = MissingLocalRepositoryError.new("Missing local repository: #{@LocalRepository}")
             end
 
             return rError
@@ -219,7 +251,7 @@ module WEACE
             end
             # Sum up conflicts
             if (!lConflicts.empty?)
-              rError = RuntimeError.new("The following files are in conflict: #{lConflicts.join(', ')}. Please resolve the conflict by updating before committing.")
+              rError = UpdateConflictError.new("The following files are in conflict: #{lConflicts.join(', ')}. Please resolve the conflict by updating before committing.")
             end
 
             return rError
@@ -234,7 +266,7 @@ module WEACE
             rError = nil
 
             # If we commit all files, no need to checkout in a different repository
-            if (@LstFiles.empty?)
+            if (@LstFiles == nil)
               rError = executeRegression(@LocalRepository)
             else
               # Check out the project in a temporary repository
@@ -279,10 +311,10 @@ module WEACE
             rError = nil
 
             changeDir(iRepositoryDir) do
-              `#{@RegressionCmd}`
+              lOutput = `#{@RegressionCmd}`
               lReturnCode = $?.exitstatus
               if (lReturnCode != 0)
-                rError = RuntimeError.new("Regression failed with error #{lReturnCode}.")
+                rError = RegressionError.new("Regression failed with error #{lReturnCode}. Output: #{lOutput}")
               end
             end
 
@@ -303,10 +335,22 @@ module WEACE
               lStrPassword = "--password #{@CommitPassword}"
             end
             changeDir(@LocalRepository) do
-              `svn ci --message "#{@Comment}" --username #{@CommitUser} #{lStrPassword} #{@StrFiles}`
+              lOutput = `svn ci --message "#{@Comment}" --username #{@CommitUser} #{lStrPassword} #{@StrFiles}`.split("\n")
               lReturnCode = $?.exitstatus
-              if (lReturnCode != 0)
-                rError = RuntimeError.new("SVN returned error #{lReturnCode} upon commit.")
+              if (lReturnCode == 0)
+                # Get back the revision number from the output
+                lOutput.each do |iLine|
+                  lMatch = iLine.match(/^Committed revision (.*)\.$/)
+                  if (lMatch != nil)
+                    rCommitID = lMatch[1].to_i
+                  end
+                end
+                if ((rCommitID == nil) or
+                    (rCommitID == 0))
+                  rError = CommitInvalidError.new("Failed to retrieve SVN commit revision. Here is the output: #{lOutput}")
+                end
+              else
+                rError = CommitConflictError.new("SVN returned error #{lReturnCode} upon commit.")
               end
             end
 

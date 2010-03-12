@@ -161,8 +161,26 @@ module WEACE
               end
               # Check
               if (lExpectedErrorClass == nil)
+                if (lError != nil)
+                  logErr "Unexpected error: #{lError.class}: #{lError}"
+                  if (lError.backtrace == nil)
+                    logErr 'No backtrace'
+                  else
+                    logErr lError.backtrace.join("\n")
+                  end
+                end
                 assert_equal(nil, lError)
               else
+                if (lError == nil)
+                  logErr 'Unexpected success.'
+                elsif (!lError.kind_of?(lExpectedErrorClass))
+                  logErr "Unexpected error: #{lError.class} (expecting #{lExpectedErrorClass}): #{lError}"
+                  if (lError.backtrace == nil)
+                    logErr 'No backtrace'
+                  else
+                    logErr lError.backtrace.join("\n")
+                  end
+                end
                 assert(lError.kind_of?(lExpectedErrorClass))
               end
               # Additional checks if needed

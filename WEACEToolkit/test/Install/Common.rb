@@ -411,7 +411,7 @@ module WEACE
             if (lInstallerError == nil)
               logErr 'Unexpected success.'
             elsif (!lInstallerError.kind_of?(lExpectedErrorClass))
-              logErr "Unexpected error: #{lInstallerError.class}: #{lInstallerError}"
+              logErr "Unexpected error: #{lInstallerError.class} (expecting #{lExpectedErrorClass}): #{lInstallerError}"
               if (lInstallerError.backtrace == nil)
                 logErr 'No backtrace'
               else

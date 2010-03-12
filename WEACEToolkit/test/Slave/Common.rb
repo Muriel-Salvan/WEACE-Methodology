@@ -122,47 +122,6 @@ module WEACE
 
         include WEACE::Test::Common
 
-        # Check that a given matching pattern of calls match effectively a given list of calls
-        # If the matching pattern is a Regexp, that the Call is matched using this Regexp. Otherwise an equality test is made.
-        # It raises assert exceptions in cases of failures
-        #
-        # Parameters:
-        # * *iCallsMatch* (<em>list<[String,Object]></em>): The calls matching patterns
-        # * *iCalls* (<em>list<[String,Object]></em>): The calls to test against the patterns
-        def checkCallsMatch(iCallsMatch, iCalls)
-          if (iCallsMatch.size != iCalls.size)
-            logErr "Mismatch Call data:\nExpected #{iCallsMatch.size} lines:\n#{iCallsMatch.inspect}\nReceived #{iCalls.size} lines:\n#{iCalls.inspect}"
-          end
-          assert_equal(iCallsMatch.size, iCalls.size)
-          lIdxCall = 0
-          iCalls.each do |iCallInfo|
-            iCallType, iCallData = iCallInfo
-            iCallMatchType, iCallMatchData = iCallsMatch[lIdxCall]
-            # First, types must match exactly
-            assert_equal(iCallMatchType, iCallType)
-            # Then we differentiate the Regexp case
-            if (iCallMatchData.kind_of?(Regexp))
-              # The data should be a String
-              assert(iCallData.kind_of?(String))
-              # Match using the RegExp
-              lMatchData = iCallData.match(iCallMatchData)
-              if (lMatchData == nil)
-                logErr "Mismatch Call data:\nExpected:\n#{iCallMatchData}\nReceived:\n#{iCallData}"
-                assert(false)
-              else
-                assert(true)
-              end
-            elsif (iCallMatchData.kind_of?(String))
-              # Exact matching test with replacing vars
-              assert_equal(replaceVars(iCallMatchData), iCallData)
-            else
-              # Exact matching test
-              assert_equal(iCallMatchData, iCallData)
-            end
-            lIdxCall += 1
-          end
-        end
-
         # Execute WEACE Slave Client
         #
         # Parameters:

@@ -5,36 +5,6 @@
 
 # Methods used in Mediawiki testing
 
-module Kernel
-
-  # Execute a command on the OS.
-  #
-  # Parameters:
-  # * *iCommand* (_String_): The command to execute
-  # Return:
-  # * _String_: The result
-  def backquote_regression(iCommand)
-    rResult = ''
-
-    # Record the query
-    if ($Variables[:OS_Exec] == nil)
-      $Variables[:OS_Exec] = []
-    end
-    $Variables[:OS_Exec] << [ 'query', iCommand ]
-
-    # Send an automated answer
-    if ($Context[:OS_ExecAnswers].empty?)
-      $Variables[:OS_Exec] << [ 'error', "ERROR: Execution of command \"#{iCommand}\" is not prepared by WEACE Regression." ]
-    else
-      rResult = $Context[:OS_ExecAnswers][0]
-      $Context[:OS_ExecAnswers].delete_at(0)
-    end
-
-    return rResult
-  end
-
-end
-
 module WEACE
 
   module Test

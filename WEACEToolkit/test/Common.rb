@@ -7,6 +7,40 @@ require 'tmpdir'
 require 'fileutils'
 require 'bin/WEACEInstall'
 
+module Kernel
+
+  # Execute a command on the OS.
+  #
+  # Parameters:
+  # * *iCommand* (_String_): The command to execute
+  # Return:
+  # * _String_: The result
+  def backquote_regression(iCommand)
+    rResult = ''
+
+    # Record the query
+    if ($Variables[:OS_Exec] == nil)
+      $Variables[:OS_Exec] = []
+    end
+    $Variables[:OS_Exec] << [ 'query', iCommand ]
+
+    # Send an automated answer
+    if ($Context[:OS_ExecAnswers].empty?)
+      $Variables[:OS_Exec] << [ 'error', "ERROR: Execution of command \"#{iCommand}\" is not prepared by WEACE Regression." ]
+      # Set exit status by calling legacy :` method
+      __Original('exit 1')
+    else
+      lReturnCode, rResult = $Context[:OS_ExecAnswers][0]
+      $Context[:OS_ExecAnswers].delete_at(0)
+      # Set exit status by calling legacy :` method
+      __Original("exit #{lReturnCode}")
+    end
+
+    return rResult
+  end
+
+end
+
 module WEACE
 
   # Needed to change the way the WEACE Slave Client behaves
@@ -158,6 +192,47 @@ module WEACE
   module Test
 
     module Common
+
+      # Check that a given matching pattern of calls match effectively a given list of calls
+      # If the matching pattern is a Regexp, that the Call is matched using this Regexp. Otherwise an equality test is made.
+      # It raises assert exceptions in cases of failures
+      #
+      # Parameters:
+      # * *iCallsMatch* (<em>list<[String,Object]></em>): The calls matching patterns
+      # * *iCalls* (<em>list<[String,Object]></em>): The calls to test against the patterns
+      def checkCallsMatch(iCallsMatch, iCalls)
+        if (iCallsMatch.size != iCalls.size)
+          logErr "Mismatch Call data:\nExpected #{iCallsMatch.size} lines:\n#{iCallsMatch.inspect}\nReceived #{iCalls.size} lines:\n#{iCalls.inspect}"
+        end
+        assert_equal(iCallsMatch.size, iCalls.size)
+        lIdxCall = 0
+        iCalls.each do |iCallInfo|
+          iCallType, iCallData = iCallInfo
+          iCallMatchType, iCallMatchData = iCallsMatch[lIdxCall]
+          # First, types must match exactly
+          assert_equal(iCallMatchType, iCallType)
+          # Then we differentiate the Regexp case
+          if (iCallMatchData.kind_of?(Regexp))
+            # The data should be a String
+            assert(iCallData.kind_of?(String))
+            # Match using the RegExp
+            lMatchData = iCallData.match(iCallMatchData)
+            if (lMatchData == nil)
+              logErr "Mismatch Call data:\nExpected:\n#{iCallMatchData}\nReceived:\n#{iCallData}"
+              assert(false)
+            else
+              assert(true)
+            end
+          elsif (iCallMatchData.kind_of?(String))
+            # Exact matching test with replacing vars
+            assert_equal(replaceVars(iCallMatchData), iCallData)
+          else
+            # Exact matching test
+            assert_equal(iCallMatchData, iCallData)
+          end
+          lIdxCall += 1
+        end
+      end
 
       # Change a method into another of a specific class, and ensure changing it back.
       #

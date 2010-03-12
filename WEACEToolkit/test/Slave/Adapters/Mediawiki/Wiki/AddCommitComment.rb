@@ -45,13 +45,13 @@ module WEACE
                 ) do
                   if ($Context[:WikiContent] == nil)
                     $Context[:OS_ExecAnswers] = [
-                      '',
-                      'Saving... done'
+                      [ 0, '' ],
+                      [ 0, 'Saving... done' ]
                     ]
                   else
                     $Context[:OS_ExecAnswers] = [
-                      $Context[:WikiContent],
-                      'Saving... done'
+                      [ 0, $Context[:WikiContent] ],
+                      [ 0, 'Saving... done' ]
                     ]
                   end
                   # Set the new content to match if it wasn't already set by a test case.
