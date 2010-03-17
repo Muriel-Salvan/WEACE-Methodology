@@ -4,6 +4,7 @@
 ** Create tests for configuration files (invalid data inside, missing properties...)
 ** Add checks ensuring that every possible Adapter has a unit test.
 ** Add checks for generic process flow of SlaveAdapters.
+** Test process flow of MasterSenders using a DummyMasterSender.
 
 * Development:
 ** Implement in-code TODOs

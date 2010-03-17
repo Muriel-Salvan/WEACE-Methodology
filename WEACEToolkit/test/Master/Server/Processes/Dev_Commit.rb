@@ -56,6 +56,35 @@ module WEACE
           
           include WEACE::Test::Master::Common
 
+          # Setup test cases
+          def setup
+            # Define common constants that need this class' context if not already done
+            if (defined?(@@CommonSlaveActions) == nil)
+              # Common Slave Actions: these Actions will always be present in standard test cases.
+              @@CommonSlaveActions = {
+                Tools::TicketTracker => {
+                  Actions::Ticket_AddCommitComment => [
+                    [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
+                    [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
+                    [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
+                  ]
+                },
+                Tools::ProjectManager => {
+                  Actions::Task_AddCommitComment => [
+                    [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
+                    [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
+                    [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
+                  ]
+                },
+                Tools::Wiki => {
+                  Actions::Wiki_AddCommitComment => [
+                    [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
+                  ]
+                }
+              }
+            end
+          end
+
           # Test that getOptions return something correct
           def testGetOptions
             accessProcessPlugin do |iProcessPlugin|
@@ -92,30 +121,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -148,30 +154,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -205,30 +188,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -262,30 +222,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -319,30 +256,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -376,30 +290,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -436,30 +327,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -496,30 +364,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -585,30 +430,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -650,30 +472,7 @@ Committed revision 314.' ]
                   ],
                   $Variables[:OS_Exec]
                 )
-                assert_equal(
-                  {
-                    Tools::TicketTracker => {
-                      Actions::Ticket_AddCommitComment => [
-                        [ 'TicketID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TicketID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::ProjectManager => {
-                      Actions::Task_AddCommitComment => [
-                        [ 'TaskID 1', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 2', 'BranchName', 314, 'CommitUser', 'CommitComment' ],
-                        [ 'TaskID 3', 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    },
-                    Tools::Wiki => {
-                      Actions::Wiki_AddCommitComment => [
-                        [ 'BranchName', 314, 'CommitUser', 'CommitComment' ]
-                      ]
-                    }
-                  },
-                  iSlaveActions
-                )
+                assert_equal(@@CommonSlaveActions, iSlaveActions)
               end
             end
           end
@@ -941,9 +740,6 @@ Invalid output' ]
               )
             end
           end
-
-
-          # Test other parameters
 
           private
 

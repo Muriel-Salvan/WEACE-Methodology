@@ -30,8 +30,19 @@ module Kernel
       # Set exit status by calling legacy :` method
       __Original('exit 1')
     else
-      lReturnCode, rResult = $Context[:OS_ExecAnswers][0]
+      lExecAnswer = $Context[:OS_ExecAnswers][0]
+      lReturnCode = nil
+      lCodeBlock  = nil
+      if (lExecAnswer.size == 2)
+        lReturnCode, rResult = $Context[:OS_ExecAnswers][0]
+      else
+        lReturnCode, rResult, lCodeBlock = $Context[:OS_ExecAnswers][0]
+      end
       $Context[:OS_ExecAnswers].delete_at(0)
+      # Call an extra code block if needed
+      if (lCodeBlock != nil)
+        lCodeBlock.call(iCommand)
+      end
       # Set exit status by calling legacy :` method
       __Original("exit #{lReturnCode}")
     end
