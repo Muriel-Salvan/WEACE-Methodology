@@ -954,7 +954,7 @@ Invalid output' ]
           # ** *iFileName* (_String_): The file name generated
           def setupTasksList
             require 'tmpdir'
-            lTasksFileName = "#{Dir.tmpdir}/WEACE_Tasks_#{Thread.object_id}.lst"
+            lTasksFileName = "#{Dir.tmpdir}/WEACE_Tasks_#{Thread.current.object_id}.lst"
             File.open(lTasksFileName, 'w') do |oFile|
               oFile << 'TaskID 1
 TaskID 2
@@ -971,7 +971,7 @@ TaskID 3'
           # ** *iFileName* (_String_): The file name generated
           def setupTicketsList
             require 'tmpdir'
-            lTicketsFileName = "#{Dir.tmpdir}/WEACE_Tickets_#{Thread.object_id}.lst"
+            lTicketsFileName = "#{Dir.tmpdir}/WEACE_Tickets_#{Thread.current.object_id}.lst"
             File.open(lTicketsFileName, 'w') do |oFile|
               oFile << 'TicketID 1
 TicketID 2
@@ -988,7 +988,7 @@ TicketID 3'
           # ** *iFileName* (_String_): The file name generated
           def setupFilesList
             require 'tmpdir'
-            lFilesFileName = "#{Dir.tmpdir}/WEACE_Files_#{Thread.object_id}.lst"
+            lFilesFileName = "#{Dir.tmpdir}/WEACE_Files_#{Thread.current.object_id}.lst"
             File.open(lFilesFileName, 'w') do |oFile|
               oFile << 'File name 1
 FileName2

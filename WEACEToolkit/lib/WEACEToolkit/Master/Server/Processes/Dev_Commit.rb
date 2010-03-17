@@ -271,7 +271,7 @@ module WEACE
             else
               # Check out the project in a temporary repository
               require 'tmpdir'
-              lTempRepositoryDirName = "#{Dir.tmpdir}/WEACERegTest_#{Thread.object_id}"
+              lTempRepositoryDirName = "#{Dir.tmpdir}/WEACERegTest_#{Thread.current.object_id}"
               require 'fileutils'
               FileUtils::mkdir_p(lTempRepositoryDirName)
               changeDir(lTempRepositoryDirName) do

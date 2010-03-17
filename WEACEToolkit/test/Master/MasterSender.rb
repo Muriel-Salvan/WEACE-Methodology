@@ -37,7 +37,7 @@ module WEACE
         #
         # Parameters:
         # * *iUserID* (_String_): The User ID to give the Sender
-        # * *iActions* (<em>map<String,map<String,list<list<String>>>></em>: The Actions to give the Sender
+        # * *iActions* (<em>map<String,map<String,list<list<Object>>>></em>: The Actions to give the Sender
         def executeTest(iUserID, iActions)
           initTestCase do
             prepareExecution do
@@ -45,17 +45,84 @@ module WEACE
               accessSenderPlugin do |ioSenderPlugin|
                 # Instantiate variables
                 instantiateVars(ioSenderPlugin, getVarsToInstantiate)
-                lError = ioSenderPlugin.sendMessage(iUserID, iActions)
+                # Parse SlaveActions to handle file transfers correctly.
+                lSlaveActionsForClient = {}
+                iActions.each do |iToolID, iSlaveActionsList|
+                  # map< ActionID, list< Parameters > >
+                  lSlaveActionsList = {}
+                  iSlaveActionsList.each do |iActionID, iParametersLists|
+                    lParametersLists = []
+                    iParametersLists.each do |iParametersList|
+                      lParametersList = []
+                      iParametersList.each do |iParameter|
+                        if (iParameter.is_a?(WEACE::Master::TransferFile))
+                          lError, lNewData = ioSenderPlugin.prepareFileTransfer(iParameter.LocalFileName)
+                          assert_equal(nil, lError)
+                          lParametersList << lNewData
+                        else
+                          lParametersList << iParameter
+                        end
+                      end
+                      lParametersLists << lParametersList
+                    end
+                    lSlaveActionsList[iActionID] = lParametersLists
+                  end
+                  lSlaveActionsForClient[iToolID] = lSlaveActionsList
+                end
+                # Send the message
+                lError = ioSenderPlugin.sendMessage(iUserID, lSlaveActionsForClient)
                 assert_equal(nil, lError)
+                # Check User and Actions received
                 lUser, lActions = getUserActions
                 assert_equal(iUserID, lUser)
-                assert_equal(iActions, lActions)
+                assert_equal(lSlaveActionsForClient, lActions)
               end
             end
           end
         end
 
+        # Setup a temporary file, and delete it once the code block exits.
+        #
+        # Parameters:
+        # * *CodeBlock*: Code called once the file is created
+        # ** *iFileName* (_String_): The file name created
+        def setupTempFile
+          require 'tmpdir'
+          lLocalFileName = "#{Dir.tmpdir}/WEACEReg_SenderFile_#{Thread.current.object_id}"
+          File.open(lLocalFileName, 'w') do |oFile|
+            oFile << 'TestFileContent'
+          end
+          begin
+            yield(lLocalFileName)
+          rescue Exception
+            File.unlink(lLocalFileName)
+            raise
+          end
+          File.unlink(lLocalFileName)
+        end
+
         # === Following are test cases that are applied for all Senders
+
+        # Test the Sender's signature
+        def testSignature
+          accessSenderPlugin do |ioSenderPlugin|
+            assert(ioSenderPlugin.respond_to?(:prepareFileTransfer))
+            assert_equal(1, ioSenderPlugin.method(:prepareFileTransfer).arity)
+            assert(ioSenderPlugin.respond_to?(:sendMessage))
+            assert_equal(2, ioSenderPlugin.method(:sendMessage).arity)
+          end
+        end
+
+        # Test the file transfer preparation
+        def testFileTransfer
+          setupTempFile do |iTmpFileName|
+            accessSenderPlugin do |ioSenderPlugin|
+              lError, lNewData = ioSenderPlugin.prepareFileTransfer(iTmpFileName)
+              assert_equal(nil, lError)
+              assert_equal(getFileNewData(iTmpFileName), lNewData)
+            end
+          end
+        end
 
         # Test a normal run without any action to execute
         def testNoAction
@@ -88,6 +155,23 @@ module WEACE
               }
             }
           )
+        end
+
+        # Test a normal run with 1 action to execute with a file parameter
+        def test1ActionFileParameter
+          # Create a local file name to transfer
+          setupTempFile do |iTempFileName|
+            executeTest(
+              'DummyUser',
+              {
+                'DummyTool' => {
+                  'DummyAction' => [
+                    [ WEACE::Master::TransferFile.new(iTempFileName) ]
+                  ]
+                }
+              }
+            )
+          end
         end
 
         # Test a normal run with 1 action to execute 2 times with different parameters

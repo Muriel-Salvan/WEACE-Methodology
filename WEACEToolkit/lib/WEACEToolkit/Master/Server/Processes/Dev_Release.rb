@@ -65,7 +65,7 @@ module WEACE
               # Lists of files, Tasks and Tickets have been retrieved
               # Create the directory that will store deliverables
               require 'tmpdir'
-              lTempDeliverablesDirName = "#{Dir.tmpdir}/WEACEDeliver_#{Thread.object_id}"
+              lTempDeliverablesDirName = "#{Dir.tmpdir}/WEACEDeliver_#{Thread.current.object_id}"
               require 'fileutils'
               FileUtils::mkdir_p(lTempDeliverablesDirName)
               rError, lReleaseNotes, lDeliverables = testRegressionAndDeliver(lTempDeliverablesDirName)
@@ -73,18 +73,20 @@ module WEACE
                 # Deliver the files for real
                 lDeliverables.each do |iPlatformName, iPlatformInfo|
                   iPlatformInfo.each do |iDeliveryType, iFilesList|
+                    lDeliveryFilesDir = "#{lTempDeliverablesDirName}/Releases/#{iPlatformName}/#{iDeliveryType}"
                     iFilesList.each do |iFileName|
                       ioSlaveActions.addSlaveAction(
                         Tools::FilesManager, Actions::File_Upload,
-                        iFileName, iPlatformName, iDeliveryType, @BranchName, @ReleaseVersion, @ReleaseUser, @Comment
+                        TransferFile.new("#{lDeliveryFilesDir}/#{iFileName}"), iPlatformName, iDeliveryType, @BranchName, @ReleaseVersion, @ReleaseUser, @Comment
                       )
                     end
                   end
                 end
+                lReleaseNotesDir = "#{lTempDeliverablesDirName}/ReleaseNotes"
                 lReleaseNotes.each do |iReleaseNoteType, iReleaseNoteName|
                   ioSlaveActions.addSlaveAction(
                     Tools::FilesManager, Actions::File_UploadReleaseNote,
-                    iReleaseNoteName, iReleaseNoteType, @BranchName, @ReleaseVersion, @ReleaseUser, @Comment
+                    TransferFile.new("#{lReleaseNotesDir}/#{iReleaseNoteName}.#{iReleaseNoteType}"), iReleaseNoteType, @BranchName, @ReleaseVersion, @ReleaseUser, @Comment
                   )
                 end
                 # For each Ticket to update, add a release comment
@@ -216,7 +218,7 @@ module WEACE
             rDeliverables = nil
 
             # Check out the project in a temporary repository
-            lTempRepositoryDirName = "#{Dir.tmpdir}/WEACERegTest_#{Thread.object_id}"
+            lTempRepositoryDirName = "#{Dir.tmpdir}/WEACERegTest_#{Thread.current.object_id}"
             FileUtils::mkdir_p(lTempRepositoryDirName)
             changeDir(lTempRepositoryDirName) do
               # Checkout using svn

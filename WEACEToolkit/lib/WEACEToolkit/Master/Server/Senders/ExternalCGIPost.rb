@@ -23,6 +23,27 @@ module WEACE
 
           include WEACE::Common
 
+          # Prepare a file to be sent, and return data to be put in the SlaveActions to execute
+          #
+          # Parameters:
+          # * *iLocalFileName* (_String_): The local file name to be transfered
+          # Return:
+          # * _Exception_: An error, or nil in case of success
+          # * _Object_: The data to put in the SlaveActions
+          def prepareFileTransfer(iLocalFileName)
+            rError = nil
+            rNewData = nil
+
+            # Put the complete file in the POST value.
+            # TODO: Make a better handling, generic (use FTP/SCP/Netbios... if the MasterProvider allows it)
+            # Read the file
+            File.open(iLocalFileName, 'rb') do |iFile|
+              rNewData = iFile.read
+            end
+
+            return rError, rNewData
+          end
+
           # Send a message containing the specified Slave Actions.
           #
           # Parameters:

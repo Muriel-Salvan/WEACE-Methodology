@@ -45,6 +45,24 @@ module WEACE
       
     end
 
+    # This file is used to encapsulate files to be transfered.
+    # This way, Senders are free to use any method they want to transfer files.
+    class TransferFile
+
+      # The local file name
+      #   String
+      attr_reader :LocalFileName
+
+      # Constructor
+      #
+      # Parameters:
+      # * *iLocalFileName* (_String_): The encapsulated file name to transfer
+      def initialize(iLocalFileName)
+        @LocalFileName = iLocalFileName
+      end
+      
+    end
+
     class Server
 
       # Error occurring during comand line parsing
@@ -237,26 +255,54 @@ module WEACE
                         # And now call concerned Slave Clients with the returned Slave Actions to perform
                         lErrors = []
                         @MasterServerConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
-                          # Gather all the Slave Actions to send to this client
-                          # map< ToolID, map< ActionID, list< Parameters > >
-                          lSlaveActionsForClient = {}
-                          lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
-                            if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
-                                (iSlaveClientInfo[:Tools].include?(Tools::All)) or
-                                (iToolID == Tools::All))
-                              lSlaveActionsForClient[iToolID] = iSlaveActionsList
+                          # Get the Sender
+                          @PluginsManager.accessPlugin('Senders', iSlaveClientInfo[:Type]) do |ioSenderPlugin|
+                            # Create the map of parameters to give the Sender
+                            lParameters = iSlaveClientInfo.dup
+                            lParameters.delete(:Type)
+                            lParameters.delete(:Tools)
+                            instantiateVars(ioSenderPlugin, lParameters)
+                            # Gather all the Slave Actions to send to this client
+                            # Also handle files transfers according to Providers' specificities
+                            # map< ToolID, map< ActionID, list< Parameters > > >
+                            lSlaveActionsForClient = {}
+                            lErrorEncountered = false
+                            lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
+                              if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
+                                  (iSlaveClientInfo[:Tools].include?(Tools::All)) or
+                                  (iToolID == Tools::All))
+                                # These Actions apply to this client.
+                                # Parse them to handle file transfers correctly.
+                                # map< ActionID, list< Parameters > >
+                                lSlaveActionsList = {}
+                                iSlaveActionsList.each do |iActionID, iParametersLists|
+                                  lParametersLists = []
+                                  iParametersLists.each do |iParametersList|
+                                    lParametersList = []
+                                    iParametersList.each do |iParameter|
+                                      if (iParameter.is_a?(TransferFile))
+                                        lError, lNewData = ioSenderPlugin.prepareFileTransfer(iParameter.LocalFileName)
+                                        if (lError == nil)
+                                          lParametersList << lNewData
+                                        else
+                                          lErrorEncountered = true
+                                          lErrors << "Error while preparing file #{iParameter.LocalFileName} to be sent: #{lError}"
+                                        end
+                                      else
+                                        lParametersList << iParameter
+                                      end
+                                    end
+                                    lParametersLists << lParametersList
+                                  end
+                                  lSlaveActionsList[iActionID] = lParametersLists
+                                end
+                                lSlaveActionsForClient[iToolID] = lSlaveActionsList
+                              end
                             end
-                          end
-                          if (!lSlaveActionsForClient.empty?)
-                            # Send them, calling the correct sender, depending on the Slave Client type
-                            # Get the Sender
-                            @PluginsManager.accessPlugin('Senders', iSlaveClientInfo[:Type]) do |ioSenderPlugin|
-                              # Create the map of parameters to give the Sender
-                              lParameters = iSlaveClientInfo.dup
-                              lParameters.delete(:Type)
-                              lParameters.delete(:Tools)
+                            if ((!lErrorEncountered) and 
+                                (!lSlaveActionsForClient.empty?))
+                              # Send them, calling the correct sender, depending on the Slave Client type
                               logDebug "Send update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect} ..."
-                              instantiateVars(ioSenderPlugin, lParameters)
                               lError = ioSenderPlugin.sendMessage(@UserID, lSlaveActionsForClient)
                               if (lError == nil)
                                 logDebug "... Update sent successfully to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}"

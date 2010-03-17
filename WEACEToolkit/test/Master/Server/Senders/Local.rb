@@ -76,6 +76,16 @@ module WEACE
             return $Variables[:SlaveActions][:UserID], $Variables[:SlaveActions][:ActionsToExecute]
           end
 
+          # Get the new data put in SlaveActions for a given file to be transfered
+          #
+          # Parameters:
+          # * *iFileName* (_String_): File name to be transfered
+          # Return:
+          # * _Object_: The data to be put in SlaveActions
+          def getFileNewData(iFileName)
+            return iFileName
+          end
+
         end
 
       end

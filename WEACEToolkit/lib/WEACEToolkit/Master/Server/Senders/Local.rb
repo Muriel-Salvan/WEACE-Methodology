@@ -23,6 +23,18 @@ module WEACE
 
           include WEACE::Common
 
+          # Prepare a file to be sent, and return data to be put in the SlaveActions to execute
+          #
+          # Parameters:
+          # * *iLocalFileName* (_String_): The local file name to be transfered
+          # Return:
+          # * _Exception_: An error, or nil in case of success
+          # * _Object_: The data to put in the SlaveActions
+          def prepareFileTransfer(iLocalFileName)
+            # We are local: the local file name will be directly accessible to the SlaveClient.
+            return nil, iLocalFileName
+          end
+
           # Send a message containing the specified Slave Actions.
           #
           # Parameters:

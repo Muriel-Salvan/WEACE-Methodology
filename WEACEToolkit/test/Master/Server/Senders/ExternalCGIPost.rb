@@ -107,6 +107,22 @@ module WEACE
             return lPostInfo['userid'], Marshal.load(lPostInfo['actions'])
           end
 
+          # Get the new data put in SlaveActions for a given file to be transfered
+          #
+          # Parameters:
+          # * *iFileName* (_String_): File name to be transfered
+          # Return:
+          # * _Object_: The data to be put in SlaveActions
+          def getFileNewData(iFileName)
+            rNewData = nil
+
+            File.open(iFileName, 'rb') do |iFile|
+              rNewData = iFile.read
+            end
+
+            return rNewData
+          end
+
         end
 
       end
