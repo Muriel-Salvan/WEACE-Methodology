@@ -16,3 +16,5 @@
 ** Replace "#!/usr/bin/env ruby" files with platform independent ones.
 ** Replace .sh creation with platform independent one.
 ** Implement dumpTerminal
+** Master processes have to be able to know which slave tools are accessible. They can use this info to optimize their processing (if they don't, no problem, useless slave actions will just be ignored).
+** Master processes have to be able to know the slave tools configurations to better tune their behaviour (for example, a SlaveProvider accepting only Windows files).

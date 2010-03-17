@@ -19,6 +19,8 @@ module WEACE
     TicketTracker = 'TicketTracker'
     # Project Manager
     ProjectManager = 'ProjectManager'
+    # Files Manager
+    FilesManager = 'FilesManager'
   end
 
 end
