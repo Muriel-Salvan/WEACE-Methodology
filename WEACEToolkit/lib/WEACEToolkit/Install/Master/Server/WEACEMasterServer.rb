@@ -74,6 +74,8 @@ end
             end
             FileUtils.chmod(0755, lShowComponentsFileName)
           end
+          # Generate directory that will store SlaveClients' queues
+          FileUtils::mkdir_p("#{@WEACEVolatileDir}/MasterServer/SlaveClientQueues")
           logInfo 'WEACE Master Server installed successfully. You can install WEACE Master Adapters.'
         end
 

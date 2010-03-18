@@ -294,6 +294,7 @@ module WEACE
     # * @WEACERepositoryDir: The directory base of the WEACE repository
     # * @WEACEInstallDir: The directory where Install related files lie
     # * @WEACEConfigDir: The directory where Configuration files lie
+    # * @WEACEVolatileDir: The directory where components can store volatile data
     # * @WEACEEnvFile: The name of the file that should contain environment setup for using WEACE Toolkit
     def setupWEACEDirs
       lWEACERepositoryDir = ENV['WEACE_CONFIG_PATH']
@@ -305,6 +306,7 @@ module WEACE
       @WEACERepositoryDir = File.expand_path(lWEACERepositoryDir)
       @WEACEInstallDir = "#{@WEACERepositoryDir}/Install"
       @WEACEConfigDir = "#{@WEACERepositoryDir}/Config"
+      @WEACEVolatileDir = "#{@WEACERepositoryDir}/Volatile"
       @WEACEEnvFile = "#{@WEACERepositoryDir}/WEACEEnv.rb"
     end
 

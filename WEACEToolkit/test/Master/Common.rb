@@ -32,7 +32,7 @@ module WEACE
           lExpectedErrorClass = iOptions[:Error]
           lRepositoryName = iOptions[:Repository]
           if (lRepositoryName == nil)
-            lRepositoryName = 'Empty'
+            lRepositoryName = 'Dummy/MasterServerInstalled'
           end
           lAddRegressionProcesses = iOptions[:AddRegressionProcesses]
           if (lAddRegressionProcesses == nil)
@@ -52,9 +52,10 @@ module WEACE
               require 'WEACEToolkit/Master/Server/WEACEMasterServer'
               lMasterServer = WEACE::Master::Server.new
 
-              # Change the repository location internally in WEACE Slave Client
+              # Change the repository location internally in WEACE Master Server
               lMasterServer.instance_variable_set(:@DefaultLogDir, "#{@WEACERepositoryDir}/Log")
               lMasterServer.instance_variable_set(:@ConfigFile, "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb")
+              lMasterServer.instance_variable_set(:@SlaveClientQueuesDir, "#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues")
 
               # Add regression Components if needed
               if ((lAddRegressionProcesses) or

@@ -55,6 +55,16 @@ module WEACE
             executeMaster( [ '-v' ] )
           end
 
+          # Test command line option activating send
+          def testCommandLineSend
+            executeMaster( [ '--send' ] )
+          end
+
+          # Test command line option activating send (short version)
+          def testCommandLineSendShort
+            executeMaster( [ '-s' ] )
+          end
+
           # Test command line option enabling debug
           def testCommandLineDebug
             # Make sure we don't break debug

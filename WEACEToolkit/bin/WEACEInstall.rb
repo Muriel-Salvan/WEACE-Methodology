@@ -739,6 +739,7 @@ module WEACEInstall
             ioPlugin.instance_variable_set(:@PluginsManager, @PluginsManager)
             ioPlugin.instance_variable_set(:@WEACEConfigDir, @WEACEConfigDir)
             ioPlugin.instance_variable_set(:@WEACELibDir, @WEACELibDir)
+            ioPlugin.instance_variable_set(:@WEACEVolatileDir, @WEACEVolatileDir)
             ioPlugin.instance_variable_set(:@WEACEEnvFile, @WEACEEnvFile)
             ioPlugin.instance_variable_set(:@AdditionalParameters, lAdditionalArgs)
             if (iProviderEnv != nil)
