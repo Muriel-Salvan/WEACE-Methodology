@@ -81,26 +81,6 @@ module WEACE
           end
         end
 
-        # Setup a temporary file, and delete it once the code block exits.
-        #
-        # Parameters:
-        # * *CodeBlock*: Code called once the file is created
-        # ** *iFileName* (_String_): The file name created
-        def setupTempFile
-          require 'tmpdir'
-          lLocalFileName = "#{Dir.tmpdir}/WEACEReg_SenderFile_#{Thread.current.object_id}"
-          File.open(lLocalFileName, 'w') do |oFile|
-            oFile << 'TestFileContent'
-          end
-          begin
-            yield(lLocalFileName)
-          rescue Exception
-            File.unlink(lLocalFileName)
-            raise
-          end
-          File.unlink(lLocalFileName)
-        end
-
         # === Following are test cases that are applied for all Senders
 
         # Test the Sender's signature

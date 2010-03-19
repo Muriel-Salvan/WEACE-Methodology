@@ -27,6 +27,12 @@ module WEACE
           # * _Exception_: An error, or nil in case of success
           def processScript(ioSlaveActions, iAdditionalParameters)
             $Variables[:ProcessParameters] = iAdditionalParameters
+            if ($Context[:SlaveActions] != nil)
+              $Context[:SlaveActions].each do |iSlaveActionInfo|
+                iToolID, iActionID, iParameters = iSlaveActionInfo
+                ioSlaveActions.addSlaveAction(iToolID, iActionID, *iParameters)
+              end
+            end
 
             return nil
           end

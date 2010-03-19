@@ -121,7 +121,6 @@ module WEACE
       def changeRepositoryPath(iRepositoryPath)
         @WEACEInstallDir = "#{iRepositoryPath}/Install"
         @DefaultLogDir = "#{iRepositoryPath}/Log"
-        @ConfigFile = "#{iRepositoryPath}/Config/SlaveClient.conf.rb"
       end
 
       # Add Regression Actions
@@ -203,6 +202,47 @@ module WEACE
   module Test
 
     module Common
+
+      # Setup a temporary file, and delete it once the code block exits.
+      #
+      # Parameters:
+      # * *iFileToBeDeleted* (_Boolean_): Do we need to delete the file at the end ? [optional = true]
+      # * *CodeBlock*: Code called once the file is created
+      # ** *iFileName* (_String_): The file name created
+      def setupTempFile(iFileToBeDeleted = true)
+        require 'tmpdir'
+        lLocalFileName = "#{Dir.tmpdir}/WEACEReg_SenderFile_#{Thread.current.object_id}"
+        File.open(lLocalFileName, 'w') do |oFile|
+          oFile << 'TestFileContent'
+        end
+        begin
+          yield(lLocalFileName)
+        rescue Exception
+          if (iFileToBeDeleted)
+            if (File.exists?(lLocalFileName))
+              File.unlink(lLocalFileName)
+            else
+              logErr "File #{lLocalFileName} was supposed to be deleted, but it is missing."
+              assert(false)
+            end
+          elsif (File.exists?(lLocalFileName))
+            logErr "File #{lLocalFileName} was supposed to be missing, but it is still present."
+            assert(false)
+          end
+          raise
+        end
+        if (iFileToBeDeleted)
+          if (File.exists?(lLocalFileName))
+            File.unlink(lLocalFileName)
+          else
+            logErr "File #{lLocalFileName} was supposed to be deleted, but it is missing."
+            assert(false)
+          end
+        elsif (File.exists?(lLocalFileName))
+          logErr "File #{lLocalFileName} was supposed to be missing, but it is still present."
+          assert(false)
+        end
+      end
 
       # Check that a given matching pattern of calls match effectively a given list of calls
       # If the matching pattern is a Regexp, that the Call is matched using this Regexp. Otherwise an equality test is made.

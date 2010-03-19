@@ -25,6 +25,8 @@ module WEACE
         # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
         # ** *:AddRegressionProcesses* (_Boolean_): Do we add Processes defined from the regression ? [optional = false]
         # ** *:AddRegressionSenders* (_Boolean_): Do we add Senders defined from the regression ? [optional = false]
+        # ** *:AddSlaveClientQueues* (<em>map<map<Symbol,Object>,list<[String,map<ToolID,map<ActionID,list<Parameters>>>]>></em>): The map of SlaveClient queues to create before invoking the MasterServer [optional = nil]
+        # ** *:AddTransferFiles* (<em>map<String,Integer></em>): The list of Transfer files to setup before executing MasterServer [optional = nil]
         # * _CodeBlock_: The code called once the server was run: [optional = nil]
         # ** *iError* (_Exception_): The error returned by the server, or nil in case of success
         def executeMaster(iParameters, iOptions = {}, &iCheckCode)
@@ -42,6 +44,8 @@ module WEACE
           if (lAddRegressionSenders == nil)
             lAddRegressionSenders = false
           end
+          lAddSlaveClientQueues = iOptions[:AddSlaveClientQueues]
+          lAddTransferFiles = iOptions[:AddTransferFiles]
 
           initTestCase do
 
@@ -49,12 +53,32 @@ module WEACE
             setupTmpDir(File.expand_path("#{File.dirname(__FILE__)}/../Repositories/#{lRepositoryName}"), 'WEACETestRepository') do |iTmpDir|
               @WEACERepositoryDir = iTmpDir
 
+              # If we need to create SlaveClient queues, do it now
+              if (lAddSlaveClientQueues != nil)
+                lAddSlaveClientQueues.each do |iSlaveClientInfo, iSlaveClientQueue|
+                  lHash = sprintf('%X', iSlaveClientInfo.hash.abs)
+                  File.open("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues/#{lHash}.Queue", 'wb') do |oFile|
+                    oFile.write(Marshal.dump(iSlaveClientQueue))
+                  end
+                  File.open("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues/#{lHash}.Info", 'wb') do |oFile|
+                    oFile.write(Marshal.dump(iSlaveClientInfo))
+                  end
+                end
+              end
+
+              # Create also Transfer files if needed
+              if (lAddTransferFiles != nil)
+                File.open("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues/TransferFiles", 'wb') do |oFile|
+                  oFile.write(Marshal.dump(lAddTransferFiles))
+                end
+              end
+
               require 'WEACEToolkit/Master/Server/WEACEMasterServer'
               lMasterServer = WEACE::Master::Server.new
 
               # Change the repository location internally in WEACE Master Server
               lMasterServer.instance_variable_set(:@DefaultLogDir, "#{@WEACERepositoryDir}/Log")
-              lMasterServer.instance_variable_set(:@ConfigFile, "#{@WEACERepositoryDir}/Config/MasterServer.conf.rb")
+              lMasterServer.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
               lMasterServer.instance_variable_set(:@SlaveClientQueuesDir, "#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues")
 
               # Add regression Components if needed

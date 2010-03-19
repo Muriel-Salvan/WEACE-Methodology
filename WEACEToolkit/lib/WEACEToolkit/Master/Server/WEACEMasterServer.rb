@@ -8,6 +8,49 @@
 
 require 'WEACEToolkit/Common'
 
+# Define a better Hash's hash to be the same hash for equivalent Hashes.
+# TODO (Ruby): Make == on Hash behave correctly. Regression fails using the normal == operator with 2 similar Hashes.
+class Hash
+
+  # Save the old one
+  alias :hash_old :hash
+
+  # Return a hash corresponding to this object
+  #
+  # Return:
+  # * _Integer_: The hash
+  def hash
+    lTmpArray = []
+    each do |iKey, iValue|
+      lTmpArray << [ iKey.hash, iValue.hash ].hash
+    end
+    
+    return [ Hash, lTmpArray.sort.hash ].hash
+  end
+
+  # Save the old one
+  alias :equal_old :==
+
+  # Compare with another object
+  #
+  # Parameters:
+  # * *iOther* (_Object_): Other object to compare with
+  # Return:
+  # * _Boolean_: Are both objects equal ?
+  def ==(iOther)
+    rEqual = false
+
+    if (iOther.object_id == object_id)
+      rEqual = true
+    elsif (iOther.is_a?(Hash))
+      rEqual = (hash == iOther.hash)
+    end
+
+    return rEqual
+  end
+
+end
+
 module WEACE
 
   module Master
@@ -59,6 +102,17 @@ module WEACE
       # * *iLocalFileName* (_String_): The encapsulated file name to transfer
       def initialize(iLocalFileName)
         @LocalFileName = iLocalFileName
+      end
+
+      # Redefine its hash for it to work correctly with Hashes
+      alias :hash_old :hash
+
+      # Get the hash
+      #
+      # Return:
+      # * _Integer_: The hash
+      def hash
+        return [ TransferFile, @LocalFileName.hash ].hash
       end
       
     end
@@ -263,35 +317,43 @@ module WEACE
                         rError = $!
                       end
                       if (rError == nil)
-                        # Gather a list of errors
-                        # list< String >
-                        lErrors = []
-                        # And now call concerned Slave Clients with the returned Slave Actions to perform
-                        @MasterServerConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
-                          # Filter out SlaveActions that have nothing to do with this SlaveClient
-                          # map< ToolID, map< ActionID, list< Parameters > > >
-                          lSlaveActionsForClient = {}
-                          lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
-                            if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
-                                (iSlaveClientInfo[:Tools].include?(Tools::All)) or
-                                (iToolID == Tools::All))
-                              # These Actions apply to this client.
-                              lSlaveActionsForClient[iToolID] = iSlaveActionsList
+                        if (lSlaveActions.SlaveActions.empty?)
+                          logWarn "No SlaveAction was issued by Process #{@ProcessID}."
+                        else
+                          # Gather a list of errors
+                          # list< String >
+                          lErrors = []
+                          # And now call concerned Slave Clients with the returned Slave Actions to perform
+                          @MasterServerConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
+                            # Filter out SlaveActions that have nothing to do with this SlaveClient
+                            # map< ToolID, map< ActionID, list< Parameters > > >
+                            lSlaveActionsForClient = {}
+                            lSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
+                              if ((iSlaveClientInfo[:Tools].include?(iToolID)) or
+                                  (iSlaveClientInfo[:Tools].include?(Tools::All)) or
+                                  (iToolID == Tools::All))
+                                # These Actions apply to this client.
+                                lSlaveActionsForClient[iToolID] = iSlaveActionsList
+                              end
+                            end
+                            if (lSlaveActionsForClient.empty?)
+                              logDebug "No Slave Action for #{iSlaveClientInfo.inspect}"
+                            else
+                              # Add this information to the queue of SlaveActions to send to this client
+                              lError = pushSlaveActions(@UserID, iSlaveClientInfo, lSlaveActionsForClient)
+                              if (lError != nil)
+                                lErrors << "An error occurred while pushing Slave Actions to the processing queue: #{lError}"
+                              end
                             end
                           end
-                          # Add this information to the queue of SlaveActions to send to this client
-                          lError = pushSlaveActions(@UserID, iSlaveClientInfo, lSlaveActionsForClient)
+                          # Ask the processing queues to perform
+                          lError = performRemainingSlaveActions
                           if (lError != nil)
-                            lErrors << "An error occurred while pushing Slave Actions to the processing queue: #{lError}"
+                            lErrors << "An error occurred while performing remaining Actions: #{lError}"
                           end
-                        end
-                        # Ask the processing queues to perform
-                        lError = performRemainingSlaveActions
-                        if (lError != nil)
-                          lErrors << "An error occurred while performing remaining Actions: #{lError}"
-                        end
-                        if (!lErrors.empty?)
-                          rError = RuntimeError.new("Several errors encountered:\n#{lErrors.join("\n")}")
+                          if (!lErrors.empty?)
+                            rError = RuntimeError.new("Several errors encountered:\n#{lErrors.join("\n")}")
+                          end
                         end
                       end
                     end
@@ -318,6 +380,7 @@ module WEACE
       def pushSlaveActions(iUserID, iSlaveClientInfo, iSlaveActions)
         rError = nil
 
+        logDebug "Adding SlaveActions to #{iSlaveClientInfo.inspect}"
         # Get errors
         # list< String >
         lErrors = []
@@ -607,6 +670,7 @@ module WEACE
 
         # Get the hash of this SlaveClient info
         lHash = sprintf('%X', iSlaveClientInfo.hash.abs)
+        logDebug "Get SlaveClient queue #{lHash} for #{iSlaveClientInfo.inspect}"
         lQueueFile = "#{@SlaveClientQueuesDir}/#{lHash}.Queue"
         if (File.exists?(lQueueFile))
           begin
@@ -686,7 +750,7 @@ module WEACE
           # map< ToolID, map< ActionID, list< Parameters > > >
           lSlaveActionsForClient = {}
           lErrorEncountered = false
-          iSlaveActions.SlaveActions.each do |iToolID, iSlaveActionsList|
+          iSlaveActions.each do |iToolID, iSlaveActionsList|
             # Parse them to handle file transfers correctly.
             # map< ActionID, list< Parameters > >
             lSlaveActionsList = {}
@@ -713,8 +777,7 @@ module WEACE
             end
             lSlaveActionsForClient[iToolID] = lSlaveActionsList
           end
-          if ((!lErrorEncountered) and
-              (!lSlaveActionsForClient.empty?))
+          if (!lErrorEncountered)
             # Send them, calling the correct sender, depending on the Slave Client type
             logDebug "Send update (user #{iUserID}) to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect} ..."
             lError = ioSenderPlugin.sendMessage(iUserID, lSlaveActionsForClient)
