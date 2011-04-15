@@ -581,6 +581,7 @@ module WEACE
 
         lTransfersFile = "#{@SlaveClientQueuesDir}/TransferFiles"
         begin
+          FileUtils::mkdir_p(@SlaveClientQueuesDir)
           File.open(lTransfersFile, 'wb') do |iFile|
             iFile.write(Marshal.dump(iTransferFiles))
           end
@@ -709,6 +710,7 @@ module WEACE
               File.unlink(lInfoFile)
             end
           else
+            FileUtils::mkdir_p(@SlaveClientQueuesDir)
             if (!File.exists?(lInfoFile))
               File.open(lInfoFile, 'wb') do |oFile|
                 oFile.write(Marshal.dump(iSlaveClientInfo))

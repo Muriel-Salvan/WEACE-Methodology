@@ -316,7 +316,14 @@ module WEACE
     # * *iVariable* (_Symbol_): The variable we are looking for.
     # * *iDescription* (_String_): The description of this variable. This will appear in the eventual error message.
     def checkVar(iVariable, iDescription)
-      if (!self.instance_variables.include?("@#{iVariable}"))
+      lMissing = nil
+      # TODO: Remove this check when not needed anymore, or handle it a better way
+      if (RUBY_VERSION >= '1.9.1')
+        lMissing = !self.instance_variables.include?("@#{iVariable}".to_sym)
+      else
+        lMissing = !self.instance_variables.include?("@#{iVariable}")
+      end
+      if (lMissing)
         logErr "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
         raise MissingVariableError, "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
       end
@@ -589,7 +596,7 @@ module WEACE
             # Write the file
             begin
               File.open(iFileName, 'w') do |iFile|
-                iFile << lContent
+                iFile << lContent.join
               end
             rescue Exception
               # Revert the file content

@@ -17,7 +17,7 @@ module WEACE
 
         module Adapters
 
-          class CommandLine
+          class CommandLine < ::Test::Unit::TestCase
 
             class Test_Broadcast < ::Test::Unit::TestCase
 

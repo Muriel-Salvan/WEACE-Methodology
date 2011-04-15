@@ -55,6 +55,7 @@ module WEACE
 
               # If we need to create SlaveClient queues, do it now
               if (lAddSlaveClientQueues != nil)
+                FileUtils::mkdir_p("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues")
                 lAddSlaveClientQueues.each do |iSlaveClientInfo, iSlaveClientQueue|
                   lHash = sprintf('%X', iSlaveClientInfo.hash.abs)
                   File.open("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues/#{lHash}.Queue", 'wb') do |oFile|
@@ -68,6 +69,7 @@ module WEACE
 
               # Create also Transfer files if needed
               if (lAddTransferFiles != nil)
+                FileUtils::mkdir_p("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues")
                 File.open("#{@WEACERepositoryDir}/Volatile/MasterServer/SlaveClientQueues/TransferFiles", 'wb') do |oFile|
                   oFile.write(Marshal.dump(lAddTransferFiles))
                 end
@@ -206,7 +208,7 @@ module WEACE
                     logErr lError.backtrace.join("\n")
                   end
                 end
-                assert(lError.kind_of?(lExpectedErrorClass))
+                assert(lError.kind_of?(lExpectedErrorClass), "Expected error of kind #{lExpectedErrorClass}, but got #{lError}")
               end
               # Additional checks if needed
               if (iCheckCode != nil)
