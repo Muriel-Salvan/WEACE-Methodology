@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -106,11 +106,11 @@ module WEACE
           if (rError == nil)
             begin
               # Create a transaction
-              lMySQL.query("start transaction")
+              lMySQL.query('start transaction')
               rError = execute(*([lMySQL] + iSQLMethodParameters))
-              lMySQL.query("commit")
+              lMySQL.query('commit')
             rescue RuntimeError
-              lMySQL.query("rollback")
+              lMySQL.query('rollback')
               # Make sure Mysql exceptioin are not returned as is, because they may be serialized and returned back to processes not having Mysql.
               rError = RuntimeError.new("Error while executing transaction in DB #{iDBUser}@#{iDBName}@#{iMySQLHost}: #{$!}. Backtrace: #{$!.backtrace.join("\n")}")
             end
