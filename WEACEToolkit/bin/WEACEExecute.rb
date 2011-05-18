@@ -4,7 +4,7 @@
 # This is intended to be used internally by some WEACE Toolkit scripts.
 #
 #--
-# Copyright (c) 2009 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
