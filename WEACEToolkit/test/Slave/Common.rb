@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -20,8 +20,8 @@ module WEACE
 
       # Constructor
       #
-      # Parameters:
-      # * *ioCallsList* (<em>list<[String,String]></em>): The list of calls to complete
+      # Parameters::
+      # * *ioCallsList* (<em>list< [String,String] ></em>): The list of calls to complete
       # * *iDummyAnswers* (<em>list<list<list<String>>></em>: The list of rows to return when asked
       def initialize(ioCallsList, iDummyAnswers)
         @CallsList, @DummyAnswers = ioCallsList, iDummyAnswers
@@ -31,9 +31,9 @@ module WEACE
 
       # Perform a query
       #
-      # Parameters:
+      # Parameters::
       # * *iText* (_String_): Text of the query
-      # Return:
+      # Return::
       # * <em>list<list<String>></em>: The rows returned by the query
       def query(iText)
         rRows = []
@@ -51,7 +51,7 @@ module WEACE
 
       # Return a new ID
       #
-      # Return:
+      # Return::
       # * _Integer_: The new ID
       def insert_id
         rID = @ID
@@ -66,7 +66,7 @@ module WEACE
 
     # Method that replaces the beginMySQLTransaction method to track connections and queries using MySQL
     #
-    # Parameters:
+    # Parameters::
     # * *iMySQLHost* (_String_): The name of the MySQL host
     # * *iDBName* (_String_): The name of the database of Redmine
     # * *iDBUser* (_String_): The name of the database user
@@ -74,10 +74,10 @@ module WEACE
     # * *iSQLExecuteObject* (_Object_): The object containing the SQL execution
     # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
     # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
-    # ** *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
-    # ** *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
-    # ** *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
-    # Return:
+    #   * *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
+    #   * *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    #   * *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
+    # Return::
     # * _Exception_: An error, or nil in case of success
     def beginMySQLTransaction_Regression(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLExecuteObject, iSQLMethodParameters, iOptions = {})
       rError = nil
@@ -124,16 +124,16 @@ module WEACE
 
         # Execute WEACE Slave Client
         #
-        # Parameters:
+        # Parameters::
         # * *iParameters* (<em>list<String></em>): The parameters to give WEACE Slave Client
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
-        # ** *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
-        # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Dummy/SlaveClientInstalled']
-        # ** *:AddRegressionActions* (_Boolean_): Do we add Actions defined from the regression ? [optional = false]
-        # ** *:InstallActions* (<em>list<[String,String,String]></em>): List of Actions to install: [ ProductID, ToolID, ActionID ]. [optional = nil]
-        # ** *:ConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ]. [optional = nil]
+        #   * *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
+        #   * *:Repository* (_String_): Name of the repository to be used [optional = 'Dummy/SlaveClientInstalled']
+        #   * *:AddRegressionActions* (_Boolean_): Do we add Actions defined from the regression ? [optional = false]
+        #   * *:InstallActions* (<em>list< [String,String,String] ></em>): List of Actions to install: [ ProductID, ToolID, ActionID ]. [optional = nil]
+        #   * *:ConfigureProducts* (<em>list< [String,String,map<Symbol,Object>] ></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ]. [optional = nil]
         # * _CodeBlock_: The code called once the server was run: [optional = nil]
-        # ** *iError* (_Exception_): The error returned by the server, or nil in case of success
+        #   * *iError* (_Exception_): The error returned by the server, or nil in case of success
         def executeSlave(iParameters, iOptions = {}, &iCheckCode)
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
@@ -166,7 +166,7 @@ module WEACE
                 lSlaveClient.instance_variable_set(:@WEACEConfigDir, "#{@WEACERepositoryDir}/Config")
 
                 begin
-                  if (debugActivated?)
+                  if (debug_activated?)
                     lError = lSlaveClient.execute(['-d']+iParameters)
                   else
                     lError = lSlaveClient.execute(iParameters)
@@ -179,23 +179,23 @@ module WEACE
                 # Check result
                 if (lExpectedErrorClass == nil)
                   if (lError != nil)
-                    logErr "Unexpected error: #{lError.class}: #{lError}"
+                    log_err "Unexpected error: #{lError.class}: #{lError}"
                     if (lError.backtrace == nil)
-                      logErr 'No backtrace'
+                      log_err 'No backtrace'
                     else
-                      logErr lError.backtrace.join("\n")
+                      log_err lError.backtrace.join("\n")
                     end
                   end
                   assert_equal(nil, lError)
                 else
                   if (lError == nil)
-                    logErr 'Unexpected success.'
+                    log_err 'Unexpected success.'
                   elsif (!lError.kind_of?(lExpectedErrorClass))
-                    logErr "Unexpected error: #{lError.class}: #{lError}"
+                    log_err "Unexpected error: #{lError.class}: #{lError}"
                     if (lError.backtrace == nil)
-                      logErr 'No backtrace'
+                      log_err 'No backtrace'
                     else
-                      logErr lError.backtrace.join("\n")
+                      log_err lError.backtrace.join("\n")
                     end
                   end
                   assert(lError.kind_of?(lExpectedErrorClass))

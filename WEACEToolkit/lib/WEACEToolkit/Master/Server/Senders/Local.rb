@@ -6,7 +6,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -25,9 +25,9 @@ module WEACE
 
           # Prepare a file to be sent, and return data to be put in the SlaveActions to execute
           #
-          # Parameters:
+          # Parameters::
           # * *iLocalFileName* (_String_): The local file name to be transfered
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           # * _Object_: The data to put in the SlaveActions
           def prepareFileTransfer(iLocalFileName)
@@ -37,10 +37,10 @@ module WEACE
 
           # Send a message containing the specified Slave Actions.
           #
-          # Parameters:
+          # Parameters::
           # * *iUserScriptID* (_String_): The user ID of the script
           # * *iSlaveActions* (<em>map< ToolID, map< ActionID, list < Parameters > > ></em>): The map of actions to send to the Slave Client
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def sendMessage(iUserScriptID, iSlaveActions)
             rError = nil
@@ -48,10 +48,10 @@ module WEACE
             # Try requiring directly the Slave Client
             require "WEACEToolkit/Slave/Client/WEACESlaveClient"
             # Save the Log file location before, and restore it after
-            lOldLogFile = getLogFile
+            lOldLogFile = get_log_file
             # Call the Slave Client directly
             rError = WEACE::Slave::Client.new.executeActions(iUserScriptID, iSlaveActions)
-            setLogFile(lOldLogFile)
+            set_log_file(lOldLogFile)
 
             return rError
           end

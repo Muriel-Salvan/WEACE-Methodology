@@ -5,7 +5,7 @@
 #
 # Check http://weacemethod.sourceforge.net/wiki/index.php/RedmineSF.NET for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -19,7 +19,7 @@ module RedmineInstaller
 
   # Set a new step
   #
-  # Parameters:
+  # Parameters::
   # * *iName* (_String_): The name of the step to execute
   # * *CodeBlock*: The code of this step
   def self.step(iName)
@@ -33,7 +33,7 @@ module RedmineInstaller
 
   # Execute a command, and log any possible error it finds
   #
-  # Parameters:
+  # Parameters::
   # * *iCmd* (_String_): The command to execute
   # * *iExpectedErrorCode* (_Integer_): The expected error code [optional = 0]
   def self.execCmd(iCmd, iExpectedErrorCode = 0)
@@ -62,9 +62,9 @@ module RedmineInstaller
   # Extract the file name from a tarball.
   # Remove extension .tar.gz or .tgz
   #
-  # Parameters:
+  # Parameters::
   # * *iTarBallName* (_String_): The tarball name
-  # Return:
+  # Return::
   # * _String_: The file name
   def self.getFileNameFromTarBall(iTarBallName)
     if (iTarBallName[-4..-1] == '.tgz')
@@ -80,10 +80,10 @@ module RedmineInstaller
   # * Check the existence of the tarball
   # * Check the existence of the project's directory
   #
-  # Parameters:
+  # Parameters::
   # * *iTarBallName* (_String_): Name of the tarball
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
-  # Return:
+  # Return::
   # * _String_: The complete project's root path
   def self.checkBasics(iTarBallName, iProjectUnixName)
     rProjectRootPath = nil
@@ -103,7 +103,7 @@ module RedmineInstaller
   
   # Execute some code once moved in a given directory, and get back to the original directory after.
   #
-  # Parameters:
+  # Parameters::
   # * *iDir* (_String_): The directory to move into
   # * *CodeBlock*: The code to execute
   def self.cdir(iDir)
@@ -123,10 +123,10 @@ module RedmineInstaller
   
   # Untar a tarball in a directory, and return the untared directory name
   #
-  # Parameters:
+  # Parameters::
   # * *iTarBallName* (_String_): Name of the tarball
   # * *iDirectory* (_String_): Name of the directory to untar into
-  # Return:
+  # Return::
   # * _String_: The complete path of the untared directory
   def self.untar(iTarBallName, iDirectory)
     rTarBallDir = "#{iDirectory}/#{getFileNameFromTarBall(iTarBallName)}"
@@ -149,7 +149,7 @@ module RedmineInstaller
   
   # Set an environment variable to a given value
   #
-  # Parameters:
+  # Parameters::
   # * *iVariableName* (_String_): The name of the variable
   # * *iValue* (_String_): The value
   def self.setEnv(iVariableName, iValue)
@@ -162,7 +162,7 @@ module RedmineInstaller
   
   # Modify a file content
   #
-  # Parameters:
+  # Parameters::
   # * *iFileName* (_String_): The name of the file to modify
   # * *iMatchLinePattern* (_RegExp_): The regular expression matching the line to modify
   # * *CodeBlock(iFile, ioLine)*: The code block called for the line matching the pattern
@@ -196,7 +196,7 @@ module RedmineInstaller
   
   # Test that RubyGems is up and running in our environment
   #
-  # Return:
+  # Return::
   # * _Boolean_: Is RubyGems working ?
   def self.testRubyGems
     rRubyGemsOK = true
@@ -244,7 +244,7 @@ module RedmineInstaller
   
   # Add a value to an environment variable
   #
-  # Parameters:
+  # Parameters::
   # * *iVariableName* (_String_): The name of the variable
   # * *iValue* (_String_): The value to add
   def self.addEnv(iVariableName, iValue)
@@ -263,7 +263,7 @@ module RedmineInstaller
   # 2.1. Install it by calling the corresponding script
   # 2.2. Modify the environment to set it up
   #
-  # Parameters:
+  # Parameters::
   # * *iRubyGemsTarBall* (_String_): The RubyGems tarball (can be nil if not given)
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
   # * *iRubyGemsSubPath* (_String_): Sub-path to install RubyGems
@@ -294,7 +294,7 @@ module RedmineInstaller
 
   # Test that Rake is up and running in our environment
   #
-  # Return:
+  # Return::
   # * _Boolean_: Is Rake working ?
   def self.testRake
     rRakeOK = true
@@ -332,7 +332,7 @@ module RedmineInstaller
   # 2.1. Install it by calling the corresponding script
   # 2.2. Modify the environment to set it up
   #
-  # Parameters:
+  # Parameters::
   # * *iRakeTarBall* (_String_): The Rake tarball (can be nil if not given)
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
   # * *iRakeBinSubPath* (_String_): Sub-path to install Rake's binary
@@ -363,7 +363,7 @@ module RedmineInstaller
   # Test that FCGI for Ruby is up and running in our environment.
   # Prerequisite: RubyGem is up and running in our environment.
   #
-  # Return:
+  # Return::
   # * _Boolean_: Is FCGI for Ruby working ?
   def self.testFCGIForRuby
     rFCGIForRubyOK = true
@@ -385,7 +385,7 @@ module RedmineInstaller
   # 2.1. Install it by calling the corresponding script
   # 2.2. Modify the environment to set it up
   #
-  # Parameters:
+  # Parameters::
   # * *iFCGITarBall* (_String_): The FCGI-devel tarball (can be nil if not given)
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
   # * *iFCGISubPath* (_String_): Sub-path to install FCGI
@@ -417,7 +417,7 @@ module RedmineInstaller
 
   # The main method
   #
-  # Parameters:
+  # Parameters::
   # * *iRedmineTarBall* (_String_): Name of the tarball
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
   # * *iProjectID* (_String_): SourceForge.net's project ID

@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -16,7 +16,7 @@ module WEACE
 
         # Initialize a test case for a generic Component
         #
-        # Parameters:
+        # Parameters::
         # * *CodeBlock*: The code to call once it is initialized
         def initComponentTest
           initTestCase do

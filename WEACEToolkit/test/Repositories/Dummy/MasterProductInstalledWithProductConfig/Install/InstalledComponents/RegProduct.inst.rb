@@ -6,5 +6,5 @@
   :InstallationParameters => '',
   :Description => 'Dummy Product used in WEACE Regression.',
   :Product => 'DummyProduct',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

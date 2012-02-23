@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -745,9 +745,9 @@ Invalid output' ]
 
           # Setup a file containing Tasks IDs, and ensure it will be removed at the end of the test.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: Code called once the file has been created:
-          # ** *iFileName* (_String_): The file name generated
+          #   * *iFileName* (_String_): The file name generated
           def setupTasksList
             require 'tmpdir'
             lTasksFileName = "#{Dir.tmpdir}/WEACE_Tasks_#{Thread.current.object_id}.lst"
@@ -762,9 +762,9 @@ TaskID 3'
 
           # Setup a file containing Tickets IDs, and ensure it will be removed at the end of the test.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: Code called once the file has been created:
-          # ** *iFileName* (_String_): The file name generated
+          #   * *iFileName* (_String_): The file name generated
           def setupTicketsList
             require 'tmpdir'
             lTicketsFileName = "#{Dir.tmpdir}/WEACE_Tickets_#{Thread.current.object_id}.lst"
@@ -779,9 +779,9 @@ TicketID 3'
 
           # Setup a file containing file names, and ensure it will be removed at the end of the test.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: Code called once the file has been created:
-          # ** *iFileName* (_String_): The file name generated
+          #   * *iFileName* (_String_): The file name generated
           def setupFilesList
             require 'tmpdir'
             lFilesFileName = "#{Dir.tmpdir}/WEACE_Files_#{Thread.current.object_id}.lst"
@@ -796,9 +796,9 @@ File name 3'
 
           # Setup a local repository
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: Code called once the file has been created:
-          # ** *iDirName* (_String_): The directory name generated
+          #   * *iDirName* (_String_): The directory name generated
           def setupLocalRepository
             lLocalRepository = "#{Dir.tmpdir}/WEACE_LocalRepository"
             require 'fileutils'
@@ -813,14 +813,14 @@ File name 3'
           # 3. Create local repository
           # 4. Catch executions of `` operator
           #
-          # Parameters:
+          # Parameters::
           # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
-          # ** *:FilesList* (_Boolean_): Do we generate a files list ? [optional = false]
+          #   * *:FilesList* (_Boolean_): Do we generate a files list ? [optional = false]
           # * *CodeBlock*: Code called once everything has been initialized
-          # ** *iTasksFileName* (_String_): The Tasks file name
-          # ** *iTicketsFileName* (_String_): The Tickets file name
-          # ** *iLocalRepository* (_String_): The local repository
-          # ** *iFilesFileName* (_String_): The Files file name (only if :FilesList was set to true).
+          #   * *iTasksFileName* (_String_): The Tasks file name
+          #   * *iTicketsFileName* (_String_): The Tickets file name
+          #   * *iLocalRepository* (_String_): The local repository
+          #   * *iFilesFileName* (_String_): The Files file name (only if :FilesList was set to true).
           def setupTest(iOptions = {})
             # Parse options
             lFilesList = iOptions[:FilesList]

@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -50,10 +50,10 @@ module WEACEInstall
         end
       end
       if (lRUALibDir == nil)
-        logBug 'Unable to find rUtilAnts library directory among Rubygems or $LOAD_PATH.'
+        log_bug 'Unable to find rUtilAnts library directory among Rubygems or $LOAD_PATH.'
       else
         if (File.exists?(@WEACEEnvFile))
-          logWarn "Environment file #{@WEACEEnvFile} already exists. Will not overwrite it."
+          log_warn "Environment file #{@WEACEEnvFile} already exists. Will not overwrite it."
         else
           File.open(@WEACEEnvFile, 'w') do |oFile|
             oFile << "\# This file is meant to be required by every script that needs to setup WEACE environment before loading and using WEACE Toolkit libraries.
@@ -70,19 +70,19 @@ $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
 
     # Get a Provider's environment
     #
-    # Parameters:
+    # Parameters::
     # * *iProviderType* (_String_): The Provider type (Master or Slave)
     # * *iProviderID* (_String_): The Provider ID
     # * *iParameters* (<em>list<String></em>): The parameters to give this provider
-    # Return:
+    # Return::
     # * _Exception_: An error, or nil in case of success
     # * <em>map<Symbol,Object></em>: The Provider's environment
     def getProviderEnv(iProviderType, iProviderID, iParameters)
       rError = nil
       rProviderConfig = nil
 
-      logDebug "Read specific type #{iProviderID} configuration ..."
-      lProviderPlugin, lError = @PluginsManager.getPluginInstance("#{iProviderType}/Providers", iProviderID)
+      log_debug "Read specific type #{iProviderID} configuration ..."
+      lProviderPlugin, lError = @PluginsManager.get_plugin_instance("#{iProviderType}/Providers", iProviderID)
       if (lError != nil)
         rError = ProviderError.new("Error while getting #{iProviderType} Provider named #{iProviderID}: #{lError}. Please use --list option to know available Providers.")
       else
@@ -125,9 +125,9 @@ $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
     # Check that mandatory variables are affected.
     # Raise an exception if they are not all affected.
     #
-    # Parameters:
+    # Parameters::
     # * *iVariablesSet* (<em>map<Symbol,[OptionParser,String]></em>): The set of variables, along with their options
-    # Return:
+    # Return::
     # * _Exception_: An error, or nil in case of success
     def checkMandatoryVariables(iVariablesSet)
       rError = nil
@@ -149,11 +149,11 @@ $LOAD_PATH << '#{File.expand_path(File.dirname(@WEACELibDir))}'
     # Initialize a plugin instance with parameters taken from the command line if options were defined in the description.
     # It checks if mandatory parameters have been specified, and creates instance variables storing the corresponding values.
     #
-    # Parameters:
+    # Parameters::
     # * *ioPlugin* (_Object_): Plugin to initialize
     # * *iParameters* (<em>list<String></em>): Parameters to give to this plugin
     # * *iExtraParametersAllowed* (_Boolean_): Are extra parameters allowed ? If true, extra parameters will be returned back with a '--' separator. [optional = false]
-    # Return:
+    # Return::
     # * _Exception_: An error, or nil in case of success
     # * <em>list<String></em>: Remaining arguments
     def initPluginWithParameters(ioPlugin, iParameters, iExtraParametersAllowed = false)

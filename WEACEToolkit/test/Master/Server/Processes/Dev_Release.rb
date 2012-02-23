@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -12,7 +12,7 @@ module WEACE
 
       # Define a comparison operator, as it will be useful for comparing SlaveActions
       #
-      # Parameters:
+      # Parameters::
       # * *iOther* (_TransferFile_): The other to compare with
       def ==(iOther)
         if (iOther.is_a?(TransferFile))
@@ -988,9 +988,9 @@ module WEACE
 
           # Setup a file containing Tasks IDs, and ensure it will be removed at the end of the test.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: Code called once the file has been created:
-          # ** *iFileName* (_String_): The file name generated
+          #   * *iFileName* (_String_): The file name generated
           def setupTasksList
             require 'tmpdir'
             lTasksFileName = "#{Dir.tmpdir}/WEACE_Tasks_#{Thread.current.object_id}.lst"
@@ -1005,9 +1005,9 @@ TaskID 3'
 
           # Setup a file containing Tickets IDs, and ensure it will be removed at the end of the test.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: Code called once the file has been created:
-          # ** *iFileName* (_String_): The file name generated
+          #   * *iFileName* (_String_): The file name generated
           def setupTicketsList
             require 'tmpdir'
             lTicketsFileName = "#{Dir.tmpdir}/WEACE_Tickets_#{Thread.current.object_id}.lst"
@@ -1026,11 +1026,11 @@ TicketID 3'
           # 3. Create local repository
           # 4. Catch executions of `` operator
           #
-          # Parameters:
+          # Parameters::
           # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
           # * *CodeBlock*: Code called once everything has been initialized
-          # ** *iTasksFileName* (_String_): The Tasks file name
-          # ** *iTicketsFileName* (_String_): The Tickets file name
+          #   * *iTasksFileName* (_String_): The Tasks file name
+          #   * *iTicketsFileName* (_String_): The Tickets file name
           def setupTest(iOptions = {})
             # Parse options
             initTestCase do

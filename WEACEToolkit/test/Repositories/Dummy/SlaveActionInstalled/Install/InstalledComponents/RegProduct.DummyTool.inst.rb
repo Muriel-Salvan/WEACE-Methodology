@@ -4,5 +4,5 @@
   :InstallationDate => '2010-01-29 16:29:24',
   :InstallationParameters => '',
   :Description => 'This Slave Tool is used for regression purposes only.',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

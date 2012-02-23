@@ -4,5 +4,5 @@
   :InstallationDate => '2010-01-29 18:08:19',
   :InstallationParameters => '',
   :Description => 'Redmine adapted to WEACE Slave as a Ticket Tracker.',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

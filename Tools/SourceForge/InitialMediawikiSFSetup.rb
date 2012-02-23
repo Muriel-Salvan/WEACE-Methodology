@@ -43,7 +43,7 @@ puts ''
 
 # Execute a command, and abort everything in case of an error
 #
-# Parameters:
+# Parameters::
 # * *iMsg* (_String_): The message to display for the operation
 # * *iCmd* (_String_): The command to execute
 def execCmd(iMsg, iCmd)

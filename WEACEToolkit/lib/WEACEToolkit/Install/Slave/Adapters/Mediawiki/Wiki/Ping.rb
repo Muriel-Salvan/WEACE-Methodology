@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -18,7 +18,7 @@ module WEACEInstall
             # Install for real.
             # This is called only when check method returned no error.
             #
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil in case of success
             def execute
               return nil

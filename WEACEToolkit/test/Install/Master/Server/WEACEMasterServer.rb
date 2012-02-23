@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -41,7 +41,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
@@ -68,7 +68,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
@@ -86,7 +86,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
@@ -104,7 +104,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummyMasterProvider'
                 },
@@ -142,7 +142,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--flag',
                   :ProviderID => 'DummyMasterProviderWithParams'
                 },
@@ -161,7 +161,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--dummyvar testvalue',
                   :ProviderID => 'DummyMasterProviderWithParamsValues'
                 },
@@ -180,7 +180,7 @@ module WEACE
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--repository %{WEACERepositoryDir}/CGI',
                   :ProviderID => 'DummyMasterProviderWithCGI'
                 },
@@ -222,7 +222,7 @@ end
                 :CheckComponentName => 'MasterServer',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Master Server.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--shelldir %{WEACERepositoryDir}/WEACETools',
                   :ProviderID => 'DummyMasterProviderWithShell'
                 },

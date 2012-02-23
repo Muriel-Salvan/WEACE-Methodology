@@ -23,9 +23,9 @@ lSerializedActions = lCgi['actions']
 require '%{WEACEEnvFile}'
 # Call WEACE Slave Client library directly
 require 'rUtilAnts/Platform'
-RUtilAnts::Platform::initializePlatform
+RUtilAnts::Platform::install_platform_on_object
 require 'rUtilAnts/Misc'
-RUtilAnts::Misc::initializeMisc
+RUtilAnts::Misc::install_misc_on_object
 require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
 lError = WEACE::Slave::Client.new.executeMarshalled(lUserID, lSerializedActions)
 if (lError == nil)

@@ -6,5 +6,5 @@
   :InstallationParameters => '--installdir E:/DOCUME~1/MURIEL~2/LOCALS~1/Temp/WEACERegression/Dir_0/WEACETools',
   :Description => 'WEACE Master processes that are accessible from a terminal.',
   :Product => 'CommandLine',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

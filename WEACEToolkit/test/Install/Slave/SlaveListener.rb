@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -36,7 +36,7 @@ module WEACE
           # * :ProductRepositoryInvalid (_String_): Name of the Product repository to use when this Component cannot be installed [optional = nil].
           # * :CheckErrorClass (_class_): Class of the Check error thrown when installing on :ProductRepositoryInvalid [optional = nil]
           #
-          # Return:
+          # Return::
           # * <em>map<Symbol,Object></em>: The different properties
           def getIndividualComponentTestSpecs
             lSpecs = replaceObjectVars(getSlaveListenerTestSpecs)

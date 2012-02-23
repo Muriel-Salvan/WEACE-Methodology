@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -17,9 +17,9 @@ module WEACE
 
           # Give access to the plugin
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: The code called once the plugin has been instantiated
-          # ** *ioActionPlugin* (_Object_): The plugin
+          #   * *ioActionPlugin* (_Object_): The plugin
           def initPlugin
             initTestCase do
               require "WEACEToolkit/Slave/Adapters/#{@ProductID}/#{@ToolID}/#{@ScriptID}"
@@ -40,7 +40,7 @@ module WEACE
 
           # Execute test
           #
-          # Parameters:
+          # Parameters::
           # * *iUserID* (_String_): User ID to use
           # * *iParameters* (<em>list<String></em>): Parameters to give the plugin
           def execTest(iUserID, iParameters)

@@ -5,9 +5,9 @@
 require 'WEACEToolkit/Common'
 # Load the Platform dependent extensions
 require 'rUtilAnts/Platform'
-RUtilAnts::Platform::initializePlatform
+RUtilAnts::Platform::install_platform_on_object
 require 'rUtilAnts/Misc'
-RUtilAnts::Misc::initializeMisc
+RUtilAnts::Misc::install_misc_on_object
 
 module WEACE
 
@@ -96,7 +96,7 @@ module WEACE
       # Dump Listeners info
       def dumpInstalledSlaveListeners_HTML
         # Get the Listeners list
-        lSlaveListeners = @PluginsManager.getPluginsDescriptions('Slave/Listeners')
+        lSlaveListeners = @PluginsManager.get_plugins_descriptions('Slave/Listeners')
         # Consider only the installed ones
         # map< String, map< Symbol, Object > >
         lInstalledListeners = {}

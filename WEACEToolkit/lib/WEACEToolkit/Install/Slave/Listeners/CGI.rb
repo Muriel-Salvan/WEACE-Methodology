@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -18,7 +18,7 @@ module WEACEInstall
         # Install for real.
         # This is called only when check method returned no error.
         #
-        # Return:
+        # Return::
         # * _Exception_: An error, or nil in case of success
         def execute
           rError = nil
@@ -31,7 +31,7 @@ module WEACEInstall
             lCGIDir = @ProviderEnv[:CGI][:InternalDirectory]
             # Generate the CGI script
             lCGIScriptFileName = "#{lCGIDir}/WEACE/Actions.cgi"
-            logDebug "Generate CGI script (#{lCGIScriptFileName}) ..."
+            log_debug "Generate CGI script (#{lCGIScriptFileName}) ..."
             require 'fileutils'
             FileUtils::mkdir_p(File.dirname(lCGIScriptFileName))
             File.open(lCGIScriptFileName, 'w') do |iFile|
@@ -60,9 +60,9 @@ lSerializedActions = lCgi['actions']
 require '#{@WEACEEnvFile}'
 \# Call WEACE Slave Client library directly
 require 'rUtilAnts/Platform'
-RUtilAnts::Platform::initializePlatform
+RUtilAnts::Platform::install_platform_on_object
 require 'rUtilAnts/Misc'
-RUtilAnts::Misc::initializeMisc
+RUtilAnts::Misc::install_misc_on_object
 require 'WEACEToolkit/Slave/Client/WEACESlaveClient'
 lError = WEACE::Slave::Client.new.executeMarshalled(lUserID, lSerializedActions)
 if (lError == nil)

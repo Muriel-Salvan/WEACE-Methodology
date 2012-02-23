@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -40,7 +40,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
@@ -67,7 +67,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
@@ -85,7 +85,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
@@ -103,7 +103,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '',
                   :ProviderID => 'DummySlaveProvider'
                 },
@@ -141,7 +141,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--flag',
                   :ProviderID => 'DummySlaveProviderWithParams'
                 },
@@ -160,7 +160,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--dummyvar testvalue',
                   :ProviderID => 'DummySlaveProviderWithParamsValues'
                 },
@@ -179,7 +179,7 @@ module WEACE
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--repository %{WEACERepositoryDir}/CGI',
                   :ProviderID => 'DummySlaveProviderWithCGI'
                 },
@@ -221,7 +221,7 @@ end
                 :CheckComponentName => 'SlaveClient',
                 :CheckInstallFile => {
                   :Description => 'The WEACE Slave Client.',
-                  :Author => 'murielsalvan@users.sourceforge.net',
+                  :Author => 'muriel@x-aeon.com',
                   :InstallationParameters => '--shelldir %{WEACERepositoryDir}/WEACETools',
                   :ProviderID => 'DummySlaveProviderWithShell'
                 },

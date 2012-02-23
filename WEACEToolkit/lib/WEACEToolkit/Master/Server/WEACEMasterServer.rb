@@ -2,7 +2,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -17,7 +17,7 @@ class Hash
 
   # Return a hash corresponding to this object
   #
-  # Return:
+  # Return::
   # * _Integer_: The hash
   def hash
     lTmpArray = []
@@ -33,9 +33,9 @@ class Hash
 
   # Compare with another object
   #
-  # Parameters:
+  # Parameters::
   # * *iOther* (_Object_): Other object to compare with
-  # Return:
+  # Return::
   # * _Boolean_: Are both objects equal ?
   def ==(iOther)
     rEqual = false
@@ -72,7 +72,7 @@ module WEACE
     
       # Constructor
       #
-      # Parameters:
+      # Parameters::
       # * *iToolID* (_String_): The tool ID
       # * *iActionID* (_String_): The action ID
       # * *iParameters* (<em>list<String></em>): Additional parameters to give the Slave Client
@@ -98,7 +98,7 @@ module WEACE
 
       # Constructor
       #
-      # Parameters:
+      # Parameters::
       # * *iLocalFileName* (_String_): The encapsulated file name to transfer
       def initialize(iLocalFileName)
         @LocalFileName = iLocalFileName
@@ -109,7 +109,7 @@ module WEACE
 
       # Get the hash
       #
-      # Return:
+      # Return::
       # * _Integer_: The hash
       def hash
         return [ TransferFile, @LocalFileName.hash ].hash
@@ -134,7 +134,7 @@ module WEACE
         # Initialize logging if needed
         if (!defined?(RUtilAnts::Logging))
           require 'rUtilAnts/Logging'
-          RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+          RUtilAnts::Logging::install_logger_on_object(:lib_root_dir => File.expand_path("#{File.dirname(__FILE__)}/.."), :bug_tracker_url => 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         end
         # Read the directories locations
         setupWEACEDirs
@@ -143,13 +143,13 @@ module WEACE
         # Parse for plugins
         require 'rUtilAnts/Plugins'
         @PluginsManager = RUtilAnts::Plugins::PluginsManager.new
-        @PluginsManager.parsePluginsFromDir('Processes', "#{@WEACELibDir}/Master/Server/Processes", 'WEACE::Master::Server::Processes')
-        @PluginsManager.parsePluginsFromDir('Senders', "#{@WEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
+        @PluginsManager.parse_plugins_from_dir('Processes', "#{@WEACELibDir}/Master/Server/Processes", 'WEACE::Master::Server::Processes')
+        @PluginsManager.parse_plugins_from_dir('Senders', "#{@WEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
       end
 
       # Get options of the WEACE Master Server
       #
-      # Return:
+      # Return::
       # * _OptionParser_: The options parser
       def getOptions
         rOptions = OptionParser.new
@@ -198,9 +198,9 @@ module WEACE
 
       # Execute the server for a given configuration
       #
-      # Parameters:
+      # Parameters::
       # * *iParameters* (<em>list<String></em>): The list of parameters
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def execute(iParameters)
         rError = nil
@@ -211,13 +211,13 @@ module WEACE
           rError = RuntimeError.new('MasterServer has not been installed correctly. Please use WEACEInstall.rb to install it.')
         else
           # Create log file
-          lLogFile = @MasterServerConfig[:LogFile]
+          lLogFile = @MasterServerConfig[:log_file]
           if (lLogFile == nil)
             lLogFile = "#{@WEACERepositoryDir}/Log/MasterServer.log"
           end
           require 'fileutils'
           FileUtils::mkdir_p(File.dirname(lLogFile))
-          setLogFile(lLogFile)
+          set_log_file(lLogFile)
           @DebugMode = false
           @ForceMode = false
           @ProcessID = nil
@@ -260,7 +260,7 @@ module WEACE
                   # TODO
                 else
                   # Display what is accessible
-                  lProcesses = @PluginsManager.getPluginNames('Processes')
+                  lProcesses = @PluginsManager.get_plugins_names('Processes')
                   puts "== #{lProcesses.size} available Processes: #{lProcesses.join(', ')}"
                 end
               end
@@ -273,32 +273,32 @@ module WEACE
                 if (@UserID == nil)
                   rError = CommandLineError.new('You must specify the UserID initiating this Process with --user option.')
                 else
-                  activateLogDebug(@DebugMode)
+                  activate_log_debug(@DebugMode)
                   # Log startup
-                  logInfo '== WEACE Master Server called =='
-                  logDebug "* User: #{@UserID}"
-                  logDebug "* Process: #{@ProcessID}"
-                  logDebug "* Parameters: #{lProcessArgs.join(' ')}"
-                  logDebug "#{@MasterServerConfig[:WEACESlaveClients].size} clients configuration:"
+                  log_info '== WEACE Master Server called =='
+                  log_debug "* User: #{@UserID}"
+                  log_debug "* Process: #{@ProcessID}"
+                  log_debug "* Parameters:: #{lProcessArgs.join(' ')}"
+                  log_debug "#{@MasterServerConfig[:WEACESlaveClients].size} clients configuration:"
                   lIdx = 0
                   @MasterServerConfig[:WEACESlaveClients].each do |iSlaveClientInfo|
-                    logDebug "* Client n.#{lIdx}:"
-                    logDebug "** Type: #{iSlaveClientInfo[:Type]}"
-                    logDebug "** #{iSlaveClientInfo[:Tools].size} tools are installed on this client:"
+                    log_debug "* Client n.#{lIdx}:"
+                    log_debug "** Type: #{iSlaveClientInfo[:Type]}"
+                    log_debug "** #{iSlaveClientInfo[:Tools].size} tools are installed on this client:"
                     iSlaveClientInfo[:Tools].each do |iToolID|
-                      logDebug "*** #{iToolID}"
+                      log_debug "*** #{iToolID}"
                     end
-                    logDebug '** Parameters:'
+                    log_debug '** Parameters::'
                     iSlaveClientInfo.each do |iKey, iValue|
                       if ((iKey != :Type) and
                           (iKey != :Tools))
-                        logDebug "** #{iKey}: #{iValue.inspect}"
+                        log_debug "** #{iKey}: #{iValue.inspect}"
                       end
                     end
                     lIdx += 1
                   end
                   # Check that ProcessID exists
-                  @PluginsManager.accessPlugin('Processes', @ProcessID) do |iProcessPlugin|
+                  @PluginsManager.access_plugin('Processes', @ProcessID) do |iProcessPlugin|
                     # Get options from the plugin and parse them
                     lProcessOptions = iProcessPlugin.getOptions
                     # Parse options
@@ -318,7 +318,7 @@ module WEACE
                       end
                       if (rError == nil)
                         if (lSlaveActions.SlaveActions.empty?)
-                          logWarn "No SlaveAction was issued by Process #{@ProcessID}."
+                          log_warn "No SlaveAction was issued by Process #{@ProcessID}."
                         else
                           # Gather a list of errors
                           # list< String >
@@ -337,7 +337,7 @@ module WEACE
                               end
                             end
                             if (lSlaveActionsForClient.empty?)
-                              logDebug "No Slave Action for #{iSlaveClientInfo.inspect}"
+                              log_debug "No Slave Action for #{iSlaveClientInfo.inspect}"
                             else
                               # Add this information to the queue of SlaveActions to send to this client
                               lError = pushSlaveActions(@UserID, iSlaveClientInfo, lSlaveActionsForClient)
@@ -371,16 +371,16 @@ module WEACE
 
       # Add a set of Slave Actions to be performed
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): The User ID initiating those SlaveActions
       # * *iSlaveClientInfo* (<em>map<Symbol,Object></em>): The SlaveClient's information
       # * *iSlaveActions* (<em>map<ToolID,map<ActionID,list<Parameters>>></em>): The SlaveActions to perform on this client
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def pushSlaveActions(iUserID, iSlaveClientInfo, iSlaveActions)
         rError = nil
 
-        logDebug "Adding SlaveActions to #{iSlaveClientInfo.inspect}"
+        log_debug "Adding SlaveActions to #{iSlaveClientInfo.inspect}"
         # Get errors
         # list< String >
         lErrors = []
@@ -423,9 +423,9 @@ module WEACE
 
       # Mark a file to be transfered.
       #
-      # Parameters:
+      # Parameters::
       # * *iLocalFileName* (_String_): The local file name
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def addLocalFileToBeTransfered(iLocalFileName)
         rError = nil
@@ -448,7 +448,7 @@ module WEACE
 
       # Perform the remaining Slave Actions to be sent to Slave Clients
       #
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def performRemainingSlaveActions
         rError = nil
@@ -496,7 +496,7 @@ module WEACE
       # Mark files present in those SlaveActions as transfered.
       # Effectively remove files that are not meant to be transfered anymore.
       #
-      # Parameters:
+      # Parameters::
       # * *iSlaveActions* (<em>map<ToolID,map<ActionID,list<Parameters>>></em>): The SlaveActions containing references to files to delete.
       def markFilesTransfered(iSlaveActions)
         rError = nil
@@ -514,7 +514,7 @@ module WEACE
                 iParameters.each do |iParameter|
                   if (iParameter.is_a?(TransferFile))
                     if (lTransferFiles[iParameter.LocalFileName] == nil)
-                      logErr "File #{iParameter.LocalFileName} should have been marked for transfer, but no trace of it was found. It appears the transfer files database might be corrupted."
+                      log_err "File #{iParameter.LocalFileName} should have been marked for transfer, but no trace of it was found. It appears the transfer files database might be corrupted."
                     else
                       lTransferFiles[iParameter.LocalFileName] -= 1
                       if (lTransferFiles[iParameter.LocalFileName] == 0)
@@ -549,7 +549,7 @@ module WEACE
 
       # Get the set of files to be transfered, with their counters
       #
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil if success
       # * <em>map<String,Integer></em>: The set of files to transfer, along with their counters.
       def getFilesToBeTransfered
@@ -572,9 +572,9 @@ module WEACE
 
       # Save files to be transferred
       #
-      # Parameters:
+      # Parameters::
       # * <em>map<String,Integer></em>: The set of files to transfer, along with their counters.
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil if success
       def putFilesToBeTransfered(iTransferFiles)
         rError = nil
@@ -594,13 +594,13 @@ module WEACE
 
       # Loop among every SlaveClient's non-empty queues
       #
-      # Parameters:
+      # Parameters::
       # * *CodeBlock*: Code called for each SlaveClient's queue found non-empty:
-      # ** *iSlaveClientInfo* (<em>map<Symbol,Object></em>): The SlaveClient's information
-      # ** *iSlaveClientQueue* (<em>list<[String,map<ToolID,map<ActionID,list<Parameters>>>]></em>): The SlaveClient's queue
-      # ** Return:
-      # ** <em>list<[String,map<ToolID,map<ActionID,list<Parameters>>>]></em>: The new SlaveClient's queue to store, replacing the one given
-      # Return:
+      #   * *iSlaveClientInfo* (<em>map<Symbol,Object></em>): The SlaveClient's information
+      #   * *iSlaveClientQueue* (<em>list< [String,map<ToolID,map<ActionID,list<Parameters>>>] ></em>): The SlaveClient's queue
+      #   * Return::
+      #   * <em>list< [String,map<ToolID,map<ActionID,list<Parameters>>>] ></em>: The new SlaveClient's queue to store, replacing the one given
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def foreachSlaveClientQueue
         rError = nil
@@ -636,7 +636,7 @@ module WEACE
 
       # Get the list of SlaveClients' info that have a non-empty processing queue
       #
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success.
       # * <em>list<map<Symbol,Object>></em>): The list of SlaveClients' info.
       def getRemainingSlaveClientInfos
@@ -660,18 +660,18 @@ module WEACE
       # Get the SlaveClient processing queue corresponding to a given SlaveClient info.
       # Initialize an empty queue if none was set.
       #
-      # Parameters:
+      # Parameters::
       # * *iSlaveClientInfo* (<em>map<Symbol,Object></em>): The SlaveClient info
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil if success
-      # * <em>list<[String,map<ToolID,map<ActionID,list<Parameters>>>]></em>: The SlaveClient queue
+      # * <em>list< [String,map<ToolID,map<ActionID,list<Parameters>>>] ></em>: The SlaveClient queue
       def getSlaveClientQueue(iSlaveClientInfo)
         rError = nil
         rSlaveClientQueue = []
 
         # Get the hash of this SlaveClient info
         lHash = sprintf('%X', iSlaveClientInfo.hash.abs)
-        logDebug "Get SlaveClient queue #{lHash} for #{iSlaveClientInfo.inspect}"
+        log_debug "Get SlaveClient queue #{lHash} for #{iSlaveClientInfo.inspect}"
         lQueueFile = "#{@SlaveClientQueuesDir}/#{lHash}.Queue"
         if (File.exists?(lQueueFile))
           begin
@@ -688,10 +688,10 @@ module WEACE
 
       # Save the SlaveClient queue for a given SlaveClient info.
       #
-      # Parameters:
+      # Parameters::
       # * *iSlaveClientInfo* (<em>map<Symbol,Object></em>): The SlaveClient info
-      # * *iSlaveClientQueue* (<em>list<[String,map<ToolID,map<ActionID,list<Parameters>>>]></em>): The SlaveClient queue
-      # Return:
+      # * *iSlaveClientQueue* (<em>list< [String,map<ToolID,map<ActionID,list<Parameters>>>] ></em>): The SlaveClient queue
+      # Return::
       # * _Exception_: An error, or nil if success
       def putSlaveClientQueue(iSlaveClientInfo, iSlaveClientQueue)
         rError = nil
@@ -729,11 +729,11 @@ module WEACE
 
       # Send SlaveActions associated to a SlaveClient Info
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): User initiating these SlaveActions
       # * *iSlaveClientInfo* (<em>map<Symbol,Object></em>): The SlaveClient's information
       # * *iSlaveActions* (<em>map<ToolID,map<ActionID,list<Parameters>>></em>): The SlaveActions to perform on this client
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def sendSlaveActions(iUserID, iSlaveClientInfo, iSlaveActions)
         rError = nil
@@ -742,7 +742,7 @@ module WEACE
         # list< String >
         lErrors = []
         # Get the Sender
-        @PluginsManager.accessPlugin('Senders', iSlaveClientInfo[:Type]) do |ioSenderPlugin|
+        @PluginsManager.access_plugin('Senders', iSlaveClientInfo[:Type]) do |ioSenderPlugin|
           # Create the map of parameters to give the Sender
           lParameters = iSlaveClientInfo.dup
           lParameters.delete(:Type)
@@ -781,13 +781,13 @@ module WEACE
           end
           if (!lErrorEncountered)
             # Send them, calling the correct sender, depending on the Slave Client type
-            logDebug "Send update (user #{iUserID}) to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect} ..."
+            log_debug "Send update (user #{iUserID}) to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect} ..."
             lError = ioSenderPlugin.sendMessage(iUserID, lSlaveActionsForClient)
             if (lError == nil)
-              logDebug "... Update sent successfully to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}"
+              log_debug "... Update sent successfully to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}"
             else
               lErrors << "Unable to send the update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}: #{lError}"
-              logDebug "... Failure to send update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}: #{lError}"
+              log_debug "... Failure to send update to client #{iSlaveClientInfo[:Type]}: #{lParameters.inspect}: #{lError}"
             end
           end
         end

@@ -9,7 +9,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -56,7 +56,7 @@ module WEACE
 
         # Constructor
         #
-        # Parameters:
+        # Parameters::
         # * *iProductID* (_String_): The Product ID
         # * *iToolID* (_String_): The Tool ID
         # * *iActionID* (_String_): The Action ID
@@ -78,8 +78,8 @@ module WEACE
 
         # Constructor
         #
-        # Parameters:
-        # * *iErrorsList* (<em>list<[iProductID,iToolID,iActionID,iActionParameters,Exception]></em>): The list of errors
+        # Parameters::
+        # * *iErrorsList* (<em>list< [iProductID,iToolID,iActionID,iActionParameters,Exception] ></em>): The list of errors
         def initialize(iErrorsList)
           lStrErrors = []
           iErrorsList.each do |iErrorInfo|
@@ -97,7 +97,7 @@ module WEACE
         # Initialize logging if needed
         if (!defined?(RUtilAnts::Logging))
           require 'rUtilAnts/Logging'
-          RUtilAnts::Logging::initializeLogging(File.expand_path("#{File.dirname(__FILE__)}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
+          RUtilAnts::Logging::install_logger_on_object(:lib_root_dir => File.expand_path("#{File.dirname(__FILE__)}/.."), :bug_tracker_url => 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
         end
         # Protection to initialize log file only once
         @AlreadyInitialized = false
@@ -111,10 +111,10 @@ module WEACE
     
       # Execute the server with the configuration given serialized
       #
-      # Parameters:
+      # Parameters::
       # * *iUserScriptID* (_String_): The user name of the script
       # * *iSerializedActions* (_String_): The serialized actions to execute
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def executeMarshalled(iUserScriptID, iSerializedActions)
         rError = nil
@@ -137,9 +137,9 @@ module WEACE
     
       # Execute the server for a given configuration
       #
-      # Parameters:
+      # Parameters::
       # * *iParameters* (<em>list<String></em>): The parameters
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def execute(iParameters)
         rError = nil
@@ -303,10 +303,10 @@ Check http://weacemethod.sourceforge.net for details."
       
       # Execute all the Actions having parameters.
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): The User ID
       # * *iActionsToExecute* (<em>map<ToolID,map<ActionID,list<list<String>>>></em>): Map of Actions to execute per Tool, along with their lists of parameters
-      # Return:
+      # Return::
       # * _ActionExecutionsError_: An error, or nil in case of success
       def executeActions(iUserID, iActionsToExecute)
         rError = nil
@@ -314,8 +314,8 @@ Check http://weacemethod.sourceforge.net for details."
         # As this method can be called publicly directly, make preliminary checks
         rError = initConfAndLogFile
         if (rError == nil)
-          activateLogDebug(@DebugMode)
-          logInfo '== WEACE Slave Client called =='
+          activate_log_debug(@DebugMode)
+          log_info '== WEACE Slave Client called =='
           dumpDebugInfo(iUserID, @SlaveClientConfig[:WEACESlaveAdapters], iActionsToExecute)
 
           # Create the map of installed Products for each Tool/Action.
@@ -407,7 +407,7 @@ Check http://weacemethod.sourceforge.net for details."
       # Make sure the SlaveClient is configured correctly, and start its log file
       # This method is protected to be called several times
       #
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil if success
       def initConfAndLogFile
         rError = nil
@@ -420,13 +420,13 @@ Check http://weacemethod.sourceforge.net for details."
             rError = RuntimeError.new('SlaveClient has not been installed correctly. Please use WEACEInstall.rb to install it.')
           else
             # Create log file
-            lLogFile = @SlaveClientConfig[:LogFile]
+            lLogFile = @SlaveClientConfig[:log_file]
             if (lLogFile == nil)
               lLogFile = "#{@WEACERepositoryDir}/Log/SlaveClient.log"
             end
             require 'fileutils'
             FileUtils::mkdir_p(File.dirname(lLogFile))
-            setLogFile(lLogFile)
+            set_log_file(lLogFile)
           end
         end
 
@@ -435,11 +435,11 @@ Check http://weacemethod.sourceforge.net for details."
 
       # Get the configuration of the given Product/Tool
       #
-      # Parameters:
+      # Parameters::
       # * *iSlaveAdapters* (<em>list<map<Symbol,Object>></em>): The list of WEACE Slave Adapters as stated in the configuration file
       # * *iProductID* (_String_): The Product ID
       # * *iToolID* (_String_): The Tool ID
-      # Return:
+      # Return::
       # * <em>map<Symbol,Object></em>: The corresponding configuration, or nil if not found
       def getProductConfig(iSlaveAdapters, iProductID, iToolID)
         rConfig = nil
@@ -457,13 +457,13 @@ Check http://weacemethod.sourceforge.net for details."
 
       # Execute an Action for a given Product/Tool given its configuration
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): The User ID
       # * *iActionID* (_String_): The Action ID
       # * *iActionParameters* (<em>list<String></em>): The parameters to give to the Action
       # * *iProductName* (_String_): The Product name
       # * *iToolID* (_String_): The Tool ID
-      # Return:
+      # Return::
       # * _Exception_: An error, or ni in case of success
       def executeAction(iUserID, iActionID, iActionParameters, iProductName, iToolID)
         rError = nil
@@ -479,16 +479,16 @@ Check http://weacemethod.sourceforge.net for details."
           lProductConfig = getComponentConfigInfo(iProductName)
           lToolConfig = getComponentConfigInfo("#{iProductName}.#{iToolID}")
           lActionConfig = getComponentConfigInfo("#{iProductName}.#{iToolID}.#{iActionID}")
-          logDebug 'Executing action on a product using an adapter:'
-          logDebug "* Product: #{iProductName} (#{lProductID})"
-          logDebug "* Product config: #{lProductConfig.inspect}"
-          logDebug "* Tool: #{iToolID}"
-          logDebug "* Tool config: #{lToolConfig.inspect}"
-          logDebug "* Action: #{iActionID}"
-          logDebug "* Action config: #{lActionConfig.inspect}"
-          logDebug "* Action parameters: #{iActionParameters.inspect}"
+          log_debug 'Executing action on a product using an adapter:'
+          log_debug "* Product: #{iProductName} (#{lProductID})"
+          log_debug "* Product config: #{lProductConfig.inspect}"
+          log_debug "* Tool: #{iToolID}"
+          log_debug "* Tool config: #{lToolConfig.inspect}"
+          log_debug "* Action: #{iActionID}"
+          log_debug "* Action config: #{lActionConfig.inspect}"
+          log_debug "* Action parameters: #{iActionParameters.inspect}"
           # Access the correct plugin
-          @PluginsManager.accessPlugin("Actions/#{lProductID}/#{iToolID}", iActionID) do |ioAdapterPlugin|
+          @PluginsManager.access_plugin("Actions/#{lProductID}/#{iToolID}", iActionID) do |ioAdapterPlugin|
             ioAdapterPlugin.instance_variable_set(:@ProductConfig, lProductConfig)
             ioAdapterPlugin.instance_variable_set(:@ToolConfig, lToolConfig)
             ioAdapterPlugin.instance_variable_set(:@ActionConfig, lActionConfig)
@@ -498,7 +498,7 @@ Check http://weacemethod.sourceforge.net for details."
               lLogError = ioAdapterPlugin.logProduct(iUserID, iProductName, lProductID, iToolID, iActionID, rError, iActionParameters)
               if (lLogError != nil)
                 # Log it and transfer it if no error otherwise
-                logErr "Error while logging operation in the Product: #{lLogError}"
+                log_err "Error while logging operation in the Product: #{lLogError}"
                 if (rError == nil)
                   rError = RuntimeError.new("Error while logging operation in the Product: #{lLogError}")
                 end
@@ -509,9 +509,9 @@ Check http://weacemethod.sourceforge.net for details."
               rError = AdapterError.new(lProductID, iToolID, iActionID, $!)
             end
             if (rError == nil)
-              logDebug 'Action completed without error.'
+              log_debug 'Action completed without error.'
             else
-              logDebug "Action completed with an error: #{rError}."
+              log_debug "Action completed with an error: #{rError}."
             end
           end
         end
@@ -522,18 +522,18 @@ Check http://weacemethod.sourceforge.net for details."
       # Execute an Action given to a list of Products.
       # Check if this Product/Tool/Action is active among SlaveClient's configuration.
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): The User ID
       # * *iProductsList* (<em>list<String></em>): The Products list
       # * *iToolID* (_String_): The corresponding Tool ID
       # * *iActionID* (_String_): The corresponding Action ID
       # * *iAskedParameters* (<em>list<list<String>></em>): The list of parameters to apply to the Action
-      # Return:
-      # * <em>list<[String,String,String,list<String>,Exception]></em>: The list of errors encountered: [ ProductID, ToolID, ActionID, ActionParameters, Error ].
+      # Return::
+      # * <em>list< [String,String,String,list<String>,Exception] ></em>: The list of errors encountered: [ ProductID, ToolID, ActionID, ActionParameters, Error ].
       def executeActionForProductsList(iUserID, iProductsList, iToolID, iActionID, iAskedParameters)
         rErrors = []
 
-        logDebug "Execute #{iToolID}/#{iActionID} for Products #{iProductsList.join(', ')}"
+        log_debug "Execute #{iToolID}/#{iActionID} for Products #{iProductsList.join(', ')}"
         iAskedParameters.each do |iActionParameters|
           iProductsList.each do |iProductName|
             # Check that iProductName/iToolID/iActionID is active
@@ -560,7 +560,7 @@ Check http://weacemethod.sourceforge.net for details."
 
       # Display to the user the available Actions.
       #
-      # Parameters:
+      # Parameters::
       # * *iDisplayDetails* (_Boolean_): Do we display detailed report ?
       # * *iSlaveAdapters* (<em>list<map<Symbol,Object>></em>): The list of WEACE Slave Adapters as stated in the configuration file
       def outputActions(iDisplayDetails, iSlaveAdapters)
@@ -622,33 +622,33 @@ Check http://weacemethod.sourceforge.net for details."
 
       # Dump debugging information about WEACE Slave Client
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): The User ID
       # * *iSlaveAdapters* (<em>list<map<Symbol,Object>></em>): The list of WEACE Slave Adapters as stated in the configuration file
       # * *iActionsToExecute* (<em>map<ToolID,map<ActionID,list<list<String>>>></em>): Map of Actions to execute per Tool, along with their lists of parameters
       def dumpDebugInfo(iUserID, iSlaveAdapters, iActionsToExecute)
         # The User
-        logDebug "* User: #{iUserID}"
+        log_debug "* User: #{iUserID}"
         # The Actions we want to execute
-        logDebug "** #{iActionsToExecute.size} Tools have Actions to execute:"
+        log_debug "** #{iActionsToExecute.size} Tools have Actions to execute:"
         iActionsToExecute.each do |iToolID, iToolInfo|
-          logDebug "** Tool: #{iToolID} has #{iToolInfo.size} Actions to execute"
+          log_debug "** Tool: #{iToolID} has #{iToolInfo.size} Actions to execute"
           iToolInfo.each do |iActionID, iAskedParameters|
-            logDebug "*** Action: #{iActionID}"
-            logDebug "**** Asked to be executed #{iAskedParameters.size} times:"
+            log_debug "*** Action: #{iActionID}"
+            log_debug "**** Asked to be executed #{iAskedParameters.size} times:"
             iAskedParameters.each do |iActionParameters|
-              logDebug "***** #{iActionParameters.join(' ')}"
+              log_debug "***** #{iActionParameters.join(' ')}"
             end
           end
         end
         # The active Products from SlaveClient configuration
-        logDebug "#{iSlaveAdapters.size} active Products:"
+        log_debug "#{iSlaveAdapters.size} active Products:"
         iSlaveAdapters.each do |iProductName, iToolsSet|
-          logDebug "* Product: #{iProductName} (#{iToolsSet.size} active Tools)"
+          log_debug "* Product: #{iProductName} (#{iToolsSet.size} active Tools)"
           iToolsSet.each do |iToolID, iActionsList|
-            logDebug "** Tool: #{iToolID} (#{iActionsList.size} active Actions)"
+            log_debug "** Tool: #{iToolID} (#{iActionsList.size} active Actions)"
             iActionsList.each do |iActionID|
-              logDebug "*** Action: #{iActionID}"
+              log_debug "*** Action: #{iActionID}"
             end
           end
         end
@@ -656,7 +656,7 @@ Check http://weacemethod.sourceforge.net for details."
       
       # Parse WEACE Slave Adapters from a given Adapters directory
       #
-      # Parameters:
+      # Parameters::
       # * *iDir* (_String_): The directory in which Adapters are to be parsed
       def parseAdapters(iDir)
         Dir.glob("#{iDir}/*").each do |iProductDir|
@@ -665,7 +665,7 @@ Check http://weacemethod.sourceforge.net for details."
             Dir.glob("#{iDir}/#{lProductID}/*").each do |iToolDir|
               if (File.directory?(iToolDir))
                 lToolID = File.basename(iToolDir)
-                @PluginsManager.parsePluginsFromDir("Actions/#{lProductID}/#{lToolID}", "#{iDir}/#{lProductID}/#{lToolID}", "WEACE::Slave::Adapters::#{lProductID}::#{lToolID}")
+                @PluginsManager.parse_plugins_from_dir("Actions/#{lProductID}/#{lToolID}", "#{iDir}/#{lProductID}/#{lToolID}", "WEACE::Slave::Adapters::#{lProductID}::#{lToolID}")
               end
             end
           end

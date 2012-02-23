@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,9 +11,9 @@ module Kernel
 
   # Execute a command on the OS.
   #
-  # Parameters:
+  # Parameters::
   # * *iCommand* (_String_): The command to execute
-  # Return:
+  # Return::
   # * _String_: The result
   def backquote_regression(iCommand)
     rResult = ''
@@ -66,11 +66,11 @@ module WEACE
       # * It will eventually install some Actions
       # * It will eventually configure some Products
       #
-      # Parameters:
+      # Parameters::
       # * *iNewWEACERepositoryDir* (_String_): New repository path to be used
       # * *iAddRegressionActions* (_Boolean_): Do we add regression Actions ?
-      # * *iInstallActions* (<em>list<[String,String,String]></em>): List of Actions to install: [ ProductID, ToolID, ActionID ].
-      # * *iConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ].
+      # * *iInstallActions* (<em>list< [String,String,String] ></em>): List of Actions to install: [ ProductID, ToolID, ActionID ].
+      # * *iConfigureProducts* (<em>list< [String,String,map<Symbol,Object>] ></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ].
       # * *CodeBlock*: The code to execute once the class has been prepared
       def self.changeClient(iNewWEACERepositoryDir, iAddRegressionActions, iInstallActions, iConfigureProducts)
         @@Regression_WEACERepositoryDir, @@Regression_AddRegressionActions, @@Regression_InstallActions, @@Regression_ConfigureProducts = iNewWEACERepositoryDir, iAddRegressionActions, iInstallActions, iConfigureProducts
@@ -90,9 +90,9 @@ module WEACE
 
       # Execute the SlaveClient for a given configuration
       #
-      # Parameters:
+      # Parameters::
       # * *iParameters* (<em>list<String></em>): The parameters
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def execute_Regression(iParameters)
         # First, we parse, install and configure Actions from the Regression
@@ -116,7 +116,7 @@ module WEACE
 
       # Change the repository location
       #
-      # Parameters:
+      # Parameters::
       # * *iRepositoryPath* (_String_): New repository location
       def changeRepositoryPath(iRepositoryPath)
         @WEACEInstallDir = "#{iRepositoryPath}/Install"
@@ -131,8 +131,8 @@ module WEACE
 
       # Mark some Actions as being installed
       #
-      # Parameters:
-      # * *iInstallActions* (<em>list<[String,String,String]></em>): List of Actions to install: [ ProductID, ToolID, ActionID ].
+      # Parameters::
+      # * *iInstallActions* (<em>list< [String,String,String] ></em>): List of Actions to install: [ ProductID, ToolID, ActionID ].
       def installActions(iInstallActions)
         iInstallActions.each do |iInstalledActionInfo|
           iProductID, iToolID, iActionID = iInstalledActionInfo
@@ -163,8 +163,8 @@ module WEACE
 
       # Add some Products to the configuration
       #
-      # Parameters:
-      # * *iConfigureProducts* (<em>list<[String,String,map<Symbol,Object>]></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ].
+      # Parameters::
+      # * *iConfigureProducts* (<em>list< [String,String,map<Symbol,Object>] ></em>): The list of Product/Tool to configure: [ ProductID, ToolID, Parameters ].
       def configureProducts(iConfigureProducts)
         # Bypass the configuration file reader to force our configuration
         $WEACESlaveConfig = getComponentConfigInfo('SlaveClient')
@@ -205,10 +205,10 @@ module WEACE
 
       # Setup a temporary file, and delete it once the code block exits.
       #
-      # Parameters:
+      # Parameters::
       # * *iFileToBeDeleted* (_Boolean_): Do we need to delete the file at the end ? [optional = true]
       # * *CodeBlock*: Code called once the file is created
-      # ** *iFileName* (_String_): The file name created
+      #   * *iFileName* (_String_): The file name created
       def setupTempFile(iFileToBeDeleted = true)
         require 'tmpdir'
         lLocalFileName = "#{Dir.tmpdir}/WEACEReg_SenderFile_#{Thread.current.object_id}"
@@ -222,11 +222,11 @@ module WEACE
             if (File.exists?(lLocalFileName))
               File.unlink(lLocalFileName)
             else
-              logErr "File #{lLocalFileName} was supposed to be deleted, but it is missing."
+              log_err "File #{lLocalFileName} was supposed to be deleted, but it is missing."
               assert(false)
             end
           elsif (File.exists?(lLocalFileName))
-            logErr "File #{lLocalFileName} was supposed to be missing, but it is still present."
+            log_err "File #{lLocalFileName} was supposed to be missing, but it is still present."
             assert(false)
           end
           raise
@@ -235,11 +235,11 @@ module WEACE
           if (File.exists?(lLocalFileName))
             File.unlink(lLocalFileName)
           else
-            logErr "File #{lLocalFileName} was supposed to be deleted, but it is missing."
+            log_err "File #{lLocalFileName} was supposed to be deleted, but it is missing."
             assert(false)
           end
         elsif (File.exists?(lLocalFileName))
-          logErr "File #{lLocalFileName} was supposed to be missing, but it is still present."
+          log_err "File #{lLocalFileName} was supposed to be missing, but it is still present."
           assert(false)
         end
       end
@@ -248,12 +248,12 @@ module WEACE
       # If the matching pattern is a Regexp, that the Call is matched using this Regexp. Otherwise an equality test is made.
       # It raises assert exceptions in cases of failures
       #
-      # Parameters:
-      # * *iCallsMatch* (<em>list<[String,Object]></em>): The calls matching patterns
-      # * *iCalls* (<em>list<[String,Object]></em>): The calls to test against the patterns
+      # Parameters::
+      # * *iCallsMatch* (<em>list< [String,Object] ></em>): The calls matching patterns
+      # * *iCalls* (<em>list< [String,Object] ></em>): The calls to test against the patterns
       def checkCallsMatch(iCallsMatch, iCalls)
         if (iCallsMatch.size != iCalls.size)
-          logErr "Mismatch Call data:\nExpected #{iCallsMatch.size} lines:\n#{iCallsMatch.inspect}\nReceived #{iCalls.size} lines:\n#{iCalls.inspect}"
+          log_err "Mismatch Call data:\nExpected #{iCallsMatch.size} lines:\n#{iCallsMatch.inspect}\nReceived #{iCalls.size} lines:\n#{iCalls.inspect}"
         end
         assert_equal(iCallsMatch.size, iCalls.size)
         lIdxCall = 0
@@ -269,7 +269,7 @@ module WEACE
             # Match using the RegExp
             lMatchData = iCallData.match(iCallMatchData)
             if (lMatchData == nil)
-              logErr "Mismatch Call data:\nExpected:\n#{iCallMatchData}\nReceived:\n#{iCallData}"
+              log_err "Mismatch Call data:\nExpected:\n#{iCallMatchData}\nReceived:\n#{iCallData}"
               assert(false)
             else
               assert(true)
@@ -287,7 +287,7 @@ module WEACE
 
       # Change a method into another of a specific class, and ensure changing it back.
       #
-      # Parameters:
+      # Parameters::
       # * *iClass* (_class_): Class in which we change the method
       # * *iOldMethod* (_Symbol_): Symbol of the method to replace
       # * *iNewMethod* (_Symbol_): Symbol of the replacing method
@@ -316,7 +316,7 @@ module WEACE
 
       # Change a singleton method into another of a specific class, and ensure changing it back.
       #
-      # Parameters:
+      # Parameters::
       # * *iClass* (_class_): Class in which we change the method
       # * *iOldMethod* (_Symbol_): Symbol of the method to replace
       # * *iNewMethod* (_Symbol_): Symbol of the replacing method
@@ -381,7 +381,7 @@ module WEACE
                 if (lMatchData == nil)
                   lMatchData = lClassName.match(/^WEACE::Test::Install::.*::Providers::(.*)$/)
                   if (lMatchData == nil)
-                    logDebug "Unable to parse test case name: #{lClassName}."
+                    log_debug "Unable to parse test case name: #{lClassName}."
                   else
                     @ProductID = lMatchData[1]
                   end
@@ -414,7 +414,7 @@ module WEACE
                 if (lMatchData == nil)
                   lMatchData = lClassName.match(/^WEACE::Test::.*::Providers::(.*)$/)
                   if (lMatchData == nil)
-                    logDebug "Unable to parse test case name: #{lClassName}."
+                    log_debug "Unable to parse test case name: #{lClassName}."
                   else
                     @ProductID = lMatchData[1]
                   end
@@ -437,7 +437,7 @@ module WEACE
       # This method can then be used in setup or in single execution methods.
       # It ensures that logging mechanism will be correctly initialized and finalized
       #
-      # Parameters:
+      # Parameters::
       # * _CodeBlock_: Code executed once the test case has been initialized
       def initTestCase
         # It is possible to call it several times. Protect it from it.
@@ -448,8 +448,8 @@ module WEACE
           #   map< Symbol, Object >
           @ContextVars = {}
           # Mute any output except for terminal output.
-          setLogErrorsStack([])
-          setLogMessagesStack([])
+          set_log_errors_stack([])
+          set_log_messages_stack([])
           # Clear variables set in tests
           # map< Symbol, Object >
           $Variables = {}
@@ -464,11 +464,11 @@ module WEACE
           begin
             yield
           rescue Exception
-            setLogFile(nil)
+            set_log_file(nil)
             @AlreadyInit = false
             raise
           end
-          setLogFile(nil)
+          set_log_file(nil)
           @AlreadyInit = false
         else
           yield
@@ -478,9 +478,9 @@ module WEACE
       # Replace variables from @ContextVariables in generic objects.
       # Processes lists and maps recursively.
       #
-      # Parameters:
+      # Parameters::
       # * *iObject* (_Object_): The object were we want to replace variables (unmodified)
-      # Return:
+      # Return::
       # * _Object_: The object with variables replaced (can be a cloned version or not)
       def replaceObjectVars(iObject)
         rObject = nil
@@ -509,9 +509,9 @@ module WEACE
       # Replace alse '%%' with '%'
       # Don't replace anything if @ContextVars is not defined.
       #
-      # Parameters:
+      # Parameters::
       # * *iLine* (_String_): The line containing variables
-      # Return:
+      # Return::
       # * _String_: The line with variables replaced
       def replaceVars(iLine)
         rResult = iLine.clone
@@ -528,7 +528,7 @@ module WEACE
 
       # Copy a directory content into another, ignoring SVN files
       #
-      # Parameters:
+      # Parameters::
       # * *iSrcDir* (_String_): Source directory
       # * *iDstDir* (_String_): Destination directory
       def copyDir(iSrcDir, iDstDir)
@@ -561,11 +561,11 @@ module WEACE
       # Create a temporary directory as a copy of another directory, and ensure it will be deleted after some code has been executed.
       # The temporary directory is not the exact image of the source one: files can be altered by using @ContextVars.
       #
-      # Parameters:
+      # Parameters::
       # * *iSrcDir* (_String_): Source directory to copy from
       # * *iBaseName* (_String_): Name to be used in the temporary directory [optional = nil]
       # * _CodeBlock_: The code called once the temporary has been created:
-      # ** *iTmpDir* (_String_): Name of the temporary directory, image of the source one.
+      #   * *iTmpDir* (_String_): Name of the temporary directory, image of the source one.
       def setupTmpDir(iSrcDir, iBaseName = nil)
         # Find a good temporary directory name
         lTmpDir = nil
@@ -579,7 +579,7 @@ module WEACE
         end
         @@UniqueCounter += 1
         # Copy the directories
-        logDebug "-> Create image of #{iSrcDir} in #{lTmpDir}"
+        log_debug "-> Create image of #{iSrcDir} in #{lTmpDir}"
         # Clean first if already present
         if (File.exists?(lTmpDir))
           FileUtils::rm_rf(lTmpDir)
@@ -590,7 +590,7 @@ module WEACE
           yield(lTmpDir)
         ensure
           # Delete the temporary directory
-          if (!debugActivated?)
+          if (!debug_activated?)
             FileUtils::rm_rf(lTmpDir)
           end
         end

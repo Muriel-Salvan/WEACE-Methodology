@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -27,13 +27,13 @@ module WEACE
             
             # Add the commit information to the wiki
             #
-            # Parameters:
+            # Parameters::
             # * *iUserID* (_String_): User ID of the script adding this info
             # * *iBranchName* (_String_): Name of the branch receiving the commit
             # * *iCommitID* (_String_): The commit ID
             # * *iCommitUser* (_String_): The commit user
             # * *iCommitComment* (_String_): The commit comment
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iBranchName, iCommitID, iCommitUser, iCommitComment)
               return initMediawiki(iUserID) do

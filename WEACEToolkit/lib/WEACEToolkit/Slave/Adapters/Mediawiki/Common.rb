@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -22,12 +22,12 @@ module WEACE
           # This will hide the fact we are in a web server transaction (as Mediawiki protects from this),
           # and will setup some instance variables used by further methods.
           #
-          # Parameters:
+          # Parameters::
           # * *iUserID* (_String_): The user ID that will perform operations on Mediawiki
           # * *CodeBlock*: The code called once Mediawiki is setup
-          # * ** Return:
-          # * ** _Exception_: The error to propagate, or nil if success
-          # Return:
+          # *   * Return::
+          # *   * _Exception_: The error to propagate, or nil if success
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def initMediawiki(iUserID)
             rError = nil
@@ -53,11 +53,11 @@ module WEACE
           # Uses @ProductConfig[:MediawikiDir]
           # Uses @UserID
           #
-          # Parameters:
+          # Parameters::
           # * *iArticleName* (_String_): Name of the article to write
           # * *iContent* (<em>list<String></em>): Content to put in the article
           # * *iComment* (_String_): Comment to associate to this edit.
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           def writeArticle(iArticleName, iContent, iComment)
             rError = nil
@@ -73,9 +73,9 @@ module WEACE
           # Get an article's content.
           # Uses @ProductConfig[:MediawikiDir]
           #
-          # Parameters:
+          # Parameters::
           # * *iArticleName* (_String_): Name of the article to write
-          # Return:
+          # Return::
           # * <em>list<String></em>: The article (can be empty)
           def readArticle(iArticleName)
             return `php #{@WEACELibDir}/Slave/Adapters/Mediawiki/Mediawiki_getContent.php #{@ProductConfig[:MediawikiDir]} #{iArticleName}`.split("\n")
@@ -83,7 +83,7 @@ module WEACE
 
           # Log an operation in the adapted Product
           #
-          # Parameters:
+          # Parameters::
           # * *iUserID* (_String_): User ID initiating the log.
           # * *iProductName* (_String_): Product name to log
           # * *iProductID* (_String_): Product ID to log
@@ -91,12 +91,12 @@ module WEACE
           # * *iActionID* (_String_): Action ID to log
           # * *iError* (_Exception_): The error to log, can be nil in case of success
           # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           def logProduct(iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
             return initMediawiki(iUserID) do
               lContent = readArticle('WEACE_Toolkit_Log')
-              logDebug "Retrieved last Log: #{lContent[-1]}"
+              log_debug "Retrieved last Log: #{lContent[-1]}"
               # Add a new entry at the end of the WEACE Log
               if (iError == nil)
                 lContent << "* [''#{DateTime.now.strftime('%Y-%m-%d %H:%M:%S')}''] - #{iUserID}@#{iProductName} - #{iProductID}/'''#{iToolID}/#{iActionID}''' - <nowiki>#{iParameters.join(' ')}</nowiki> - <span style=\"color:green\">Success</span>"

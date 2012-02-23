@@ -7,9 +7,8 @@ require 'test/unit'
 $WEACETestBaseDir = File.expand_path(File.dirname(__FILE__))
 
 require 'rUtilAnts/Logging'
-RUtilAnts::Logging::initializeLogging(File.expand_path("#{$WEACETestBaseDir}/.."), 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055')
-# If activated, the testNoParameter tests will fail as they will have the --debug flag given to them.
-activateLogDebug(false)
+# !!! If debug is activated, the testNoParameter tests will fail as they will have the --debug flag given to them.
+RUtilAnts::Logging::install_logger_on_object(:lib_root_dir => File.expand_path("#{$WEACETestBaseDir}/.."), :bug_tracker_url => 'http://sourceforge.net/tracker/?group_id=254463&atid=1218055', :debug_mode => false)
 
 $LOAD_PATH << File.dirname(__FILE__)
 

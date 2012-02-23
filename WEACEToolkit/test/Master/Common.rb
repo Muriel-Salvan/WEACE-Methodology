@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -18,17 +18,17 @@ module WEACE
 
         # Execute WEACE Master Server
         #
-        # Parameters:
+        # Parameters::
         # * *iParameters* (<em>list<String></em>): The parameters to give WEACE Master Server
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
-        # ** *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
-        # ** *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
-        # ** *:AddRegressionProcesses* (_Boolean_): Do we add Processes defined from the regression ? [optional = false]
-        # ** *:AddRegressionSenders* (_Boolean_): Do we add Senders defined from the regression ? [optional = false]
-        # ** *:AddSlaveClientQueues* (<em>map<map<Symbol,Object>,list<[String,map<ToolID,map<ActionID,list<Parameters>>>]>></em>): The map of SlaveClient queues to create before invoking the MasterServer [optional = nil]
-        # ** *:AddTransferFiles* (<em>map<String,Integer></em>): The list of Transfer files to setup before executing MasterServer [optional = nil]
+        #   * *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
+        #   * *:Repository* (_String_): Name of the repository to be used [optional = 'Empty']
+        #   * *:AddRegressionProcesses* (_Boolean_): Do we add Processes defined from the regression ? [optional = false]
+        #   * *:AddRegressionSenders* (_Boolean_): Do we add Senders defined from the regression ? [optional = false]
+        #   * *:AddSlaveClientQueues* (<em>map<map<Symbol,Object>,list< [String,map<ToolID,map<ActionID,list<Parameters>>>] >></em>): The map of SlaveClient queues to create before invoking the MasterServer [optional = nil]
+        #   * *:AddTransferFiles* (<em>map<String,Integer></em>): The list of Transfer files to setup before executing MasterServer [optional = nil]
         # * _CodeBlock_: The code called once the server was run: [optional = nil]
-        # ** *iError* (_Exception_): The error returned by the server, or nil in case of success
+        #   * *iError* (_Exception_): The error returned by the server, or nil in case of success
         def executeMaster(iParameters, iOptions = {}, &iCheckCode)
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
@@ -89,15 +89,15 @@ module WEACE
                 lInternalPluginsManager = lMasterServer.instance_variable_get(:@PluginsManager)
                 lNewWEACELibDir = File.expand_path("#{File.dirname(__FILE__)}/../Components")
                 if (lAddRegressionProcesses)
-                  lInternalPluginsManager.parsePluginsFromDir('Processes', "#{lNewWEACELibDir}/Master/Server/Processes", 'WEACE::Master::Server::Processes')
+                  lInternalPluginsManager.parse_plugins_from_dir('Processes', "#{lNewWEACELibDir}/Master/Server/Processes", 'WEACE::Master::Server::Processes')
                 end
                 if (lAddRegressionSenders)
-                  lInternalPluginsManager.parsePluginsFromDir('Senders', "#{lNewWEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
+                  lInternalPluginsManager.parse_plugins_from_dir('Senders', "#{lNewWEACELibDir}/Master/Server/Senders", 'WEACE::Master::Server::Senders')
                 end
               end
 
               # Execute for real
-              if (debugActivated?)
+              if (debug_activated?)
                 lError = lMasterServer.execute(['-d']+iParameters)
               else
                 lError = lMasterServer.execute(iParameters)
@@ -105,23 +105,23 @@ module WEACE
               # Check
               if (lExpectedErrorClass == nil)
                 if (lError != nil)
-                  logErr "Unexpected error: #{lError.class}: #{lError}"
+                  log_err "Unexpected error: #{lError.class}: #{lError}"
                   if (lError.backtrace == nil)
-                    logErr 'No backtrace'
+                    log_err 'No backtrace'
                   else
-                    logErr lError.backtrace.join("\n")
+                    log_err lError.backtrace.join("\n")
                   end
                 end
                 assert_equal(nil, lError)
               else
                 if (lError == nil)
-                  logErr 'Unexpected success.'
+                  log_err 'Unexpected success.'
                 elsif (!lError.kind_of?(lExpectedErrorClass))
-                  logErr "Unexpected error: #{lError.class}: #{lError}"
+                  log_err "Unexpected error: #{lError.class}: #{lError}"
                   if (lError.backtrace == nil)
-                    logErr 'No backtrace'
+                    log_err 'No backtrace'
                   else
-                    logErr lError.backtrace.join("\n")
+                    log_err lError.backtrace.join("\n")
                   end
                 end
                 assert(lError.kind_of?(lExpectedErrorClass))
@@ -136,14 +136,14 @@ module WEACE
 
         # Give access to a Process plugin
         #
-        # Parameters:
+        # Parameters::
         # * _CodeBlock_: The code executed with the Process instance created:
-        # ** *iProcessPlugin* (_Object_): The Process plugin
+        #   * *iProcessPlugin* (_Object_): The Process plugin
         def accessProcessPlugin
           # Get the name of the Process plugin
           lMatch = self.class.to_s.match(/^WEACE::Test::Master::Processes::(.*)$/)
           if (lMatch == nil)
-            logErr "Class #{self.class} does not have format /^WEACE::Test::Master::Processes::(.*)$/."
+            log_err "Class #{self.class} does not have format /^WEACE::Test::Master::Processes::(.*)$/."
           else
             lProcessName = lMatch[1]
             require "WEACEToolkit/Master/Server/Processes/#{lProcessName}"
@@ -154,13 +154,13 @@ module WEACE
 
         # Execute a Process plugin
         #
-        # Parameters:
+        # Parameters::
         # * *iParameters* (<em>list<String></em>): The parameters to give to the Process plugin
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
-        # ** *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
+        #   * *:Error* (_class_): The error class the execution is supposed to return [optional = nil]
         # * _CodeBlock_: The code executed once the Process plugin has been called [optional = nil]
-        # ** *iError* (_Exception_): The error returned by the Process plugin, or nil if success
-        # ** *iSlaveActions* (<em>map<String,list<[String,Object]>></em>): The Slave Actions as reported by the Process plugin
+        #   * *iError* (_Exception_): The error returned by the Process plugin, or nil if success
+        #   * *iSlaveActions* (<em>map<String,list< [String,Object] >></em>): The Slave Actions as reported by the Process plugin
         def executeProcess(iParameters, iOptions = {}, &iCheckCode)
           # Parse options
           lExpectedErrorClass = iOptions[:Error]
@@ -189,23 +189,23 @@ module WEACE
               # Check
               if (lExpectedErrorClass == nil)
                 if (lError != nil)
-                  logErr "Unexpected error: #{lError.class}: #{lError}"
+                  log_err "Unexpected error: #{lError.class}: #{lError}"
                   if (lError.backtrace == nil)
-                    logErr 'No backtrace'
+                    log_err 'No backtrace'
                   else
-                    logErr lError.backtrace.join("\n")
+                    log_err lError.backtrace.join("\n")
                   end
                 end
                 assert_equal(nil, lError)
               else
                 if (lError == nil)
-                  logErr 'Unexpected success.'
+                  log_err 'Unexpected success.'
                 elsif (!lError.kind_of?(lExpectedErrorClass))
-                  logErr "Unexpected error: #{lError.class} (expecting #{lExpectedErrorClass}): #{lError}"
+                  log_err "Unexpected error: #{lError.class} (expecting #{lExpectedErrorClass}): #{lError}"
                   if (lError.backtrace == nil)
-                    logErr 'No backtrace'
+                    log_err 'No backtrace'
                   else
-                    logErr lError.backtrace.join("\n")
+                    log_err lError.backtrace.join("\n")
                   end
                 end
                 assert(lError.kind_of?(lExpectedErrorClass), "Expected error of kind #{lExpectedErrorClass}, but got #{lError}")

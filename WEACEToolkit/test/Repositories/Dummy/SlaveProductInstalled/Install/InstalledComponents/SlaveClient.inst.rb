@@ -5,5 +5,5 @@
   :InstallationParameters => '',
   :Description => 'The WEACE Slave Client.',
   :ProviderID => 'DummySlaveProvider',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

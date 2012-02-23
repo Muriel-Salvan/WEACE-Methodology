@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -17,11 +17,11 @@ module WEACE
 
             # Execute the DummyAction
             #
-            # Parameters:
+            # Parameters::
             # * *iUserID* (_String_): User ID of the script adding this info
             # * *iParam1* (_Object_): First parameter
             # * *iParam2* (_Object_): Second parameter
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iParam1, iParam2)
               $Variables[:DummyActionWithParams_User] = iUserID
@@ -32,7 +32,7 @@ module WEACE
 
             # Log an operation in the adapted Product
             #
-            # Parameters:
+            # Parameters::
             # * *iUserID* (_String_): User ID initiating the log.
             # * *iProductName* (_String_): Product name to log
             # * *iProductID* (_String_): Product ID to log
@@ -40,7 +40,7 @@ module WEACE
             # * *iActionID* (_String_): Action ID to log
             # * *iError* (_Exception_): The error to log, can be nil in case of success
             # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil if success
             def logProduct(iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
               return nil

@@ -5,5 +5,5 @@
   :InstallationParameters => '--shelldir %{ProductDir}/WEACETools',
   :Description => 'The WEACE Master Server.',
   :ProviderID => 'DummyMasterProviderWithShell',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

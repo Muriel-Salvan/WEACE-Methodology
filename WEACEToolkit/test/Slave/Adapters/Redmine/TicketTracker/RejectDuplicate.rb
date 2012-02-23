@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -29,7 +29,7 @@ module WEACE
 
               # Prepare the plugin's execution
               #
-              # Parameters:
+              # Parameters::
               # * *iUserID* (_String_): User ID of the script adding this info
               # * *iMasterTicketID* (_String_): The Master Ticket ID
               # * *iSlaveTicketID* (_String_): The Slave Ticket ID
@@ -60,7 +60,7 @@ module WEACE
 
               # Check data after execution of the Action
               #
-              # Parameters:
+              # Parameters::
               # * *iUserID* (_String_): User ID of the script adding this info
               # * *iMasterTicketID* (_String_): The Master Ticket ID
               # * *iSlaveTicketID* (_String_): The Slave Ticket ID

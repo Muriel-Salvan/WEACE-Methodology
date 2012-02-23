@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -29,7 +29,7 @@ module WEACE
             # Log an operation in the adapted Product.
             # This is the internal method used once the DB connection is active
             #
-            # Parameters:
+            # Parameters::
             # * *ioSQL* (_Object_): The SQL connection
             # * *iUserID* (_String_): User ID initiating the log.
             # * *iProductName* (_String_): Product name to log
@@ -38,7 +38,7 @@ module WEACE
             # * *iActionID* (_String_): Action ID to log
             # * *iError* (_Exception_): The error to log, can be nil in case of success
             # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil if success
             def execute(ioSQL, iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
               # Get the User ID
@@ -76,7 +76,7 @@ module WEACE
 
           # Log an operation in the adapted Product
           #
-          # Parameters:
+          # Parameters::
           # * *iUserID* (_String_): User ID initiating the log.
           # * *iProductName* (_String_): Product name to log
           # * *iProductID* (_String_): Product ID to log
@@ -84,7 +84,7 @@ module WEACE
           # * *iActionID* (_String_): Action ID to log
           # * *iError* (_Exception_): The error to log, can be nil in case of success
           # * *iParameters* (<em>list<String></em>): The parameters given to the operation
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           def logProduct(iUserID, iProductName, iProductID, iToolID, iActionID, iError, iParameters)
             return executeRedmine(

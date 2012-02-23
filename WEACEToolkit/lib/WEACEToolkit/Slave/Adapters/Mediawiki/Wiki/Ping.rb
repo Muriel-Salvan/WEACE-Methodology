@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -26,10 +26,10 @@ module WEACE
 
             # Ping the Product
             #
-            # Parameters:
+            # Parameters::
             # * *iUserID* (_String_): User ID of the script adding this info
             # * *iComment* (_String_): The Comment to associate to this Ping
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iComment)
               # Do nothing, it will just be logged

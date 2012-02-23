@@ -6,5 +6,5 @@
   :InstallationParameters => '--redminedir E:/DOCUME~1/MURIEL~2/LOCALS~1/Temp/WEACERegression/Dir_0/redmine-0.8.2',
   :Description => 'Product Redmine adapted to WEACE Master.',
   :Product => 'Redmine',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

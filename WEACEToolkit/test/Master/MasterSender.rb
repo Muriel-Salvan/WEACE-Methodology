@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -17,14 +17,14 @@ module WEACE
 
         # Give access to a Sender plugin
         #
-        # Parameters:
+        # Parameters::
         # * _CodeBlock_: The code executed with the Sender instance created:
-        # ** *iSenderPlugin* (_Object_): The Sender plugin
+        #   * *iSenderPlugin* (_Object_): The Sender plugin
         def accessSenderPlugin
           # Get the name of the Sender plugin
           lMatch = self.class.to_s.match(/^WEACE::Test::Master::Senders::(.*)$/)
           if (lMatch == nil)
-            logErr "Class #{self.class} does not have format /^WEACE::Test::Master::Senders::(.*)$/."
+            log_err "Class #{self.class} does not have format /^WEACE::Test::Master::Senders::(.*)$/."
           else
             lProcessName = lMatch[1]
             require "WEACEToolkit/Master/Server/Senders/#{lProcessName}"
@@ -35,7 +35,7 @@ module WEACE
 
         # Execute a Sender Test with the following User and Actions
         #
-        # Parameters:
+        # Parameters::
         # * *iUserID* (_String_): The User ID to give the Sender
         # * *iActions* (<em>map<String,map<String,list<list<Object>>>></em>: The Actions to give the Sender
         def executeTest(iUserID, iActions)

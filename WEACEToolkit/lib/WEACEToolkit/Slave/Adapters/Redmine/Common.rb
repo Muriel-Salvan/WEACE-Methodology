@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -23,10 +23,10 @@ module WEACE
 
             # Get the User ID based on its name
             #
-            # Parameters:
+            # Parameters::
             # * *iSQL* (_Object_): The SQL connection
             # * *iUserName* (_String_): User name to look for
-            # Return:
+            # Return::
             # * _String_: Corresponding user ID
             def getUserID(iSQL, iUserName)
               rUserID = nil
@@ -44,7 +44,7 @@ module WEACE
                     (iUserName == 'Scripts_Developer'))
                   rUserID = createUser(iSQL, iUserName)
                 else
-                  logErr "User #{iUserName} is not allowed to perform operations."
+                  log_err "User #{iUserName} is not allowed to perform operations."
                   raise RuntimeError, "User #{iUserName} is not allowed to perform operations."
                 end
               end
@@ -54,10 +54,10 @@ module WEACE
 
             # Get the Ticket ID based on its subject
             #
-            # Parameters:
+            # Parameters::
             # * *iSQL* (_Object_): The SQL connection
             # * *iSubject* (_String_): Subject to look for
-            # Return:
+            # Return::
             # * _String_: Corresponding Ticket ID
             def getTicketID(iSQL, iSubject)
               rTicketID = nil
@@ -71,7 +71,7 @@ module WEACE
               end
               # If the Ticket does not exist, error
               if (rTicketID == nil)
-                logErr 'Ticket WEACE_Toolkit_Log does not exist.'
+                log_err 'Ticket WEACE_Toolkit_Log does not exist.'
                 raise RuntimeError, 'Ticket WEACE_Toolkit_Log does not exist.'
               end
 
@@ -80,10 +80,10 @@ module WEACE
 
             # Create a user, and get its ID back
             #
-            # Parameters:
+            # Parameters::
             # * *iSQL* (_Object_): The SQL connection
             # * *iUserName* (_String_): User name to look for
-            # Return:
+            # Return::
             # * _String_: Corresponding user ID
             def createUser(iSQL, iUserName)
               rUserID = nil
@@ -124,10 +124,10 @@ module WEACE
         
           # Connect to Redmine's database
           #
-          # Parameters:
+          # Parameters::
           # * *iSQLExecuteObject* (_Object_): The object containing the SQL execution
           # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def executeRedmine(iSQLExecuteObject, iSQLMethodParameters)
             return beginMySQLTransaction(

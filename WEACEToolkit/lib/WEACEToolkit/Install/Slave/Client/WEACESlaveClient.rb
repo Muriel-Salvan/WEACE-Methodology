@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -19,7 +19,7 @@ module WEACEInstall
       # Install for real.
       # This is called only when check method returned no error.
       #
-      # Return:
+      # Return::
       # * _Exception_: An error, or nil in case of success
       def execute
         rError = nil
@@ -52,7 +52,7 @@ end
           if (lProviderEnv[:CGI] != nil)
             # Generate the cgi script that will give details about the installed WEACE Slave Adapters
             lShowComponentsFileName = "#{lProviderEnv[:CGI][:InternalDirectory]}/WEACE/ShowWEACESlaveInfo.cgi"
-            logDebug "Generate CGI script that shows installed WEACE Slave information (#{lShowComponentsFileName}) ..."
+            log_debug "Generate CGI script that shows installed WEACE Slave information (#{lShowComponentsFileName}) ..."
             require 'fileutils'
             FileUtils.mkdir_p(File.dirname(lShowComponentsFileName))
             File.open(lShowComponentsFileName, 'w') do |oFile|
@@ -74,7 +74,7 @@ end
             end
             FileUtils.chmod(0755, lShowComponentsFileName)
           end
-          logInfo 'WEACE Slave Client installed successfully. You can now install WEACE Slave Adapters and Listeners.'
+          log_info 'WEACE Slave Client installed successfully. You can now install WEACE Slave Adapters and Listeners.'
         end
 
         return rError
@@ -82,14 +82,14 @@ end
     
       # Get the default configuration
       #
-      # Return:
+      # Return::
       # * _String_: The default configuration text to put in the configuration file.
       def getDefaultConfig
         return "
 {
   \# Log file used
   \# String
-  \# :LogFile => '/var/log/WEACESlaveClient.log',
+  \# :log_file => '/var/log/WEACESlaveClient.log',
 
   \# List of WEACE Slave Adapters that can be used by WEACE Slave Client
   \# map <

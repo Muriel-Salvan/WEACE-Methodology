@@ -5,5 +5,5 @@
   :InstallationParameters => '',
   :Description => 'The WEACE Master Server.',
   :ProviderID => 'DummyMasterProvider',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

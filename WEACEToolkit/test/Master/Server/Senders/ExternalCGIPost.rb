@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,10 +11,10 @@ module Net
 
     # Method used to replace post_form
     #
-    # Parameters:
+    # Parameters::
     # * *iURL* (_String_): URL of the post
     # * *iParams* (<em>map<String,String></em>): Set of variables given as POST
-    # Return:
+    # Return::
     # * _Object_: The HTTP response
     def self.post_form_Regression(iURL, iParams)
       if ($Variables[:HTTPPosts] == nil)
@@ -46,7 +46,7 @@ module WEACE
 
             # Get the response type
             #
-            # Return:
+            # Return::
             # * _Object_: The response type
             def response
               # TODO: Don't know really much about this constructor. Maybe change values ?
@@ -55,7 +55,7 @@ module WEACE
 
             # Get the response entity
             #
-            # Return:
+            # Return::
             # * _String_: The response's body
             def entity
               return 'CGI_EXIT: OK'
@@ -66,7 +66,7 @@ module WEACE
           # Get a map of variables to instantiate in the plugin.
           # This is used to simulate the configuration stored in MasterServer.conf.rb
           #
-          # Return:
+          # Return::
           # * <em>map<Symbol,Object></em>: The variables to instantiate
           def getVarsToInstantiate
             return {
@@ -77,7 +77,7 @@ module WEACE
           # Prepare for execution.
           # Use this method to bypass methods to better track WEACE behaviour.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: The code to call once preparation is done
           def prepareExecution
             WEACE::Test::Common::changeSingletonMethod(
@@ -93,7 +93,7 @@ module WEACE
           # Get back the User ID and the Actions once sent.
           # This method is also used to assert some specific parts of the execution.
           #
-          # Return:
+          # Return::
           # * _String_: The User ID
           # * <em>map<String,map<String,list<list<String>>>></em>: The Actions
           def getUserActions
@@ -109,9 +109,9 @@ module WEACE
 
           # Get the new data put in SlaveActions for a given file to be transfered
           #
-          # Parameters:
+          # Parameters::
           # * *iFileName* (_String_): File name to be transfered
-          # Return:
+          # Return::
           # * _Object_: The data to be put in SlaveActions
           def getFileNewData(iFileName)
             rNewData = nil

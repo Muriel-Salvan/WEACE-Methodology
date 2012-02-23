@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -22,10 +22,10 @@ module WEACE
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
-          # Parameters:
+          # Parameters::
           # * *ioSlaveActions* (_SlaveActions_): The slave actions to populate (check WEACEMasterServer.rb for API)
           # * *iAdditionalParameters* (<em>list<String></em>): Additional parameters given that were not parsed by the options parser
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def processScript(ioSlaveActions, iAdditionalParameters)
             checkVar(:Comment, 'Comment to send with the Ping')
@@ -40,7 +40,7 @@ module WEACE
 
           # Get the command line options for this Process
           #
-          # Return:
+          # Return::
           # * _OptionParser_: The corresponding options
           def getOptions
             rOptions = OptionParser.new

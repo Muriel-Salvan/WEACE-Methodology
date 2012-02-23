@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -77,17 +77,17 @@ module WEACE
     end
 
     # Register WEACE plugins read from a directory.
-    # This reads the plugins descriptions the same parsePluginsFromDir does, but it completes the description with WEACE specific attributes.
+    # This reads the plugins descriptions the same parse_plugins_from_dir does, but it completes the description with WEACE specific attributes.
     #
-    # Parameters:
+    # Parameters::
     # * *iCategoryName* (_String_): The category name of the plugins
     # * *iDir* (_String_): Directory containing plugins
     # * *iBaseClassName* (_String_): Name of the base class of every plugin in this directory
     def parseWEACEPluginsFromDir(iCategoryName, iDir, iBaseClassName)
       # Get plugins from there
-      @PluginsManager.parsePluginsFromDir(iCategoryName, iDir, iBaseClassName)
+      @PluginsManager.parse_plugins_from_dir(iCategoryName, iDir, iBaseClassName)
       # Create the corresponding OptionParser object, and complete the current description with it
-      @PluginsManager.getPluginsDescriptions(iCategoryName).each do |iScriptID, ioDescription|
+      @PluginsManager.get_plugins_descriptions(iCategoryName).each do |iScriptID, ioDescription|
         initializePluginDescription(ioDescription)
       end
     end
@@ -95,7 +95,7 @@ module WEACE
     # Initialize a freshly read plugin description
     # This is used to set additional variables among the description already created by the plugins manager.
     #
-    # Parameters:
+    # Parameters::
     # * *ioDescription* (<em>map<Symbol,Object></em>): The description to complete
     def initializePluginDescription(ioDescription)
       if (ioDescription[:VarOptions] != nil)
@@ -128,29 +128,29 @@ module WEACE
 
     # Get the name of the file used to register an installed component
     #
-    # Parameters:
+    # Parameters::
     # * *iComponentName* (_String_): Component name
-    # Return:
+    # Return::
     # * _String_: The file name
     def getInstallFileName(iComponentName)
-      return "#{@WEACEInstallDir}/InstalledComponents/#{getValidFileName(iComponentName)}.inst.rb"
+      return "#{@WEACEInstallDir}/InstalledComponents/#{get_valid_file_name(iComponentName)}.inst.rb"
     end
 
     # Get the name of the file used to configure an installed component
     #
-    # Parameters:
+    # Parameters::
     # * *iComponentName* (_String_): Component name
-    # Return:
+    # Return::
     # * _String_: The file name
     def getConfigFileName(iComponentName)
-      return "#{@WEACEConfigDir}/#{getValidFileName(iComponentName)}.conf.rb"
+      return "#{@WEACEConfigDir}/#{get_valid_file_name(iComponentName)}.conf.rb"
     end
 
     # Get the installed description of a component
     #
-    # Parameters:
+    # Parameters::
     # * *iComponentName* (_String_): Component name
-    # Return:
+    # Return::
     # * <em>map<Symbol, Object></em>: The description, or nil if not installed
     def getComponentInstallInfo(iComponentName)
       return getMapFromFile(getInstallFileName(iComponentName))
@@ -158,9 +158,9 @@ module WEACE
 
     # Get the installed configuration of a component
     #
-    # Parameters:
+    # Parameters::
     # * *iComponentName* (_String_): Component name
-    # Return:
+    # Return::
     # * <em>map<Symbol, Object></em>: The configuration, or nil if not installed
     def getComponentConfigInfo(iComponentName)
       return getMapFromFile(getConfigFileName(iComponentName))
@@ -168,9 +168,9 @@ module WEACE
 
     # Get a map that was stored in a file
     #
-    # Parameters:
+    # Parameters::
     # * *iFileName* (_String_): Name of the file that stores the map
-    # Return:
+    # Return::
     # * <em>map<Object,Object></em>: The map read, or nil if none or no file
     def getMapFromFile(iFileName)
       rMap = nil
@@ -198,7 +198,7 @@ module WEACE
     #   ]
     # >
     #
-    # Return:
+    # Return::
     # <em>map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,map<String,[map<Symbol,Object>,Boolean]>]>]></em>: The list of Slave Products, along with their information
     def getInstalledSlaveProducts
       rInstalledProducts = {}
@@ -262,7 +262,7 @@ module WEACE
     #   ]
     # >
     #
-    # Return:
+    # Return::
     # <em>map<String,[map<Symbol,Object>,map<String,map<Symbol,Object>>]></em>: The list of Master Products, along with their information
     def getInstalledMasterProducts
       rInstalledProducts = {}
@@ -312,7 +312,7 @@ module WEACE
 
     # Check that an instance variable has been correctly instantiated, and give a good looking exception otherwise.
     #
-    # Parameters:
+    # Parameters::
     # * *iVariable* (_Symbol_): The variable we are looking for.
     # * *iDescription* (_String_): The description of this variable. This will appear in the eventual error message.
     def checkVar(iVariable, iDescription)
@@ -324,14 +324,14 @@ module WEACE
         lMissing = !self.instance_variables.include?("@#{iVariable}")
       end
       if (lMissing)
-        logErr "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
+        log_err "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
         raise MissingVariableError, "Variable #{iVariable} (#{iDescription}) not set. Check your configuration."
       end
     end
 
     # Store a map of variable names and their corresponding values as instance variables of a given class
     #
-    # Parameters:
+    # Parameters::
     # * *ioObject* (_Object_): Object where we want to instantiate those variables
     # * *iVars* (<em>map<Symbol,Object></em>): The map of variables and their values
     def instantiateVars(ioObject, iVars)
@@ -342,9 +342,9 @@ module WEACE
   
     # Split parameters, before and after the first -- encountered
     #
-    # Parameters:
+    # Parameters::
     # * *iParameters* (<em>list<String></em>): The parameters
-    # Return:
+    # Return::
     # * <em>list<String></em>: The first part
     # * <em>list<String></em>: The second part
     def splitParameters(iParameters)
@@ -370,7 +370,7 @@ module WEACE
 
     # Dump HTML header
     #
-    # Parameters:
+    # Parameters::
     # * *iTitle* (_String_): Title of the header
     def dumpHeader_HTML(iTitle)
       puts '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
@@ -411,7 +411,7 @@ module WEACE
     # A real method symbol is given instead of a code block, as it might be necessary to serialize the call to give it to an external process.
     # This method will have the SQL connection object followed by its parameters given as a signature.
     #
-    # Parameters:
+    # Parameters::
     # * *iMySQLHost* (_String_): The name of the MySQL host
     # * *iDBName* (_String_): The name of the database of Redmine
     # * *iDBUser* (_String_): The name of the database user
@@ -419,10 +419,10 @@ module WEACE
     # * *iSQLExecuteObject* (_Object_): The object containing the SQL execution
     # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
     # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
-    # ** *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
-    # ** *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
-    # ** *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
-    # Return:
+    #   * *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
+    #   * *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    #   * *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
+    # Return::
     # * _Exception_: An error, or nil in case of success
     def beginMySQLTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLExecuteObject, iSQLMethodParameters, iOptions = {})
       return iSQLExecuteObject.executeTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethodParameters, iOptions)
@@ -431,18 +431,18 @@ module WEACE
     # Modify a file in a safe way (exception protected, keep copy of original...).
     # It inserts (just before the end marker) or replaces some of the content of this file, between 2 markers (1 begin and 1 end markers).
     #
-    # Parameters:
+    # Parameters::
     # * *iFileName* (_String_): The file to modify
     # * *iBeginMarker* (_RegExp_): The begin marker (can be nil if it represents the beginning of the file)
     # * *iNewLines* (_String_): The text to insert between the markers
     # * *iEndMarker* (_RegExp_): The end marker (can be nil if it represents the end of the file)
     # * *iOptions* (_Hash_): Additional parameters: [ optional = {} ]
-    # ** *:Replace* (_Boolean_): Do we completely replace the text between the markers ? [optional = false]
-    # ** *:NoBackup* (_Boolean_): Do we skip backuping the file ? [optional = false]
-    # ** *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed. [optional = nil]
-    # ** *:ExtraLinesDuringMatch* (_Boolean_): Do we ignore extra lines that could be present between the lines to match ? [optional = false]
-    # ** *:CommitModifications* (_Boolean_): Do we actually commit modifications made ? [optional = true]
-    # Return:
+    #   * *:Replace* (_Boolean_): Do we completely replace the text between the markers ? [optional = false]
+    #   * *:NoBackup* (_Boolean_): Do we skip backuping the file ? [optional = false]
+    #   * *:CheckMatch* (<em>list<Object></em>): List of String or RegExp used to check if the new content is already present. If not specified, an exact match on iNewLines is performed. [optional = nil]
+    #   * *:ExtraLinesDuringMatch* (_Boolean_): Do we ignore extra lines that could be present between the lines to match ? [optional = false]
+    #   * *:CommitModifications* (_Boolean_): Do we actually commit modifications made ? [optional = true]
+    # Return::
     # * _Exception_: An error, or nil in case of success
     def modifyFile(iFileName, iBeginMarker, iNewLines, iEndMarker, iOptions = {})
       rError = nil
@@ -470,7 +470,7 @@ module WEACE
       if (!File.exists?(iFileName))
         rError = MissingFileError.new("File #{iFileName} is missing.")
       else
-        logDebug "Modify file #{iFileName} ..."
+        log_debug "Modify file #{iFileName} ..."
         if ((!lNoBackup) and
             lCommitModifications)
           # First, copy the file if the backup does not already exist (avoid overwriting the backup with a modified file when invoked several times)
@@ -578,7 +578,7 @@ module WEACE
           if (lFound)
             # Already here
             if (lCommitModifications)
-              logWarn "File #{iFileName} already contains modifications. It will be left unchanged."
+              log_warn "File #{iFileName} already contains modifications. It will be left unchanged."
             end
           elsif (lCommitModifications)
             # Modify the content in memory
@@ -601,10 +601,10 @@ module WEACE
             rescue Exception
               # Revert the file content
               FileUtils.cp("#{iFileName}.WEACEBackup", iFileName)
-              logErr "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
+              log_err "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
               raise RuntimeError, "Exception while writing file #{iFileName}: #{$!}. The file content has been reverted back to original."
             end
-            logDebug "File #{iFileName} modified successfully."
+            log_debug "File #{iFileName} modified successfully."
           end
         end
       end

@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -15,7 +15,7 @@ module WEACEInstall
 
         # Check if we can install
         #
-        # Return:
+        # Return::
         # * _Exception_: An error, or nil in case of success
         def check
           checkVar(:MediawikiDir, '--mediawikidir')
@@ -26,7 +26,7 @@ module WEACEInstall
         # Install for real.
         # This is called only when check method returned no error.
         #
-        # Return:
+        # Return::
         # * _Exception_: An error, or nil in case of success
         def execute
           return performModify(true)
@@ -34,7 +34,7 @@ module WEACEInstall
 
         # Get the default configuration
         #
-        # Return:
+        # Return::
         # * _String_: The default configuration text to put in the configuration file.
         def getDefaultConfig
           return "
@@ -49,9 +49,9 @@ module WEACEInstall
 
         # Perform modifications or simulate them
         #
-        # Parameters:
+        # Parameters::
         # * *iCommitModifications* (_Boolean_): Do we really perform the modifications ?
-        # Return:
+        # Return::
         # * _Exception_: An error, or nil in case of success
         def performModify(iCommitModifications)
           # Modify the skin to add WEACE icon if not already present

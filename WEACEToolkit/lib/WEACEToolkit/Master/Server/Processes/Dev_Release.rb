@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -46,10 +46,10 @@ module WEACE
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
-          # Parameters:
+          # Parameters::
           # * *ioSlaveActions* (_SlaveActions_): The slave actions to populate (check WEACEMasterServer.rb for API)
           # * *iAdditionalParameters* (<em>list<String></em>): Additional parameters given that were not parsed by the options parser
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def processScript(ioSlaveActions, iAdditionalParameters)
             rError = nil
@@ -116,7 +116,7 @@ module WEACE
               if (rError == nil)
                 FileUtils::rm_rf(lTempDeliverablesDirName)
               else
-                logErr "Error encountered while distributing deliverables: #{rError}. Keeping directory #{lTempDeliverablesDirName} for investigation purposes. Feel free to remove it."
+                log_err "Error encountered while distributing deliverables: #{rError}. Keeping directory #{lTempDeliverablesDirName} for investigation purposes. Feel free to remove it."
               end
             end
 
@@ -125,7 +125,7 @@ module WEACE
 
           # Get the command line options for this Process
           #
-          # Return:
+          # Return::
           # * _OptionParser_: The corresponding options
           def getOptions
             rOptions = OptionParser.new
@@ -178,7 +178,7 @@ module WEACE
 
           # Read files given as parameters, containing lists of files, Tasks and Tickets.
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def readFiles
             rError = nil
@@ -210,9 +210,9 @@ module WEACE
           # Test regression on the release, and generate deliverables.
           # Returns an error if the regression is failing.
           #
-          # Parameters:
+          # Parameters::
           # * *iDeliverablesDir* (_String_): The directory where deliverables must be stored
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           # * <em>map<String,String></em>: The release notes files to publish, per type (or nil in case of failure)
           # * <em>map<String,map<String,list<String>>></em>: The deliverables to publish, per platform and type (or nil in case of failure)
@@ -224,7 +224,7 @@ module WEACE
             # Check out the project in a temporary repository
             lTempRepositoryDirName = "#{Dir.tmpdir}/WEACERegTest_#{Thread.current.object_id}"
             FileUtils::mkdir_p(lTempRepositoryDirName)
-            changeDir(lTempRepositoryDirName) do
+            change_dir(lTempRepositoryDirName) do
               # Checkout using svn
               `svn co #{@SVNCOCmd}`
               if (@RegressionCmd != nil)
@@ -239,7 +239,7 @@ module WEACE
                 # Perfect, we can clean up the temporary directory
                 FileUtils::rm_rf(lTempRepositoryDirName)
               else
-                logErr "An error occurred when testing regression: #{rError}. Leaving checked-out repository #{lTempRepositoryDirName} for further investigations. Feel free to remove it."
+                log_err "An error occurred when testing regression: #{rError}. Leaving checked-out repository #{lTempRepositoryDirName} for further investigations. Feel free to remove it."
               end
             end
 
@@ -248,14 +248,14 @@ module WEACE
 
           # Execute the regression from a given repository
           #
-          # Parameters:
+          # Parameters::
           # * *iRepositoryDir* (_String_): Repository dir from where we execute the regression
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def executeRegression(iRepositoryDir)
             rError = nil
 
-            changeDir(iRepositoryDir) do
+            change_dir(iRepositoryDir) do
               lOutput = `#{@RegressionCmd}`
               lReturnCode = $?.exitstatus
               if (lReturnCode != 0)
@@ -268,10 +268,10 @@ module WEACE
 
           # Generate deliverables
           #
-          # Parameters:
+          # Parameters::
           # * *iRepositoryDir* (_String_): Repository dir of the project
           # * *iDeliverablesDir* (_String_): Directory where deliverables must be put
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           # * <em>map<String,String></em>: The release notes files to publish, per type (or nil in case of failure)
           # * <em>map<String,map<String,list<String>>></em>: The deliverables to publish, per platform and type (or nil in case of failure)
@@ -282,15 +282,15 @@ module WEACE
 
             # Structure of the deliverables directory:
             # * Releases\
-            # ** <Platform>\
+            #   * <Platform>\
             # *** <DeliveryType>\
             # **** <Files>
             # * ReleaseNotes\
-            # ** <File>.<ReleaseNoteType>
+            #   * <File>.<ReleaseNoteType>
 
             FileUtils::mkdir_p("#{iDeliverablesDir}/Releases")
             FileUtils::mkdir_p("#{iDeliverablesDir}/ReleaseNotes")
-            changeDir(iRepositoryDir) do
+            change_dir(iRepositoryDir) do
               lRealDeliverCmd = @DeliverCmd.gsub("%{DeliverablesDir}", "\"#{iDeliverablesDir}\"")
               lOutput = `#{lRealDeliverCmd}`
               lErrorCode = $?.exitstatus

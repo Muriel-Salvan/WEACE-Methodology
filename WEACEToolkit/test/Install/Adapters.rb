@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -25,12 +25,12 @@ module WEACE
         # Parmeters:
         # * *iParameters* (<em>list<String></em>): The parameters to give the Adapter's installer
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options: [optional = {}]
-        # ** *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
-        # ** *:Repository* (_String_): Name of the repository to be used [optional = 'MasterServerInstalled' or 'SlaveClientInstalled']
-        # ** *:ProductRepository* (_String_): Name of the Product repository to use [optional = nil]
-        # ** *:ContextVars* (<em>map<String,String></em>): Context variables to add [optional = nil]
+        #   * *:Error* (_class_): The error class the installer is supposed to return [optional = nil]
+        #   * *:Repository* (_String_): Name of the repository to be used [optional = 'MasterServerInstalled' or 'SlaveClientInstalled']
+        #   * *:ProductRepository* (_String_): Name of the Product repository to use [optional = nil]
+        #   * *:ContextVars* (<em>map<String,String></em>): Context variables to add [optional = nil]
         # * _CodeBlock_: The code called once the installer was run: [optional = nil]
-        # ** *iError* (_Exception_): The error returned by the installer, or nil in case of success
+        #   * *iError* (_Exception_): The error returned by the installer, or nil in case of success
         def executeInstallAdapter(iParameters, iOptions = {}, &iCheckCode)
           initTestCase do
             # Parse options
@@ -51,9 +51,9 @@ module WEACE
 
             lComponentName = "#{@Type}/Adapter/#{@ProductID}/#{@ToolID}/#{@ScriptID}"
             if (@InstallTest)
-              logDebug "Running test for installation of #{lComponentName}: Test #{@TestName}"
+              log_debug "Running test for installation of #{lComponentName}: Test #{@TestName}"
             else
-              logDebug "Running test for #{lComponentName}: Test #{@TestName}"
+              log_debug "Running test for #{lComponentName}: Test #{@TestName}"
             end
             # Setup the Product repository
             setupRepository(lProductRepositoryName) do

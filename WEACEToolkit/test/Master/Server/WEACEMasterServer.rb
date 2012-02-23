@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -68,27 +68,27 @@ module WEACE
           # Test command line option enabling debug
           def testCommandLineDebug
             # Make sure we don't break debug
-            lDebugMode = debugActivated?
+            lDebugMode = debug_activated?
             begin
               executeMaster( [ '--debug' ] )
             rescue Exception
-              activateLogDebug(lDebugMode)
+              activate_log_debug(lDebugMode)
               raise
             end
-            activateLogDebug(lDebugMode)
+            activate_log_debug(lDebugMode)
           end
 
           # Test command line option enabling debug (short version)
           def testCommandLineDebugShort
             # Make sure we don't break debug
-            lDebugMode = debugActivated?
+            lDebugMode = debug_activated?
             begin
               executeMaster( [ '-d' ] )
             rescue Exception
-              activateLogDebug(lDebugMode)
+              activate_log_debug(lDebugMode)
               raise
             end
-            activateLogDebug(lDebugMode)
+            activate_log_debug(lDebugMode)
           end
 
           # Test command line option setting a Process ID and a User ID

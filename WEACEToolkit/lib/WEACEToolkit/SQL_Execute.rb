@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -13,17 +13,17 @@ module WEACE
     # This transaction will call the execute method to perform SQL queries, with the given parameters as signature (with the additional first parameter: the SQL connection object).
     # !!! It is important that classes inheriting this one may be Marshalled (meaning they should contain no singleton and no code block), as it might be necessary to serialize the call to give it to an external process.
     #
-    # Parameters:
+    # Parameters::
     # * *iMySQLHost* (_String_): The name of the MySQL host
     # * *iDBName* (_String_): The name of the database of Redmine
     # * *iDBUser* (_String_): The name of the database user
     # * *iDBPassword* (_String_): The password of the database user
     # * *iSQLMethodParameters* (<em>list<Object></em>): The parameters to give the SQL method
     # * *iOptions* (<em>map<Symbol,Object></em>): Additional options [optional = {}]
-    # ** *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
-    # ** *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
-    # ** *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
-    # Return:
+    #   * *:RubyMySQLLibDir* (_String_): Ruby MYSQL's lib directory to try if Ruby MySQL is not natively accessible [optional = nil]
+    #   * *:MySQLLibDir* (_String_): MySQL C-connector's library directory to try if ruby/MySQL is not natively accessible [optional = nil]
+    #   * *:ExtraProcess* (_Boolean_): Do we span a new process if needed ? [optional = true]
+    # Return::
     # * _Exception_: An error, or nil in case of success
     def executeTransaction(iMySQLHost, iDBName, iDBUser, iDBPassword, iSQLMethodParameters, iOptions = {})
       rError = nil
@@ -35,15 +35,15 @@ module WEACE
         lExtraProcess = true
       end
 
-      logDebug "Trying to create an SQL transaction #{iDBUser}@#{iDBName}@#{iMySQLHost} ..."
+      log_debug "Trying to create an SQL transaction #{iDBUser}@#{iDBName}@#{iMySQLHost} ..."
       lAlreadyExecuted = false
       # First, try directly
       lSuccess = true
       begin
         require 'mysql'
-        logDebug 'Ruby-mysql accessible natively.'
+        log_debug 'Ruby-mysql accessible natively.'
       rescue Exception
-        logDebug 'Ruby-mysql NOT accessible natively.'
+        log_debug 'Ruby-mysql NOT accessible natively.'
         lSuccess = false
       end
       if (!lSuccess)
@@ -53,22 +53,22 @@ module WEACE
           $LOAD_PATH << lRubyMySQLLibDir
           begin
             require 'mysql'
-            logDebug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path."
+            log_debug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path."
             lSuccess = true
           rescue Exception
-            logDebug "Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path."
+            log_debug "Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path."
           end
         end
         # Try the C-connector if possible
         if ((!lSuccess) and
             (lMySQLLibDir != nil))
           # We have to alter our libraries paths and try again
-          $rUtilAnts_Platform_Info.setSystemLibsPath($rUtilAnts_Platform_Info.getSystemLibsPath + [lMySQLLibDir])
-          if ($rUtilAnts_Platform_Info.os == OS_LINUX)
+          setSystemLibsPath(getSystemLibsPath + [lMySQLLibDir])
+          if (os == OS_LINUX)
             if (lExtraProcess)
               # Execute in a separate process, as $LD_LIBRARY_PATH can't be changed dynamically inside a process
               require 'rUtilAnts/ForeignProcess'
-              rError, lResult = RUtilAnts::ForeignProcess::execCmdOtherSession(
+              rError, lResult = RUtilAnts::ForeignProcess::exec_cmd_other_session(
                 "export LD_LIBRARY_PATH='#{ENV['LD_LIBRARY_PATH']}'",
                 self,
                 :executeTransaction,
@@ -86,10 +86,10 @@ module WEACE
           else
             begin
               require 'mysql'
-              logDebug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
+              log_debug "Ruby-mysql accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
               lSuccess = true
             rescue Exception
-              logDebug "Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
+              log_debug "Ruby-mysql NOT accessible after adding #{lRubyMySQLLibDir} to load path and #{lMySQLLibDir} to system's libraries paths."
             end
           end
         end

@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -54,10 +54,10 @@ module WEACE
 
           # Process the script and get the actions to perform on WEACE Slave Clients
           #
-          # Parameters:
+          # Parameters::
           # * *ioSlaveActions* (_SlaveActions_): The slave actions to populate (check WEACEMasterServer.rb for API)
           # * *iAdditionalParameters* (<em>list<String></em>): Additional parameters given that were not parsed by the options parser
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def processScript(ioSlaveActions, iAdditionalParameters)
             rError = nil
@@ -113,7 +113,7 @@ module WEACE
 
           # Get the command line options for this Process
           #
-          # Return:
+          # Return::
           # * _OptionParser_: The corresponding options
           def getOptions
             rOptions = OptionParser.new
@@ -172,7 +172,7 @@ module WEACE
 
           # Read files given as parameters, containing lists of files, Tasks and Tickets.
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def readFiles
             rError = nil
@@ -233,14 +233,14 @@ module WEACE
 
           # Update the local repository files and checks for conflicts doing so.
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success and no conflict
           def updateAndCheckConflicts
             rError = nil
 
             lConflicts = []
             # Execute svn update
-            changeDir(@LocalRepository) do
+            change_dir(@LocalRepository) do
               `svn update --accept=postpone #{@StrFiles}`.split("\n").each do |iLine|
                 # Check that this line does not tell about a conflict
                 if (iLine.strip[0..0] == 'C')
@@ -260,7 +260,7 @@ module WEACE
           # Test that the files we want to commit will not break the regression.
           # Returns an error if the regression is failing.
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           def testCommitAgainstRegression
             rError = nil
@@ -274,7 +274,7 @@ module WEACE
               lTempRepositoryDirName = "#{Dir.tmpdir}/WEACERegTest_#{Thread.current.object_id}"
               require 'fileutils'
               FileUtils::mkdir_p(lTempRepositoryDirName)
-              changeDir(lTempRepositoryDirName) do
+              change_dir(lTempRepositoryDirName) do
                 # Checkout using svn
                 `svn co #{@SVNCOCmd}`
                 # Now replace the files we want with the ones from the local repository
@@ -294,7 +294,7 @@ module WEACE
                 # Perfect, we can clean up the temporary directory
                 FileUtils::rm_rf(lTempRepositoryDirName)
               else
-                logErr "An error occurred when testing regression: #{rError}. Leaving checked-out repository #{lTempRepositoryDirName} for further investigations. Feel free to remove it."
+                log_err "An error occurred when testing regression: #{rError}. Leaving checked-out repository #{lTempRepositoryDirName} for further investigations. Feel free to remove it."
               end
             end
 
@@ -303,14 +303,14 @@ module WEACE
 
           # Execute the regression from a given repository
           #
-          # Parameters:
+          # Parameters::
           # * *iRepositoryDir* (_String_): Repository dir from where we execute the regression
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def executeRegression(iRepositoryDir)
             rError = nil
 
-            changeDir(iRepositoryDir) do
+            change_dir(iRepositoryDir) do
               lOutput = `#{@RegressionCmd}`
               lReturnCode = $?.exitstatus
               if (lReturnCode != 0)
@@ -323,7 +323,7 @@ module WEACE
 
           # Commit
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil if success
           # * _Integer_: The commit ID, to be used for future references
           def commit
@@ -334,7 +334,7 @@ module WEACE
             if (@CommitPassword != nil)
               lStrPassword = "--password #{@CommitPassword}"
             end
-            changeDir(@LocalRepository) do
+            change_dir(@LocalRepository) do
               lOutput = `svn ci --message "#{@Comment}" --username #{@CommitUser} #{lStrPassword} #{@StrFiles}`.split("\n")
               lReturnCode = $?.exitstatus
               if (lReturnCode == 0)

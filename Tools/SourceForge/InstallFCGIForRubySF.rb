@@ -5,7 +5,7 @@
 #
 # Check http://weacemethod.sourceforge.net/wiki/index.php/FCGIForRubySF.NET for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -19,7 +19,7 @@ module FCGIForRubyInstaller
 
   # Set a new step
   #
-  # Parameters:
+  # Parameters::
   # * *iName* (_String_): The name of the step to execute
   # * *CodeBlock*: The code of this step
   def self.step(iName)
@@ -33,7 +33,7 @@ module FCGIForRubyInstaller
 
   # Execute a command, and log any possible error it finds
   #
-  # Parameters:
+  # Parameters::
   # * *iCmd* (_String_): The command to execute
   # * *iExpectedErrorCode* (_Integer_): The expected error code [optional = 0]
   def self.execCmd(iCmd, iExpectedErrorCode = 0)
@@ -62,9 +62,9 @@ module FCGIForRubyInstaller
   # Extract the file name from a tarball.
   # Remove extension .tar.gz or .tgz
   #
-  # Parameters:
+  # Parameters::
   # * *iTarBallName* (_String_): The tarball name
-  # Return:
+  # Return::
   # * _String_: The file name
   def self.getFileNameFromTarBall(iTarBallName)
     if (iTarBallName[-4..-1] == '.tgz')
@@ -80,10 +80,10 @@ module FCGIForRubyInstaller
   # * Check the existence of the tarball
   # * Check the existence of the project's directory
   #
-  # Parameters:
+  # Parameters::
   # * *iTarBallName* (_String_): Name of the tarball
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
-  # Return:
+  # Return::
   # * _String_: The complete project's root path
   def self.checkBasics(iTarBallName, iProjectUnixName)
     rProjectRootPath = nil
@@ -103,7 +103,7 @@ module FCGIForRubyInstaller
   
   # Execute some code once moved in a given directory, and get back to the original directory after.
   #
-  # Parameters:
+  # Parameters::
   # * *iDir* (_String_): The directory to move into
   # * *CodeBlock*: The code to execute
   def self.cdir(iDir)
@@ -123,10 +123,10 @@ module FCGIForRubyInstaller
   
   # Untar a tarball in a directory, and return the untared directory name
   #
-  # Parameters:
+  # Parameters::
   # * *iTarBallName* (_String_): Name of the tarball
   # * *iDirectory* (_String_): Name of the directory to untar into
-  # Return:
+  # Return::
   # * _String_: The complete path of the untared directory
   def self.untar(iTarBallName, iDirectory)
     rTarBallDir = "#{iDirectory}/#{getFileNameFromTarBall(iTarBallName)}"
@@ -149,7 +149,7 @@ module FCGIForRubyInstaller
   
   # Set an environment variable to a given value
   #
-  # Parameters:
+  # Parameters::
   # * *iVariableName* (_String_): The name of the variable
   # * *iValue* (_String_): The value
   def self.setEnv(iVariableName, iValue)
@@ -162,7 +162,7 @@ module FCGIForRubyInstaller
   
   # Modify a file content
   #
-  # Parameters:
+  # Parameters::
   # * *iFileName* (_String_): The name of the file to modify
   # * *iMatchLinePattern* (_RegExp_): The regular expression matching the line to modify
   # * *CodeBlock(iFile, ioLine)*: The code block called for the line matching the pattern
@@ -196,7 +196,7 @@ module FCGIForRubyInstaller
   
   # Test that RubyGems is up and running in our environment
   #
-  # Return:
+  # Return::
   # * _Boolean_: Is RubyGems working ?
   def self.testRubyGems
     rRubyGemsOK = true
@@ -244,7 +244,7 @@ module FCGIForRubyInstaller
   
   # Add a value to an environment variable
   #
-  # Parameters:
+  # Parameters::
   # * *iVariableName* (_String_): The name of the variable
   # * *iValue* (_String_): The value to add
   def self.addEnv(iVariableName, iValue)
@@ -263,7 +263,7 @@ module FCGIForRubyInstaller
   # 2.1. Install it by calling the corresponding script
   # 2.2. Modify the environment to set it up
   #
-  # Parameters:
+  # Parameters::
   # * *iRubyGemsTarBall* (_String_): The RubyGems tarball (can be nil if not given)
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
   # * *iRubyGemsSubPath* (_String_): Sub-path to install RubyGems
@@ -294,7 +294,7 @@ module FCGIForRubyInstaller
 
   # The main method
   #
-  # Parameters:
+  # Parameters::
   # * *iFCGITarBall* (_String_): Name of the tarball
   # * *iProjectUnixName* (_String_): Unix name of the project to install to
   # * *iFCGILibSubPath* (_String_): Sub-path to install FCGI-devel's library

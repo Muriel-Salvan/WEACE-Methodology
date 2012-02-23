@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -11,10 +11,10 @@ module WEACE
 
       # Execute all the Actions having parameters.
       #
-      # Parameters:
+      # Parameters::
       # * *iUserID* (_String_): The User ID
       # * *iActionsToExecute* (<em>map<ToolID,map<ActionID,list<list<String>>>></em>): Map of Actions to execute per Tool, along with their lists of parameters
-      # Return:
+      # Return::
       # * _ActionExecutionsError_: An error, or nil in case of success
       def executeActions_Regression(iUserID, iActionsToExecute)
         $Variables[:SlaveActions] = {
@@ -42,7 +42,7 @@ module WEACE
           # Get a map of variables to instantiate in the plugin.
           # This is used to simulate the configuration stored in MasterServer.conf.rb
           #
-          # Return:
+          # Return::
           # * <em>map<Symbol,Object></em>: The variables to instantiate
           def getVarsToInstantiate
             return {}
@@ -51,7 +51,7 @@ module WEACE
           # Prepare for execution.
           # Use this method to bypass methods to better track WEACE behaviour.
           #
-          # Parameters:
+          # Parameters::
           # * *CodeBlock*: The code to call once preparation is done
           def prepareExecution
             # Bypass SlaveClient (executeMarshalled)
@@ -67,7 +67,7 @@ module WEACE
           # Get back the User ID and the Actions once sent.
           # This method is also used to assert some specific parts of the execution.
           #
-          # Return:
+          # Return::
           # * _String_: The User ID
           # * <em>map<String,map<String,list<list<String>>>></em>: The Actions
           def getUserActions
@@ -78,9 +78,9 @@ module WEACE
 
           # Get the new data put in SlaveActions for a given file to be transfered
           #
-          # Parameters:
+          # Parameters::
           # * *iFileName* (_String_): File name to be transfered
-          # Return:
+          # Return::
           # * _Object_: The data to be put in SlaveActions
           def getFileNewData(iFileName)
             return iFileName

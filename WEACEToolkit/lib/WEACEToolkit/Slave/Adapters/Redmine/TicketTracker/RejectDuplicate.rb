@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -32,12 +32,12 @@ module WEACE
               # Execute SQL.
               # This is the internal method used once the DB connection is active.
               #
-              # Parameters:
+              # Parameters::
               # * *ioSQL* (_Object_): The SQL connection
               # * *iUserID* (_String_): User ID of the script adding this info
               # * *iMasterTicketID* (_String_): The Master Ticket ID
               # * *iSlaveTicketID* (_String_): The Slave Ticket ID
-              # Return:
+              # Return::
               # * _Exception_: An error, or nil if success
               def execute(ioSQL, iUserID, iMasterTicketID, iSlaveTicketID)
                 # Get the User ID
@@ -125,11 +125,11 @@ module WEACE
 
             # Mark 2 tickets as duplicated and close the slave ticket
             #
-            # Parameters:
+            # Parameters::
             # * *iUserID* (_String_): User ID of the script adding this info
             # * *iMasterTicketID* (_String_): The Master Ticket ID
             # * *iSlaveTicketID* (_String_): The Slave Ticket ID
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iMasterTicketID, iSlaveTicketID)
               return executeRedmine(

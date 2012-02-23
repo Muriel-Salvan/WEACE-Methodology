@@ -6,5 +6,5 @@
   :InstallationParameters => '--mediawikidir E:/DOCUME~1/MURIEL~2/LOCALS~1/Temp/WEACERegression/Dir_0/wiki',
   :Description => 'Mediawiki adapted to WEACE Slave.',
   :Product => 'Mediawiki',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

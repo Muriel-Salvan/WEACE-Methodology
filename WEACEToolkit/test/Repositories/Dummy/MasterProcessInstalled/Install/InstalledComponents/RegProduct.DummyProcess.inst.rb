@@ -4,5 +4,5 @@
   :InstallationDate => '2010-01-29 18:08:19',
   :InstallationParameters => '',
   :Description => 'Dummy Product used in WEACE Regression.',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

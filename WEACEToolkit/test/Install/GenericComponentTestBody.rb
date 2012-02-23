@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -12,7 +12,7 @@ module WEACE
       # Get variable options, based on the context we want for our regression
       # Method used to describe variable options in Components including GenericComponentTestBody.
       #
-      # Return:
+      # Return::
       # * <em>list<list<Object>></em>: List of options as given to the OptionParser.on method
       def self.getGenericComponentVarOptions
         rOptions = nil
@@ -89,7 +89,7 @@ module WEACE
 
         # Check if we can install
         #
-        # Return:
+        # Return::
         # * _Exception_: An error, or nil in case of success
         def check
           rError = nil
@@ -128,7 +128,7 @@ module WEACE
         # Install for real.
         # This is called only when check method returned no error.
         #
-        # Return:
+        # Return::
         # * _Exception_: An error, or nil in case of success
         def execute
           rError = nil
@@ -151,7 +151,7 @@ module WEACE
 
         # Get the default configuration
         #
-        # Return:
+        # Return::
         # * _String_: The default configuration text to put in the configuration file.
         def getDefaultConfig
           if ($Variables[:ComponentInstall] == nil)

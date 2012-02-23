@@ -4,7 +4,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -33,7 +33,7 @@ module WEACE
               # Execute SQL.
               # This is the internal method used once the DB connection is active.
               #
-              # Parameters:
+              # Parameters::
               # * *ioSQL* (_Object_): The SQL connection
               # * *iUserID* (_String_): User ID of the script adding this info
               # * *iTicketID* (_String_): The Ticket ID
@@ -41,7 +41,7 @@ module WEACE
               # * *iCommitID* (_String_): The commit ID
               # * *iCommitUser* (_String_): The commit user
               # * *iCommitComment* (_String_): The commit comment
-              # Return:
+              # Return::
               # * _Exception_: An error, or nil if success
               def execute(ioSQL, iUserID, iTicketID, iBranchName, iCommitID, iCommitUser, iCommitComment)
                 # Get the User ID
@@ -71,14 +71,14 @@ module WEACE
 
             # Add the commit information to the ticket
             #
-            # Parameters:
+            # Parameters::
             # * *iUserID* (_String_): User ID of the script adding this info
             # * *iTicketID* (_String_): The Ticket ID
             # * *iBranchName* (_String_): Name of the branch receiving the commit
             # * *iCommitID* (_String_): The commit ID
             # * *iCommitUser* (_String_): The commit user
             # * *iCommitComment* (_String_): The commit comment
-            # Return:
+            # Return::
             # * _Exception_: An error, or nil in case of success
             def execute(iUserID, iTicketID, iBranchName, iCommitID, iCommitUser, iCommitComment)
               return executeRedmine(

@@ -4,5 +4,5 @@
   :InstallationDate => '2010-01-29 18:08:19',
   :InstallationParameters => '',
   :Description => 'MediaWiki adapted to WEACE Slave as a Wiki.',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

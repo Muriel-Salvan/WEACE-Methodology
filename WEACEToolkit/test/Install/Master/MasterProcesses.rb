@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -33,7 +33,7 @@ module WEACE
           # * :RepositoryProductConfig (_String_): Name of the repository to use when testing Product config, if :ProductConfig is specified [optional = nil]
           # * :RepositoryToolConfig (_String_): Name of the repository to use when testing Tool config, if :ToolConfig is specified [optional = nil]
           #
-          # Return:
+          # Return::
           # * <em>map<Symbol,Object></em>: The different properties
           def getComponentTestSpecs
             return {
@@ -42,7 +42,7 @@ module WEACE
               :ComponentName => 'RegProduct.DummyProcess',
               :ComponentInstallInfo => {
                 :Description => 'This Process is used for WEACE Regression only.',
-                :Author => 'murielsalvan@users.sourceforge.net'
+                :Author => 'muriel@x-aeon.com'
               },
               :RepositoryNormal => 'Dummy/MasterProductInstalled',
               :RepositoryInstalled => 'Dummy/MasterProcessInstalled',

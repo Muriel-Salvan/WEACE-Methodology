@@ -1,5 +1,5 @@
 #--
-# Copyright (c) 2010 - 2011 Muriel Salvan (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2010 - 2012 Muriel Salvan (muriel@x-aeon.com)
 # Licensed under the terms specified in LICENSE file. No warranty is provided.
 #++
 
@@ -16,16 +16,16 @@ module WEACE
 
         # Execute the installation of an individual Component.
         #
-        # Parameters:
+        # Parameters::
         # * *iParameters* (<em>list<String></em>): The parameters to give to the Component's installer
         # * *iComponentParameters* (<em>list<String></em>): The parameters to give to the Component's installer, specific to the Component
         # * *iOptions* (<em>map<Symbol,Object></em>): Additional options:
-        # ** *:Error* (_Exception_): Expected error from the Installer [optional = nil]
-        # ** *:ProductRepository* (_String_): Name of the Product repository to use as a start [optional = 'Empty']
-        # ** *:CheckInstallFile* (<em>map<Symbol,String></em>): Installation file parameters to check, except :InstallationDate and :InstallationParameters [optional = {}]
-        # ** *:CheckConfigFile* (<em>map<Symbol,String></em>): Configuration file parameters to check [optional = {}]
+        #   * *:Error* (_Exception_): Expected error from the Installer [optional = nil]
+        #   * *:ProductRepository* (_String_): Name of the Product repository to use as a start [optional = 'Empty']
+        #   * *:CheckInstallFile* (<em>map<Symbol,String></em>): Installation file parameters to check, except :InstallationDate and :InstallationParameters [optional = {}]
+        #   * *:CheckConfigFile* (<em>map<Symbol,String></em>): Configuration file parameters to check [optional = {}]
         # * *CodeBlock*: The code called to perform extra testing
-        # ** *iError* (_Exception_): The error returned by the installer
+        #   * *iError* (_Exception_): The error returned by the installer
         def executeInstallIndividualComponent(iParameters, iComponentParameters, iOptions = {}, &iCheckCode)
           lExpectedError = iOptions[:Error]
           lProductRepository = iOptions[:ProductRepository]
@@ -83,7 +83,7 @@ module WEACE
 
         # Initialize a test case for an individual Component
         #
-        # Parameters:
+        # Parameters::
         # * *CodeBlock*: The code to call once it is initialized
         def initIndividualComponentTest
           initTestCase do

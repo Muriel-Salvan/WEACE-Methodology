@@ -6,5 +6,5 @@
   :InstallationParameters => '',
   :Description => 'This Slave Product is used for regression purposes only.',
   :Product => 'DummyProduct2',
-  :Author => 'murielsalvan@users.sourceforge.net'
+  :Author => 'muriel@x-aeon.com'
 }

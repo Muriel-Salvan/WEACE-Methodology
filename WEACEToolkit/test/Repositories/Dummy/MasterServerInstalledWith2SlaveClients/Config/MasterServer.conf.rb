@@ -7,7 +7,7 @@
 {
   # Log file used
   # String
-  # :LogFile => '/var/log/WEACEMasterServer.log',
+  # :log_file => '/var/log/WEACEMasterServer.log',
 
   # List of WEACE Slave Clients to contact
   # list <

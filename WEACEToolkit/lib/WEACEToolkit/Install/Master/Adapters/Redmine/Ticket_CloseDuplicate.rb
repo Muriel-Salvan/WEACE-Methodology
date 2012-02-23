@@ -3,7 +3,7 @@
 #
 # Check http://weacemethod.sourceforge.net for details.
 #--
-# Copyright (c) 2009 - 2011 Muriel Salvan  (murielsalvan@users.sourceforge.net)
+# Copyright (c) 2009 - 2012 Muriel Salvan  (muriel@x-aeon.com)
 # Licensed under BSD LICENSE. No warranty is provided.
 #++
 
@@ -21,7 +21,7 @@ module WEACEInstall
 
           # Check if we can install
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def check
             return performModify(false)
@@ -30,7 +30,7 @@ module WEACEInstall
           # Install for real.
           # This is called only when check method returned no error.
           #
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def execute
             return performModify(true)
@@ -40,9 +40,9 @@ module WEACEInstall
 
           # Perform modifications or simulate them
           #
-          # Parameters:
+          # Parameters::
           # * *iCommitModifications* (_Boolean_): Do we really perform the modifications ?
-          # Return:
+          # Return::
           # * _Exception_: An error, or nil in case of success
           def performModify(iCommitModifications)
             rError = nil
